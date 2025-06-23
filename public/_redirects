@@ -1,0 +1,4 @@
+/*    /index.html   200
+
+# API redirects (opcional, caso queira proxy)
+# /api/*  https://seu-backend.railway.app/api/:splat  200

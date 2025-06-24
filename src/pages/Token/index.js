@@ -15,7 +15,7 @@ export default function Token() {
 
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(false)
-  const [enabled, setEnabled] = useState(false)
+  const [enabledTokens, setEnabledTokens] = useState({})
 
   useEffect(() => {
     async function loadList() {
@@ -51,7 +51,7 @@ export default function Token() {
         rotation: 90,
         character_id: data.Cod,
         token_id: tokenId,
-        enabled: enabled,
+        enabled: enabledTokens[tokenId] || false,
       }
 
       console.log('Criando character token:', newToken)
@@ -87,11 +87,16 @@ export default function Token() {
     {
       title: 'Habilitado',
       dataIndex: 'enabled',
-      render: () => (
+      render: (text, record) => (
         <input
           type="checkbox"
-          value={enabled}
-          onChange={e => setEnabled(e.target.checked)}
+          checked={enabledTokens[record.id] || false}
+          onChange={e =>
+            setEnabledTokens(prev => ({
+              ...prev,
+              [record.id]: e.target.checked,
+            }))
+          }
         />
       ),
     },

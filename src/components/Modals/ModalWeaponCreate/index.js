@@ -33,8 +33,8 @@ export default function ModalWeaponCreate({ weapon }) {
   const [selectedWeapon, setSelectedWeapon] = useState()
 
   useEffect(() => {
-    register({ name: 'character' })
-    register({ name: 'dex_damage' })
+    register('character')
+    register('dex_damage')
   }, [register])
 
   const onSubmit = (data, e) => {
@@ -98,8 +98,7 @@ export default function ModalWeaponCreate({ weapon }) {
             <div>
               <label htmlFor="weapon">Cod</label>
               <Styles.WeaponShort
-                name="weapon"
-                ref={register({ required: true })}
+                {...register('weapon', { required: true })}
                 readOnly
                 value={selectedWeapon?.id}
               />
@@ -117,16 +116,14 @@ export default function ModalWeaponCreate({ weapon }) {
             <div>
               <label htmlFor="price">Preço</label>
               <Styles.WeaponMed
-                name="price"
+                {...register('price', { required: true })}
                 defaultValue={0}
-                ref={register({ required: true })}
               />
             </div>
             <div>
               <label htmlFor="nickname">Apelido</label>
               <Styles.WeaponLarge
-                name="nickname"
-                ref={register({ required: true })}
+                {...register('nickname', { required: true })}
               />
             </div>
           </Styles.InputContainer>
@@ -135,28 +132,25 @@ export default function ModalWeaponCreate({ weapon }) {
             <div>
               <label htmlFor="weapon">Acerto Extra</label>
               <Styles.WeaponMed
-                name="hit"
+                {...register('hit', { required: true, maxLength: 1 })}
                 type="number"
                 maxLength={1}
                 defaultValue={0}
-                ref={register({ required: true, maxLength: 1 })}
               />
             </div>
             <div>
               <label htmlFor="weapon">Dano Extra</label>
               <Styles.WeaponMed
-                name="damage"
+                {...register('damage', { required: true })}
                 defaultValue={0}
-                ref={register({ required: true })}
               />
             </div>
 
             <div>
               <label htmlFor="weapon">Elemento (dado)</label>
               <Styles.WeaponMed
-                name="element"
+                {...register('element', { required: true })}
                 defaultValue={0}
-                ref={register({ required: true })}
               />
             </div>
 
@@ -175,17 +169,15 @@ export default function ModalWeaponCreate({ weapon }) {
             <div>
               <label htmlFor="weapon">Crítico Mínimo</label>
               <Styles.WeaponMed
-                name="crit_from_mod"
+                {...register('crit_from_mod', { required: true })}
                 defaultValue={0}
-                ref={register({ required: true })}
               />
             </div>
             <div>
               <label htmlFor="weapon">Crit Multiplicador</label>
               <Styles.WeaponMed
-                name="crit_mod"
+                {...register('crit_mod', { required: true })}
                 defaultValue={0}
-                ref={register({ required: true })}
               />
             </div>
             <div>
@@ -203,9 +195,8 @@ export default function ModalWeaponCreate({ weapon }) {
             <div>
               <label htmlFor="weapon">Observação</label>
               <Styles.WeaponExtLarge
+                {...register('description', { required: true })}
                 type="text"
-                name="description"
-                ref={register({ required: true })}
               />
             </div>
             <Styles.Button type="submit">Vincular</Styles.Button>

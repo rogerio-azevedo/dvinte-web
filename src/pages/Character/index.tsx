@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react'
-// import { useSelector } from 'react-redux'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Table } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
@@ -46,24 +45,11 @@ export default function CharacterList() {
     loadChar()
   }, []) // eslint-disable-line
 
-  // Função para construir URL do portrait
   function getPortraitUrl(portrait: string | undefined): string {
     if (!portrait) {
       return '/favicon.ico'
     }
 
-    // Se já é uma URL completa, usar diretamente
-    if (portrait.startsWith('http')) {
-      return portrait
-    }
-
-    // Se é só o nome do arquivo, construir URL no formato correto
-    if (!portrait.includes('/')) {
-      const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:9600'
-      return `${baseUrl}/portrait-files/${portrait}`
-    }
-
-    // Se já tem um caminho, assumir que é relativo ao servidor
     return portrait
   }
 

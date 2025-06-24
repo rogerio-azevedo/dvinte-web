@@ -2,6 +2,10 @@ import styled from 'styled-components'
 import { Select } from 'antd'
 import { Table } from 'antd'
 
+interface FormContainerProps {
+  showform: 'hide' | 'show'
+}
+
 export const Container = styled.div`
   display: flex;
   justify-content: center;
@@ -30,7 +34,7 @@ export const HeaderContainer = styled.div`
   justify-content: space-between;
 `
 
-export const FormContainer = styled.div`
+export const FormContainer = styled.div<FormContainerProps>`
   width: 100%;
   height: 600px;
 
@@ -153,6 +157,7 @@ export const InputShort = styled.input`
   -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
   box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
 `
+
 export const SelectContainer = styled.div`
   width: 280px;
 
@@ -160,6 +165,7 @@ export const SelectContainer = styled.div`
     margin-bottom: 3px;
   }
 `
+
 export const SelectFormated = styled(Select)`
   border: 1px solid rgba(111, 0, 0, 1);
   border-radius: 4px;

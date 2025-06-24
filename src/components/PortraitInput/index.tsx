@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useField } from '@rocketseat/unform'
 import api from '../../services/api'
-import Select, { ActionMeta, SingleValue } from 'react-select'
 
 import { Container } from './styles'
 

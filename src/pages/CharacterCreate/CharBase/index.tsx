@@ -193,14 +193,12 @@ export default function CharBase() {
 
   // Carregar dados do contexto quando componente monta OU quando state.base muda
   useEffect(() => {
-    console.log('🔍 Verificando dados do contexto:', state.base)
     if (
       state.base &&
       Object.keys(state.base).some(
         key => state.base[key as keyof typeof state.base]
       )
     ) {
-      console.log('🔍 Carregando dados do contexto no formulário')
       reset({
         ...state.base,
         is_ativo: true,
@@ -212,7 +210,6 @@ export default function CharBase() {
   // Função para salvar dados no contexto (só quando clica Next)
   const onSubmit = useCallback(
     (data: FormData) => {
-      console.log('🔍 onSubmit chamado com dados:', data)
       actions.setBaseData(data)
       toast.success('Dados básicos salvos com sucesso!')
     },
@@ -220,10 +217,8 @@ export default function CharBase() {
   )
 
   const handleSave = useCallback(() => {
-    console.log('🔍 handleSave chamado')
     // Em vez de dispatch event, vamos pegar os dados atuais e chamar onSubmit diretamente
     const formData = watch() // Pega todos os dados atuais do formulário
-    console.log('🔍 Dados do formulário:', formData)
 
     // Validar se campos obrigatórios estão preenchidos
     const requiredFields = [
@@ -466,21 +461,6 @@ export default function CharBase() {
             </Styles.InputContainer>
           </form>
         </Styles.FormContainer>
-
-        {/* Debug info - apenas mostrar dados atuais do contexto */}
-        {process.env.NODE_ENV === 'development' && (
-          <div
-            style={{
-              fontSize: '12px',
-              background: '#f0f0f0',
-              padding: '10px',
-              marginTop: '20px',
-            }}
-          >
-            <strong>Dados salvos no contexto:</strong>
-            <pre>{JSON.stringify(state.base, null, 2)}</pre>
-          </div>
-        )}
 
         <Styles.DivPage>
           <Link to="charactercreate">

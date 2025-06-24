@@ -187,19 +187,6 @@ export default function CharClass() {
           </div>
         </Styles.FormContainer>
 
-        {/* Debug - mostrar dados do contexto */}
-        <div
-          style={{
-            marginTop: '20px',
-            padding: '10px',
-            backgroundColor: '#f5f5f5',
-            fontSize: '12px',
-          }}
-        >
-          <strong>Debug - Classes no contexto:</strong>
-          <pre>{JSON.stringify(state.classe, null, 2)}</pre>
-        </div>
-
         <Styles.DivPage>
           <Link to="charactercreate">
             <Styles.Page />

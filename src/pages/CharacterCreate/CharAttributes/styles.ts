@@ -36,6 +36,11 @@ export const AttributesContainer = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 10px;
+  -webkit-user-select: none !important;
+  -khtml-user-select: none !important;
+  -moz-user-select: none !important;
+  -o-user-select: none !important;
+  user-select: none !important;
 `
 
 export const GroupContainer = styled.div`

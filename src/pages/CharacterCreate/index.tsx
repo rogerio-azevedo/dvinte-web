@@ -180,27 +180,6 @@ export default function CharacterPortrait() {
           )}
         </Styles.ImageContainer>
 
-        {/* Debug - mostrar estado atual */}
-        {process.env.NODE_ENV === 'development' && (
-          <div
-            style={{
-              fontSize: '12px',
-              background: '#f0f0f0',
-              padding: '10px',
-              marginTop: '20px',
-            }}
-          >
-            <strong>Debug - Estado do contexto:</strong>
-            <pre>
-              {JSON.stringify(
-                { portrait: state.portrait, base: state.base },
-                null,
-                2
-              )}
-            </pre>
-          </div>
-        )}
-
         <Styles.DivPage>
           <Link to="charactercreate">
             <Styles.ActivePage />

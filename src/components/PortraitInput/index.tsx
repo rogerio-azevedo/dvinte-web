@@ -13,11 +13,13 @@ interface Option {
 interface PortraitInputProps {
   changePortrait: (_value: string | null) => void
   portraits?: Option[]
+  onUploadSuccess?: () => void
 }
 
 export default function PortraitInput({
   changePortrait,
   portraits = [],
+  onUploadSuccess,
 }: PortraitInputProps) {
   const { defaultValue, registerField } = useField('avatar')
 
@@ -61,6 +63,10 @@ export default function PortraitInput({
 
     setFile(id)
     setPreview(url)
+
+    if (onUploadSuccess) {
+      onUploadSuccess()
+    }
   }
 
   const customStyles = {
@@ -92,7 +98,7 @@ export default function PortraitInput({
       </label>
 
       <div style={{ width: '220px', marginRight: '15px' }}>
-        <Select
+        {/* <Select
           styles={customStyles}
           maxMenuHeight={220}
           placeholder="ESCOLHA O RETRATO"
@@ -103,7 +109,7 @@ export default function PortraitInput({
           isLoading={loading}
           options={portraitOptions}
           isClearable
-        />
+        /> */}
       </div>
     </Container>
   )

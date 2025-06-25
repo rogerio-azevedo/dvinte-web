@@ -4,8 +4,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 
 import api from '../../services/api'
 
-import AvatarInput from '../../components/PortraitInput'
-
 import { Container, ImageContainer, List, Item } from './styles'
 
 interface PortraitProps {

@@ -10,6 +10,7 @@ import { FaPlusCircle } from 'react-icons/fa'
 import api from '../../services/api'
 
 import * as Styles from './styles'
+import ModalWeaponCreate from '../../components/Modals/ModalWeaponCreate'
 
 const { Option } = Select
 
@@ -31,7 +32,7 @@ interface WeaponFormData {
   str_bonus: string
 }
 
-interface Weapon {
+interface WeaponProps {
   id: number
   name: string
   dice_s: number
@@ -73,7 +74,7 @@ export default function Weapon() {
     defaultValues,
   })
   const [loading, setLoading] = useState(false)
-  const [list, setList] = useState<Weapon[]>([])
+  const [list, setList] = useState<WeaponProps[]>([])
   const [showform, setShowform] = useState<'hide' | 'show'>('hide')
 
   useEffect(() => {
@@ -110,7 +111,7 @@ export default function Weapon() {
     }
   }
 
-  const columns: ColumnsType<Weapon> = [
+  const columns: ColumnsType<WeaponProps> = [
     {
       title: 'Cod',
       dataIndex: 'id',
@@ -172,12 +173,13 @@ export default function Weapon() {
       dataIndex: 'version',
       key: 'version',
     },
-    // Temporariamente removido até corrigir o modal
-    // {
-    //   title: 'Comprar',
-    //   dataIndex: 'buy',
-    //   render: (_, item) => <ModalWeaponCreate weapon={item} />,
-    // },
+    {
+      title: 'Comprar',
+      dataIndex: 'buy',
+      render: (_, item) => (
+        <ModalWeaponCreate weapon={{ ...item, id: String(item.id) }} />
+      ),
+    },
   ]
 
   function handleAdd() {

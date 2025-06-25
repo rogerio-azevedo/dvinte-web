@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import Modal from 'react-modal'
-import { FaTimes } from 'react-icons/fa/'
-import { FaRegMoneyBillAlt } from 'react-icons/fa/'
-import { useForm } from 'react-hook-form'
+import { FaTimes } from 'react-icons/fa'
+import { FaRegMoneyBillAlt } from 'react-icons/fa'
+import { useForm, SubmitHandler } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import { Switch } from 'antd'
 
@@ -11,6 +11,27 @@ import api from '../../../services/api'
 import SelectCharacter from '../../../components/SelectCharacter'
 
 import * as Styles from './styles'
+
+interface ModalWeaponCreateProps {
+  weapon: {
+    id: string
+    name: string
+  }
+}
+
+interface FormData {
+  character: string
+  dex_damage: boolean
+  weapon: string
+  price: number
+  nickname: string
+  hit: number
+  damage: number
+  element: number
+  crit_from_mod: number
+  crit_mod: number
+  description: string
+}
 
 const customStyles = {
   content: {
@@ -27,20 +48,20 @@ const customStyles = {
 
 Modal.setAppElement('#root')
 
-export default function ModalWeaponCreate({ weapon }) {
-  const { handleSubmit, register, setValue } = useForm()
+const ModalWeaponCreate: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
+  const { handleSubmit, register, setValue } = useForm<FormData>()
   const [modalIsOpen, setIsOpen] = useState(false)
-  const [selectedWeapon, setSelectedWeapon] = useState()
+  const [selectedWeapon, setSelectedWeapon] = useState(weapon)
 
   useEffect(() => {
     register('character')
     register('dex_damage')
   }, [register])
 
-  const onSubmit = (data, e) => {
+  const onSubmit: SubmitHandler<FormData> = (data, e) => {
     async function saveData() {
       await api.post('characterweapons', data)
-      e.target.reset()
+      e?.target.reset()
       toast.success('Arma vinculada com sucesso!')
     }
     saveData()
@@ -61,12 +82,8 @@ export default function ModalWeaponCreate({ weapon }) {
     setIsOpen(false)
   }
 
-  function onChange(checked) {
-    if (checked === true) {
-      setValue('dex_damage', checked)
-    } else {
-      setValue('dex_damage', false)
-    }
+  function onChange(checked: boolean) {
+    setValue('dex_damage', checked)
   }
 
   return (
@@ -157,11 +174,7 @@ export default function ModalWeaponCreate({ weapon }) {
             <div>
               <label htmlFor="weapon">Dex (dano)</label>
               <div style={{ marginTop: '18px' }}>
-                <Switch
-                  name="dex_damage"
-                  defaultChecked={false}
-                  onChange={onChange}
-                />
+                <Switch defaultChecked={false} onChange={onChange} />
               </div>
             </div>
           </Styles.InputContainer>
@@ -185,8 +198,7 @@ export default function ModalWeaponCreate({ weapon }) {
                 .
               </label>
               <SelectCharacter
-                name="character"
-                changeCharacter={e => setValue('character', e?.value)}
+                changeCharacter={e => setValue('character', e)}
               />
             </div>
           </Styles.InputContainer>
@@ -196,7 +208,6 @@ export default function ModalWeaponCreate({ weapon }) {
               <label htmlFor="weapon">Observação</label>
               <Styles.WeaponExtLarge
                 {...register('description', { required: true })}
-                type="text"
               />
             </div>
             <Styles.Button type="submit">Vincular</Styles.Button>
@@ -206,3 +217,5 @@ export default function ModalWeaponCreate({ weapon }) {
     </Styles.Container>
   )
 }
+
+export default ModalWeaponCreate

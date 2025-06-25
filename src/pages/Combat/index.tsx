@@ -115,7 +115,7 @@ interface Token {
   enabled: boolean
 }
 
-interface CharStatus {
+interface CharStatusProps {
   fortitude: number
   reflex: number
   will: number
@@ -152,7 +152,7 @@ export default function Combat(): React.JSX.Element {
 
   const [maxDex, setMaxDex] = useState<number | undefined>()
   const [weapons, setWeapons] = useState<Weapon[] | undefined>()
-  const [charStatus, setCharStatus] = useState<CharStatus | undefined>()
+  const [charStatus, setCharStatus] = useState<CharStatusProps | undefined>()
   const [allowDrag, setAllowDrag] = useState<boolean>(false)
 
   async function calcDext(dexMod: number): Promise<number> {

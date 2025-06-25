@@ -1,5 +1,9 @@
 import styled from 'styled-components'
 
+interface ContainerProps {
+  show?: boolean
+}
+
 export const Container = styled.div`
   display: flex;
   flex-direction: row;
@@ -9,7 +13,7 @@ export const Container = styled.div`
   height: 100%;
 `
 
-export const CombatContainer = styled.div`
+export const CombatContainer = styled.div<ContainerProps>`
   display: flex;
   flex-direction: column;
   width: ${props => (props.show ? '80%' : '100%')};
@@ -30,7 +34,7 @@ export const MapContainer = styled.div`
   border: 0;
 `
 
-export const TalkContainer = styled.div`
+export const TalkContainer = styled.div<ContainerProps>`
   display: ${props => (props.show ? 'flex' : 'none')};
   width: 20%;
   min-width: 350px;

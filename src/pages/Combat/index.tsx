@@ -38,29 +38,127 @@ import MapTool from '../../components/CombatComponents/MapTool'
 
 import ScrollContainer from 'react-indiana-drag-scroll'
 
-export default function Combat() {
-  const { profile } = useSelector(state => state.user)
-  const showMenu = useSelector(state => state.menu.chatMenu)
+// Interfaces
+interface User {
+  id: number
+  name: string
+  is_gm: boolean
+}
 
-  const [menu, setMenu] = useState('attack')
+interface RootState {
+  user: {
+    profile: User
+  }
+  menu: {
+    chatMenu: boolean
+  }
+}
 
-  const [charInit, setCharInit] = useState()
-  const [character, setCharacter] = useState()
-  const [tokens, setTokens] = useState([])
-  const [fortitude, setFortitude] = useState()
-  const [reflex, setReflex] = useState()
-  const [will, setWill] = useState()
-  const [strength, setStrength] = useState()
+interface Armor {
+  id: number
+  type: number
+  bonus: number
+  defense: number
+  dexterity: number
+}
 
-  const [maxDex, setMaxDex] = useState()
-  const [weapons, setWeapons] = useState()
-  const [charStatus, setCharStatus] = useState()
-  const [allowDrag, setAllowDrag] = useState(false)
+interface Weapon {
+  id: number
+  name: string
+  nickname?: string
+  dice_m: number
+  dice_s: number
+  multiplier_m: number
+  multiplier_s: number
+  critical: number
+  crit_from: number
+  crit_from_mod: number
+  crit_mod: number
+  range: number
+  damage: number
+  element: number
+  hit: number
+  str_bonus: number
+  dex_damage: boolean
+}
 
-  async function calcDext(dexMod) {
+interface Character {
+  id: number
+  name: string
+  Health: number
+  HealthNow: number
+  Size: string
+  Fortitude: number
+  Reflex: number
+  Will: number
+  BaseAttack: number
+  StrMod: number
+  DexMod: number
+  ConMod: number
+  WisMod: number
+  StrModTemp?: number
+  DexModTemp?: number
+  ConModTemp?: number
+  WisModTemp?: number
+  Armor: Armor[]
+  Weapon: Weapon[]
+}
+
+interface Token {
+  id: number
+  character_id: number
+  token_id: number
+  position_x: number
+  position_y: number
+  size: number
+  rotation: number
+  enabled: boolean
+}
+
+interface CharStatus {
+  fortitude: number
+  reflex: number
+  will: number
+  charInit: number
+  melee: number
+  ranged: number
+  totalCa: number
+  health: number
+  healthNow: number
+}
+
+type MenuType =
+  | 'chat'
+  | 'init'
+  | 'saves'
+  | 'damage'
+  | 'status'
+  | 'attack'
+  | 'config'
+
+export default function Combat(): React.JSX.Element {
+  const { profile } = useSelector((state: RootState) => state.user)
+  const showMenu = useSelector((state: RootState) => state.menu.chatMenu)
+
+  const [menu, setMenu] = useState<MenuType>('attack')
+
+  const [charInit, setCharInit] = useState<number | undefined>()
+  const [character, setCharacter] = useState<Character | undefined>()
+  const [tokens, setTokens] = useState<Token[]>([])
+  const [fortitude, setFortitude] = useState<number | undefined>()
+  const [reflex, setReflex] = useState<number | undefined>()
+  const [will, setWill] = useState<number | undefined>()
+  const [strength, setStrength] = useState<number | undefined>()
+
+  const [maxDex, setMaxDex] = useState<number | undefined>()
+  const [weapons, setWeapons] = useState<Weapon[] | undefined>()
+  const [charStatus, setCharStatus] = useState<CharStatus | undefined>()
+  const [allowDrag, setAllowDrag] = useState<boolean>(false)
+
+  async function calcDext(dexMod: number): Promise<number> {
     let dextBonus = 0
 
-    if (dexMod <= maxDex) {
+    if (maxDex !== undefined && dexMod <= maxDex) {
       dextBonus = dexMod
     } else if (!maxDex || maxDex === 0) {
       dextBonus = dexMod
@@ -71,9 +169,9 @@ export default function Combat() {
     return dextBonus
   }
 
-  async function GetTokens() {
+  async function GetTokens(): Promise<void> {
     try {
-      const response = await api.get('/chartokens')
+      const response = await api.get<Token[]>('/chartokens')
 
       // Garantir que sempre seja um array
       const tokensData = Array.isArray(response.data) ? response.data : []
@@ -83,9 +181,9 @@ export default function Combat() {
     }
   }
 
-  async function getCharacter() {
+  async function getCharacter(): Promise<void> {
     try {
-      const response = await api.get(`combats/${profile.id}`)
+      const response = await api.get<Character>(`combats/${profile.id}`)
       const char = response.data
       setCharacter(char)
 
@@ -162,7 +260,7 @@ export default function Combat() {
   }, []) // eslint-disable-line
 
   useEffect(() => {
-    const handleTokens = Tokens => {
+    const handleTokens = (Tokens: Token[]) => {
       // Garantir que sempre seja um array
       const tokensArray = Array.isArray(Tokens) ? Tokens : []
       setTokens(tokensArray)
@@ -170,20 +268,22 @@ export default function Combat() {
 
     socket.on('token.message', handleTokens)
 
-    return () => socket.off('token.message', handleTokens)
+    return () => {
+      socket.off('token.message', handleTokens)
+    }
   }, []) // Removida dependência [tokens] para evitar loop infinito
 
-  function handleMenu(tipo) {
+  function handleMenu(tipo: MenuType): void {
     setMenu(tipo)
   }
 
-  function handleDragable() {
+  function handleDragable(): void {
     setAllowDrag(!allowDrag)
   }
 
   return (
     <Styles.Container>
-      <Styles.CombatContainer show={showMenu ? 1 : 0}>
+      <Styles.CombatContainer show={showMenu}>
         <ScrollContainer vertical={allowDrag} horizontal={allowDrag}>
           <Styles.MapContainer>
             <RenderMap tokens={tokens} allowDrag={allowDrag} />
@@ -191,7 +291,7 @@ export default function Combat() {
         </ScrollContainer>
       </Styles.CombatContainer>
 
-      <Styles.TalkContainer show={showMenu ? 1 : 0}>
+      <Styles.TalkContainer show={showMenu}>
         <Styles.IconContainer>
           <ReactTooltip />
 
@@ -315,7 +415,7 @@ export default function Combat() {
           <CharStatus charStatus={charStatus} />
         ) : menu === 'attack' ? (
           <Styles.AttackContainer>
-            <Armory character={character} weapons={weapons} />
+            <Armory character={character} weapons={weapons} loadChar={false} />
             <h2>Painel Logs</h2>
             <LogBoard />
           </Styles.AttackContainer>

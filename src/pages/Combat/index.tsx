@@ -286,7 +286,11 @@ export default function Combat(): React.JSX.Element {
       <Styles.CombatContainer show={showMenu}>
         <ScrollContainer vertical={allowDrag} horizontal={allowDrag}>
           <Styles.MapContainer>
-            <RenderMap tokens={tokens} allowDrag={allowDrag} />
+            <RenderMap
+              tokens={tokens}
+              allowDrag={allowDrag}
+              setTokens={setTokens}
+            />
           </Styles.MapContainer>
         </ScrollContainer>
       </Styles.CombatContainer>

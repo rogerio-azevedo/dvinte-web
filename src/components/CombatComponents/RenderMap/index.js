@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import React, { useState, useEffect, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
@@ -14,7 +16,7 @@ import { Container } from './styles'
 
 import api from '../../../services/api'
 
-export default function RenderMap({ tokens = [], allowDrag }) {
+export default function RenderMap({ tokens = [], allowDrag, setTokens }) {
   const profile = useSelector(state => state.user.profile)
   const { fogLevel, eraserSize } = useSelector(state => state.menu)
   const { fogPersist } = useSelector(state => state.menu)
@@ -174,6 +176,22 @@ export default function RenderMap({ tokens = [], allowDrag }) {
 
   const [portrait] = useImage(mapData?.portrait || '')
 
+  useEffect(() => {
+    socket.on('token.message', data => {
+      console.log('🔄 Socket.IO: Received token.message event with data:', {
+        isArray: Array.isArray(data),
+        dataLength: data?.length,
+        firstToken: data?.[0],
+      })
+
+      if (Array.isArray(data) && setTokens) {
+        setTokens(data)
+      }
+    })
+
+    return () => socket.off('token.message')
+  }, [setTokens])
+
   return (
     <Container>
       <Stage
@@ -324,4 +342,6 @@ export default function RenderMap({ tokens = [], allowDrag }) {
 
 RenderMap.propTypes = {
   tokens: PropTypes.arrayOf(PropTypes.object),
+  allowDrag: PropTypes.bool,
+  setTokens: PropTypes.func,
 }

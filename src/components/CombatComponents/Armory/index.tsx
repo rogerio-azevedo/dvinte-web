@@ -1,11 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
 
 import SelectWeapon from '../../../components/SelectWeapon'
+import SelectCharacter from '../../../components/SelectCharacter'
 
 import * as Styles from './styles'
+
+interface Character {
+  id: number
+  name: string
+}
 
 interface ArmoryProps {
   character: any
@@ -18,10 +24,70 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
   const from = profile.id
 
   const [weapon, setWeapon] = useState()
+  const [userCharacters, setUserCharacters] = useState<Character[]>([])
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
+    null
+  )
+  const [characterWeapons, setCharacterWeapons] = useState<any[]>([])
+  const [loadingCharacters, setLoadingCharacters] = useState(false)
+  const [loadingWeapons, setLoadingWeapons] = useState(false)
+
+  // Carregar personagens do usuário
+  async function loadUserCharacters() {
+    if (loadingCharacters) return
+
+    setLoadingCharacters(true)
+    try {
+      const response = await api.get(`/combats/characters/${profile.id}`)
+      const characters = response.data || []
+      setUserCharacters(characters)
+
+      // Se há apenas um personagem, selecionar automaticamente
+      if (characters.length === 1) {
+        setSelectedCharacter(characters[0])
+      }
+    } catch (error) {
+      toast.error('Erro ao carregar seus personagens')
+    } finally {
+      setLoadingCharacters(false)
+    }
+  }
+
+  // Carregar armas do personagem selecionado
+  async function loadCharacterWeapons(characterId: number) {
+    if (loadingWeapons) return
+
+    setLoadingWeapons(true)
+    try {
+      const response = await api.get(`/combats/${profile.id}/${characterId}`)
+      const characterData = response.data
+      setCharacterWeapons(characterData?.Weapon || [])
+    } catch (error) {
+      toast.error('Erro ao carregar armas do personagem')
+    } finally {
+      setLoadingWeapons(false)
+    }
+  }
+
+  // Carregar personagens ao montar o componente
+  useEffect(() => {
+    loadUserCharacters()
+  }, [])
+
+  // Carregar armas quando um personagem for selecionado
+  useEffect(() => {
+    if (selectedCharacter) {
+      loadCharacterWeapons(selectedCharacter.id)
+      setWeapon(undefined) // Reset da arma selecionada
+    }
+  }, [selectedCharacter])
+
+  // Usar as armas do personagem selecionado, ou as armas passadas por props como fallback
+  const weaponsToUse = characterWeapons.length > 0 ? characterWeapons : weapons
 
   async function handleAttack() {
     if (weapon) {
-      const wep = await character?.Weapon?.find((w: any) => w.id === weapon)
+      const wep = await weaponsToUse?.find((w: any) => w.id === weapon)
       const extraHit = wep?.hit || 0
       const critFrom =
         wep?.crit_from_mod > 0 ? wep?.crit_from_mod : wep?.crit_from
@@ -47,13 +113,18 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
 
       let mod = 0
 
-      const StrMod = character?.StrModTemp
-        ? character?.StrModTemp
-        : character?.StrMod
+      // Usar dados do personagem selecionado ou do character prop
+      const currentChar = selectedCharacter
+        ? await loadCharacterData(selectedCharacter.id)
+        : character
 
-      const DexMod = character?.DexModTemp
-        ? character?.DexModTemp
-        : character?.DexMod
+      const StrMod = currentChar?.StrModTemp
+        ? currentChar?.StrModTemp
+        : currentChar?.StrMod
+
+      const DexMod = currentChar?.DexModTemp
+        ? currentChar?.DexModTemp
+        : currentChar?.DexMod
 
       if (wep?.range > 3) {
         mod = DexMod
@@ -61,7 +132,7 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
         mod = StrMod
       }
 
-      const base = character?.BaseAttack + mod
+      const base = currentChar?.BaseAttack + mod
       const attack = Number(base) + Number(dice) + Number(extraHit)
 
       let rolled = ''
@@ -90,22 +161,25 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
 
   async function handleDamage() {
     if (weapon) {
-      const wep = await character?.Weapon?.find((w: any) => w.id === weapon)
-      const size = await character?.Size
+      const wep = await weaponsToUse?.find((w: any) => w.id === weapon)
+      const currentChar = selectedCharacter
+        ? await loadCharacterData(selectedCharacter.id)
+        : character
+      const size = await currentChar?.Size
 
       let mod = 0
       let modType = ''
 
       if (wep?.dex_damage === true) {
-        mod = (await character?.DexModTemp)
-          ? character.DexModTemp
-          : character.DexMod
+        mod = (await currentChar?.DexModTemp)
+          ? currentChar.DexModTemp
+          : currentChar.DexMod
 
         modType = 'de mod de Destreza'
       } else {
-        mod = (await character?.StrModTemp)
-          ? character.StrModTemp
-          : character.StrMod
+        mod = (await currentChar?.StrModTemp)
+          ? currentChar.StrModTemp
+          : currentChar.StrMod
 
         modType = 'de mod de Força'
       }
@@ -159,23 +233,26 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
   }
 
   async function handleCritDamage() {
-    const wep = await character?.Weapon?.find((w: any) => w.id === weapon)
-    const size = await character?.Size
+    const wep = await weaponsToUse?.find((w: any) => w.id === weapon)
+    const currentChar = selectedCharacter
+      ? await loadCharacterData(selectedCharacter.id)
+      : character
+    const size = await currentChar?.Size
     const critMult = wep?.crit_mod > 0 ? wep?.crit_mod : wep?.critical
 
     let mod = 0
     let modType = ''
 
     if (wep?.dex_damage === true) {
-      mod = (await character?.DexModTemp)
-        ? character.DexModTemp
-        : character.DexMod
+      mod = (await currentChar?.DexModTemp)
+        ? currentChar.DexModTemp
+        : currentChar.DexMod
 
       modType = 'bônus de Destreza'
     } else {
-      mod = (await character?.StrModTemp)
-        ? character.StrModTemp
-        : character.StrMod
+      mod = (await currentChar?.StrModTemp)
+        ? currentChar.StrModTemp
+        : currentChar.StrMod
 
       modType = 'bônus de Força'
     }
@@ -234,18 +311,90 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
     }
   }
 
+  // Função para carregar dados completos do personagem
+  async function loadCharacterData(characterId: number) {
+    try {
+      const response = await api.get(`/combats/${profile.id}/${characterId}`)
+      return response.data
+    } catch (error) {
+      return character // fallback para o character passado por props
+    }
+  }
+
+  async function handleSubmit(data: any) {
+    try {
+      const weaponData = {
+        weapon: data.weapon,
+        hit: Number(data.hit),
+        damage: Number(data.damage),
+        element: Number(data.element),
+        crit_mod: Number(data.crit_mod),
+        crit_from_mod: Number(data.crit_from_mod),
+        dex_damage: data.dex_damage === 'true',
+        price: Number(data.price),
+        nickname: data.nickname,
+        description: data.description,
+      }
+
+      await api.post(`/characters/${data.character}/weapons`, weaponData)
+      toast.success('Arma vinculada com sucesso!')
+    } catch (error) {
+      console.error('Error adding weapon:', error)
+      toast.error('Erro ao vincular arma ao personagem')
+    }
+  }
+
   return (
     <Styles.Container>
       <Styles.ArmoryContainer>
         <h2>Arsenal</h2>
+
+        {/* Seleção de personagem se houver múltiplos */}
+        {userCharacters.length > 1 && (
+          <Styles.WeaponContainer>
+            <label>Personagem:</label>
+            {loadingCharacters ? (
+              <p>Carregando personagens...</p>
+            ) : (
+              <SelectCharacter
+                characters={userCharacters.map(char => ({
+                  value: char.id.toString(),
+                  label: char.name,
+                }))}
+                changeCharacter={(characterId: string | null) => {
+                  if (characterId) {
+                    const char = userCharacters.find(
+                      c => c.id.toString() === characterId
+                    )
+                    setSelectedCharacter(char || null)
+                  } else {
+                    setSelectedCharacter(null)
+                  }
+                }}
+              />
+            )}
+          </Styles.WeaponContainer>
+        )}
+
+        {/* Seleção de arma */}
         <Styles.WeaponContainer>
-          {!loadChar && (
-            <SelectWeapon
-              weapons={weapons as never[]}
-              changeWeapon={(e: any) => setWeapon(e?.value)}
-            />
+          <label>Arma:</label>
+          {!loadChar && userCharacters.length > 0 && (
+            <>
+              {loadingWeapons ? (
+                <p>Carregando armas...</p>
+              ) : weaponsToUse.length > 0 ? (
+                <SelectWeapon
+                  weapons={weaponsToUse as never[]}
+                  changeWeapon={(e: any) => setWeapon(e?.value)}
+                />
+              ) : (
+                <p>Nenhuma arma encontrada para este personagem</p>
+              )}
+            </>
           )}
         </Styles.WeaponContainer>
+
         <Styles.AttackContainer>
           <div>
             <button type="button" onClick={handleAttack}>

@@ -30,10 +30,27 @@ export default function ModalArmorCreate({ armor }) {
   const { handleSubmit, register, setValue } = useForm()
   const [modalIsOpen, setIsOpen] = useState(false)
   const [selectedArmor, setSelectedArmor] = useState()
+  const [characters, setCharacters] = useState([])
 
   useEffect(() => {
     register({ name: 'character' })
   }, [register])
+
+  async function loadCharacters() {
+    try {
+      const response = await api.get('/characters')
+      const charactersData = response.data || []
+
+      const characterOptions = charactersData.map(char => ({
+        value: char.id.toString(),
+        label: char.name,
+      }))
+
+      setCharacters(characterOptions)
+    } catch (error) {
+      toast.error('Erro ao carregar personagens')
+    }
+  }
 
   const onSubmit = (data, e) => {
     async function saveData() {
@@ -49,7 +66,7 @@ export default function ModalArmorCreate({ armor }) {
   function openModal() {
     setIsOpen(true)
     setSelectedArmor(armor)
-    //setValue('cod', selectedWeapon?.id)
+    loadCharacters()
   }
 
   function afterOpenModal() {
@@ -126,7 +143,7 @@ export default function ModalArmorCreate({ armor }) {
                 .
               </label>
               <SelectCharacter
-                name="character"
+                characters={characters}
                 changeCharacter={e => setValue('character', e?.value)}
               />
             </div>

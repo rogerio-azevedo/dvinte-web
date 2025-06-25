@@ -187,14 +187,6 @@ export default function Play() {
     GetTokens()
   }, []) // eslint-disable-line
 
-  useEffect(() => {
-    const handleTokens = Tokens => setTokens(Tokens)
-
-    socket.on('token.message', handleTokens)
-
-    return () => socket.off('token.message', handleTokens)
-  }, [tokens])
-
   function handleMenu(tipo) {
     setMenu(tipo)
   }
@@ -208,7 +200,11 @@ export default function Play() {
       <Styles.MapContainer show={showMenu ? 1 : 0}>
         <ScrollContainer vertical={allowDrag} horizontal={allowDrag}>
           {diceShow && <MyDices />}
-          <RenderMap tokens={tokens} allowDrag={allowDrag} />
+          <RenderMap
+            tokens={tokens}
+            allowDrag={allowDrag}
+            setTokens={setTokens}
+          />
         </ScrollContainer>
       </Styles.MapContainer>
 

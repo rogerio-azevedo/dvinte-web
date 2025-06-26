@@ -339,7 +339,6 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
       await api.post(`/characters/${data.character}/weapons`, weaponData)
       toast.success('Arma vinculada com sucesso!')
     } catch (error) {
-      console.error('Error adding weapon:', error)
       toast.error('Erro ao vincular arma ao personagem')
     }
   }

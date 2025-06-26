@@ -3,25 +3,63 @@ import { darken } from 'polished'
 
 export const Container = styled.div`
   display: flex;
-  align-items: center !important;
-  justify-content: center !important;
+  align-items: center;
+  justify-content: center;
 `
 
 export const HeaderContainer = styled.div`
   display: flex;
-  justify-content: space-between !important;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+
+  h2 {
+    color: #333;
+  }
 `
 
-export const ButtonsContainer = styled.div`
+export const InputContainer = styled.div`
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
 
   div {
     display: flex;
     flex-direction: column;
+    gap: 5px;
+
+    label {
+      font-size: 14px;
+      color: #333;
+    }
+
+    select {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  }
+`
+
+export const ButtonsContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+
+  button {
+    padding: 10px 20px;
+    background: #8e0e00;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:hover {
+      background: #420000;
+    }
   }
 `
 
@@ -47,21 +85,6 @@ export const Button = styled.button`
   -webkit-box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.6);
   -moz-box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.6);
   box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.6);
-`
-
-export const InputContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  justify-items: center;
-  padding-bottom: 10px;
-  padding-top: 10px;
-
-  > div {
-    display: flex;
-    flex-direction: column;
-  }
 `
 
 export const WeaponExtLarge = styled.textarea`

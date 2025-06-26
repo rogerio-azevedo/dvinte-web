@@ -5,11 +5,11 @@ import { SubmitHandler } from 'react-hook-form'
 
 import Button from '../../components/Button'
 import { FaPlusCircle } from 'react-icons/fa'
-import ModalArmorCreate from '../../components/Modals/ModalArmorCreate'
 
 import api from '../../services/api'
 
 import * as Styles from './styles'
+import ModalArmorCreate from '../../components/Modals/ModalArmorCreate'
 
 const { Option } = Select
 
@@ -173,11 +173,11 @@ export default function Armor() {
                           .indexOf(input.toLowerCase()) >= 0
                       }
                     >
-                      <Option value="ARMADURA">ARMADURA</Option>
-                      <Option value="ESCUDO">ESCUDO</Option>
-                      <Option value="NATURAL">NATURAL</Option>
-                      <Option value="DEFLEXÃO">DEFLEXÃO</Option>
-                      <Option value="OUTRO">OUTRO</Option>
+                      <Option value={1}>ARMADURA</Option>
+                      <Option value={2}>ESCUDO</Option>
+                      <Option value={3}>NATURAL</Option>
+                      <Option value={4}>DEFLEXÃO</Option>
+                      <Option value={5}>OUTRO</Option>
                     </Select>
                   )}
                 />

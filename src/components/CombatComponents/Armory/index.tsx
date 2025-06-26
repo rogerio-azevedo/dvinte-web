@@ -69,12 +69,10 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
     }
   }
 
-  // Carregar personagens ao montar o componente
   useEffect(() => {
     loadUserCharacters()
   }, [])
 
-  // Carregar armas quando um personagem for selecionado
   useEffect(() => {
     if (selectedCharacter) {
       loadCharacterWeapons(selectedCharacter.id)
@@ -82,7 +80,6 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
     }
   }, [selectedCharacter])
 
-  // Usar as armas do personagem selecionado, ou as armas passadas por props como fallback
   const weaponsToUse = characterWeapons.length > 0 ? characterWeapons : weapons
 
   async function handleAttack() {
@@ -377,12 +374,11 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
 
         {/* Seleção de arma */}
         <Styles.WeaponContainer>
-          <label>Arma:</label>
-          {!loadChar && userCharacters.length > 0 && (
+          {!loadChar && (
             <>
               {loadingWeapons ? (
-                <p>Carregando armas...</p>
-              ) : weaponsToUse.length > 0 ? (
+                <p></p>
+              ) : weaponsToUse && weaponsToUse.length > 0 ? (
                 <SelectWeapon
                   weapons={weaponsToUse as never[]}
                   changeWeapon={(e: any) => setWeapon(e?.value)}

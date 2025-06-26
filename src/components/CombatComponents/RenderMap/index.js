@@ -44,9 +44,9 @@ export default function RenderMap({ tokens = [], allowDrag, setTokens }) {
     linesA.push(
       <Line
         key={`${i}v`}
-        strokeWidth={1}
+        strokeWidth={0.5}
         stroke={'white'}
-        opacity={0.7}
+        opacity={0.4}
         points={[i * grid, 0, i * grid, gridWidth]}
       />
     )
@@ -54,9 +54,9 @@ export default function RenderMap({ tokens = [], allowDrag, setTokens }) {
     linesB.push(
       <Line
         key={`${i}h`}
-        strokeWidth={1}
+        strokeWidth={0.5}
         stroke={'white'}
-        opacity={0.7}
+        opacity={0.4}
         points={[0, i * grid, gridWidth, i * grid]}
       />
     )

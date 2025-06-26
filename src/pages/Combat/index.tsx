@@ -37,104 +37,14 @@ import Dices from '../../components/CombatComponents/Dices'
 import MapTool from '../../components/CombatComponents/MapTool'
 
 import ScrollContainer from 'react-indiana-drag-scroll'
-
-// Interfaces
-interface User {
-  id: number
-  name: string
-  is_gm: boolean
-}
-
-interface RootState {
-  user: {
-    profile: User
-  }
-  menu: {
-    chatMenu: boolean
-  }
-}
-
-interface Armor {
-  id: number
-  type: number
-  bonus: number
-  defense: number
-  dexterity: number
-}
-
-interface Weapon {
-  id: number
-  name: string
-  nickname?: string
-  dice_m: number
-  dice_s: number
-  multiplier_m: number
-  multiplier_s: number
-  critical: number
-  crit_from: number
-  crit_from_mod: number
-  crit_mod: number
-  range: number
-  damage: number
-  element: number
-  hit: number
-  str_bonus: number
-  dex_damage: boolean
-}
-
-interface Character {
-  id: number
-  name: string
-  Health: number
-  HealthNow: number
-  Size: string
-  Fortitude: number
-  Reflex: number
-  Will: number
-  BaseAttack: number
-  StrMod: number
-  DexMod: number
-  ConMod: number
-  WisMod: number
-  StrModTemp?: number
-  DexModTemp?: number
-  ConModTemp?: number
-  WisModTemp?: number
-  Armor: Armor[]
-  Weapon: Weapon[]
-}
-
-interface Token {
-  id: number
-  character_id: number
-  token_id: number
-  position_x: number
-  position_y: number
-  size: number
-  rotation: number
-  enabled: boolean
-}
-
-interface CharStatusProps {
-  fortitude: number
-  reflex: number
-  will: number
-  charInit: number
-  melee: number
-  ranged: number
-  totalCa: number
-  health: number
-  healthNow: number
-}
-
-type MenuType =
-  | 'chat'
-  | 'init'
-  | 'saves'
-  | 'damage'
-  | 'status'
-  | 'attack'
-  | 'config'
+import {
+  RootState,
+  MenuType,
+  Character,
+  Token,
+  Weapon,
+  CharStatusProps,
+} from './interfaces'
 
 export default function Combat(): React.JSX.Element {
   const { profile } = useSelector((state: RootState) => state.user)

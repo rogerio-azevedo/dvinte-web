@@ -1,40 +1,45 @@
 import { useEffect, useState } from 'react'
 import Select, { StylesConfig } from 'react-select'
+import PropTypes from 'prop-types'
 
-import * as Styles from './styles'
+interface Weapon {
+  id: number
+  name: string
+  nickname?: string | null
+}
 
 interface Option {
-  value: string
+  value: number
   label: string
 }
 
-interface SelectLevelProps {
-  value?: string
-  changeLevel: (value: string | null) => void
-  levels?: Option[]
+interface SelectWeaponProps {
+  changeWeapon: (option: Option | null) => void
+  weapons?: Weapon[]
 }
 
-export default function SelectLevel({
-  value,
-  changeLevel,
-  levels = [],
-}: SelectLevelProps) {
-  const [levelOptions, setLevelOptions] = useState<Option[]>([])
+export default function SelectWeapon({
+  changeWeapon,
+  weapons = [],
+}: SelectWeaponProps) {
+  const [weaponOptions, setWeaponOptions] = useState<Option[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    function loadOptions() {
-      const options = levels.map(level => ({
-        value: level.value,
-        label: level.label.toUpperCase(),
+    async function loadOptions() {
+      const options = weapons.map(weapon => ({
+        value: weapon.id,
+        label: weapon.nickname?.trim()
+          ? weapon.nickname.toUpperCase()
+          : weapon.name.toUpperCase(),
       }))
 
-      setLevelOptions(options)
+      setWeaponOptions(options)
       setLoading(false)
     }
 
     loadOptions()
-  }, [levels])
+  }, [weapons])
 
   const customStyles: StylesConfig<Option, false> = {
     input: styles => ({
@@ -60,26 +65,24 @@ export default function SelectLevel({
       color: isSelected ? 'white' : '#333',
       cursor: 'pointer',
     }),
-    placeholder: styles => ({
-      ...styles,
-      color: 'rgba(111, 0, 0, 0.6)',
-    }),
   }
 
-  const selectedOption = levelOptions.find(option => option.value === value)
-
   return (
-    <Styles.Container>
+    <div style={{ width: '320px' }}>
       <Select<Option>
-        value={selectedOption}
         styles={customStyles}
         maxMenuHeight={220}
-        placeholder="ESCOLHA O NÍVEL"
-        onChange={newValue => changeLevel(newValue?.value || null)}
+        placeholder="ESCOLHA A ARMA"
+        onChange={changeWeapon}
         isLoading={loading}
-        options={levelOptions}
+        options={weaponOptions}
         isClearable
       />
-    </Styles.Container>
+    </div>
   )
+}
+
+SelectWeapon.propTypes = {
+  changeWeapon: PropTypes.func.isRequired,
+  weapons: PropTypes.arrayOf(PropTypes.object),
 }

@@ -1,8 +1,10 @@
+/* eslint-disable no-console */
 import { useEffect, useRef, useState } from 'react'
 import { useField } from '@rocketseat/unform'
+import Select, { StylesConfig } from 'react-select'
 import api from '../../services/api'
 
-import { Container } from './styles'
+import * as Styles from './styles'
 
 interface Option {
   value: string
@@ -10,9 +12,14 @@ interface Option {
 }
 
 interface PortraitInputProps {
-  changePortrait: (_value: string | null) => void
+  changePortrait: (value: string | null) => void
   portraits?: Option[]
   onUploadSuccess?: () => void
+}
+
+interface UploadResponse {
+  id: string
+  url: string
 }
 
 export default function PortraitInput({
@@ -22,8 +29,8 @@ export default function PortraitInput({
 }: PortraitInputProps) {
   const { defaultValue, registerField } = useField('avatar')
 
-  const [file, setFile] = useState(defaultValue && defaultValue.id)
-  const [preview, setPreview] = useState(defaultValue && defaultValue.url)
+  const [file, setFile] = useState<string | undefined>(defaultValue?.id)
+  const [preview, setPreview] = useState<string | undefined>(defaultValue?.url)
   const [portraitOptions, setPortraitOptions] = useState<Option[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -40,50 +47,79 @@ export default function PortraitInput({
   }, [ref, registerField])
 
   useEffect(() => {
-    const data = portraits.map(portrait => ({
-      value: portrait.value,
-      label: portrait.label.toUpperCase(),
-    }))
+    function loadOptions() {
+      const options = portraits.map(portrait => ({
+        value: portrait.value,
+        label: portrait.label.toUpperCase(),
+      }))
 
-    setPortraitOptions(data)
-    setLoading(false)
+      setPortraitOptions(options)
+      setLoading(false)
+    }
+
+    loadOptions()
   }, [portraits])
 
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (!e.target.files) return
+    try {
+      const files = e.target.files
+      if (!files || files.length === 0) return
 
-    const data = new FormData()
+      const data = new FormData()
+      data.append('file', files[0])
 
-    data.append('file', e.target.files[0])
+      const response = await api.post<UploadResponse>('portraits', data)
+      const { id, url } = response.data
 
-    const response = await api.post('portraits', data)
+      setFile(id)
+      setPreview(url)
 
-    const { id, url } = response.data
-
-    setFile(id)
-    setPreview(url)
-
-    if (onUploadSuccess) {
-      onUploadSuccess()
+      if (onUploadSuccess) {
+        onUploadSuccess()
+      }
+    } catch (error) {
+      console.error('Erro ao fazer upload do retrato:', error)
     }
   }
 
-  const customStyles = {
-    input: (styles: any) => ({
+  const customStyles: StylesConfig<Option, false> = {
+    input: styles => ({
       ...styles,
       height: '30px',
       minHeight: '30px',
     }),
+    control: styles => ({
+      ...styles,
+      backgroundColor: 'white',
+      borderColor: '#ddd',
+      '&:hover': {
+        borderColor: '#999',
+      },
+    }),
+    option: (styles, { isFocused, isSelected }) => ({
+      ...styles,
+      backgroundColor: isSelected
+        ? '#6f0000'
+        : isFocused
+        ? 'rgba(111, 0, 0, 0.1)'
+        : 'white',
+      color: isSelected ? 'white' : '#333',
+      cursor: 'pointer',
+    }),
+    placeholder: styles => ({
+      ...styles,
+      color: 'rgba(111, 0, 0, 0.6)',
+    }),
   }
 
   return (
-    <Container>
+    <Styles.Container>
       <label htmlFor="avatar">
         <img
           src={
             preview || 'https://api.adorable.io/avatars/50/abott@adorable.png'
           }
-          alt=""
+          alt="Avatar do personagem"
         />
 
         <input
@@ -96,20 +132,17 @@ export default function PortraitInput({
         />
       </label>
 
-      <div style={{ width: '220px', marginRight: '15px' }}>
-        {/* <Select
+      <Styles.SelectContainer>
+        <Select<Option>
           styles={customStyles}
           maxMenuHeight={220}
           placeholder="ESCOLHA O RETRATO"
-          onChange={(
-            newValue: SingleValue<Option>,
-            _actionMeta: ActionMeta<Option>
-          ) => changePortrait(newValue ? newValue.value : null)}
+          onChange={newValue => changePortrait(newValue?.value || null)}
           isLoading={loading}
           options={portraitOptions}
           isClearable
-        /> */}
-      </div>
-    </Container>
+        />
+      </Styles.SelectContainer>
+    </Styles.Container>
   )
 }

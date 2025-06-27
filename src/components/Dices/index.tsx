@@ -8,7 +8,7 @@ import EnginerJs from './components/enginerjs'
 
 import { GlobalStyle } from './GlobalStyle'
 
-function App() {
+const Dices: React.FC = () => {
   return (
     <>
       <GlobalStyle />
@@ -21,4 +21,4 @@ function App() {
   )
 }
 
-export default App
+export default Dices

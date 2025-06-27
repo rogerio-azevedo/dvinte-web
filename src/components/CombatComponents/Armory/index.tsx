@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
 
-import SelectWeapon from '../../../components/SelectWeapon'
+import SelectWeapon from '../../SelectWeapon'
 import SelectCharacter from '../../../components/SelectCharacter'
 
 import * as Styles from './styles'

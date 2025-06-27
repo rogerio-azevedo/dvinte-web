@@ -1,6 +1,9 @@
 import styled from 'styled-components'
 import { darken } from 'polished'
-import { Table } from 'antd'
+
+interface ContainerProps {
+  $loading?: boolean
+}
 
 export const Container = styled.div`
   display: flex;
@@ -10,28 +13,25 @@ export const Container = styled.div`
   height: 100%;
 `
 
-export const MyTable = styled(Table)`
-  tbody {
-    tr {
-      td {
-        height: 5px;
-        padding: 2px;
-      }
-    }
-  }
-`
-
-export const TableContainer = styled.div`
+export const TableContainer = styled.div<ContainerProps>`
   width: 1000px;
   padding: 20px;
   border-radius: 4px;
   height: 100%;
   max-height: 100vh;
   overflow: auto;
-  /*
-  -webkit-box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.5);
-  -moz-box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.5);
-  box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.5); */
+
+  .ant-table {
+    tbody {
+      tr {
+        td {
+          height: 5px;
+          padding: 2px;
+        }
+      }
+    }
+  }
+
   input {
     width: 60px;
     height: 30px;
@@ -48,7 +48,7 @@ export const TableContainer = styled.div`
     border-radius: 4px;
     font-size: 14px;
     transition: background 0.3s;
-    display: ${props => (props.loading ? 'none' : 'block')};
+    display: ${({ $loading }) => ($loading ? 'none' : 'block')};
     margin: 0 10px;
 
     &:hover {

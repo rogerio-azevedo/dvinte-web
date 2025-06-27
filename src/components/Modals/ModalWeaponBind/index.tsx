@@ -10,7 +10,7 @@ import { Switch } from 'antd'
 
 import api from '../../../services/api'
 
-import SelectCharacter from '../../../components/SelectCharacter'
+import SelectCharacter from '../../SelectCharacter'
 
 import * as Styles from './styles'
 
@@ -55,7 +55,7 @@ const customStyles = {
 
 Modal.setAppElement('#root')
 
-const ModalWeaponCreate: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
+const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
   const { handleSubmit, register, setValue } = useForm<FormData>()
   const [modalIsOpen, setIsOpen] = useState(false)
   const [selectedWeapon, setSelectedWeapon] = useState(weapon)
@@ -148,7 +148,7 @@ const ModalWeaponCreate: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
         contentLabel="Example Modal"
       >
         <Styles.HeaderContainer>
-          <h2>Cadastro de Arma</h2>
+          <h2>Compra / Vinculação de Arma</h2>
           <FaTimes
             onClick={closeModal}
             color="red"
@@ -267,4 +267,4 @@ const ModalWeaponCreate: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
   )
 }
 
-export default ModalWeaponCreate
+export default ModalWeaponBind

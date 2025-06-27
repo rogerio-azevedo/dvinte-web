@@ -5,12 +5,11 @@ import type { ColumnsType } from 'antd/es/table'
 
 import Button from '../../components/Button'
 import { FaPlusCircle } from 'react-icons/fa'
-// import ModalWeaponCreate from '../../components/Modals/ModalWeaponCreate'
 
 import api from '../../services/api'
 
 import * as Styles from './styles'
-import ModalWeaponCreate from '../../components/Modals/ModalWeaponCreate'
+import ModalWeaponBind from '../../components/Modals/ModalWeaponBind'
 
 const { Option } = Select
 
@@ -177,7 +176,7 @@ export default function Weapon() {
       title: 'Comprar',
       dataIndex: 'buy',
       render: (_, item) => (
-        <ModalWeaponCreate weapon={{ ...item, id: String(item.id) }} />
+        <ModalWeaponBind weapon={{ ...item, id: String(item.id) }} />
       ),
     },
   ]

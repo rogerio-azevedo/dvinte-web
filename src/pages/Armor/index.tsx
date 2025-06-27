@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { Select } from 'antd'
-import { SubmitHandler } from 'react-hook-form'
+import type { ColumnsType } from 'antd/es/table'
 
 import Button from '../../components/Button'
 import { FaPlusCircle } from 'react-icons/fa'
@@ -9,13 +9,29 @@ import { FaPlusCircle } from 'react-icons/fa'
 import api from '../../services/api'
 
 import * as Styles from './styles'
-import ModalArmorCreate from '../../components/Modals/ModalArmorCreate'
+import ModalArmorBind from '../../components/Modals/ModalArmorBind'
 
 const { Option } = Select
 
-interface ArmorData {
+interface ArmorFormData {
+  name: string
+  type: string
+  bonus: string
+  dexterity: string
+  penalty: string
+  magic: string
+  displacement_s: string
+  displacement_m: string
+  weight: string
+  price: string
+  book: string
+  version: string
+}
+
+interface ArmorProps {
   id: number
   name: string
+  type: number
   bonus: number
   dexterity: number
   penalty: number
@@ -26,110 +42,151 @@ interface ArmorData {
   price: number
   book: string
   version: string
-  type: string
+}
+
+const defaultValues: Partial<ArmorFormData> = {
+  name: '',
+  type: '',
+  bonus: '',
+  dexterity: '',
+  penalty: '',
+  magic: '',
+  displacement_s: '',
+  displacement_m: '',
+  weight: '',
+  price: '',
+  book: '',
+  version: '',
 }
 
 export default function Armor() {
-  const { handleSubmit, register, reset, control } = useForm<ArmorData>()
+  const { handleSubmit, register, reset, control } = useForm<ArmorFormData>({
+    defaultValues,
+  })
   const [loading, setLoading] = useState(false)
-  const [list, setList] = useState<ArmorData[]>([])
-  const [showform, setShowform] = useState('hide')
+  const [list, setList] = useState<ArmorProps[]>([])
+  const [showform, setShowform] = useState<'hide' | 'show'>('hide')
 
   useEffect(() => {
     async function loadData() {
-      setLoading(true)
-
-      const response = await api.get('armors')
-
-      setList(response.data)
-      setLoading(false)
+      try {
+        setLoading(true)
+        const response = await api.get('/armors')
+        setList(response.data || [])
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Erro ao carregar armaduras:', error)
+        setList([])
+      } finally {
+        setLoading(false)
+      }
     }
 
     loadData()
   }, [])
 
-  const onSubmit: SubmitHandler<ArmorData> = data => {
-    async function saveData() {
+  const onSubmit = async (data: ArmorFormData) => {
+    try {
       setLoading(true)
-
-      const weapons = await api.post('armors', data)
-
-      const newList = [weapons.data, ...list]
-
+      const response = await api.post('/armors', data)
+      const newList = [response.data, ...list]
       setList(newList)
-      setLoading(false)
-
-      reset()
+      reset(defaultValues)
       setShowform('hide')
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Erro ao salvar armadura:', error)
+    } finally {
+      setLoading(false)
     }
-    saveData()
   }
 
-  const columns = [
+  const columns: ColumnsType<ArmorProps> = [
     {
       title: 'Cod',
       dataIndex: 'id',
       key: 'id',
+      width: 80,
     },
     {
       title: 'Nome',
       dataIndex: 'name',
-      render: (_: any, item: any) => item.name.toUpperCase(),
+      key: 'name',
+    },
+    {
+      title: 'Tipo',
+      dataIndex: 'type',
+      render: type => {
+        switch (type) {
+          case 1:
+            return 'Armadura'
+          case 2:
+            return 'Escudo'
+          case 3:
+            return 'Natural'
+          case 5:
+            return 'Outros'
+          default:
+            return 'Desconhecido'
+        }
+      },
     },
     {
       title: 'Bônus',
       dataIndex: 'bonus',
-      render: (_: any, item: any) => `${item.bonus} CA`,
+      key: 'bonus',
     },
     {
-      title: 'Dex Maxima',
+      title: 'Destreza',
       dataIndex: 'dexterity',
-      render: (_: any, item: any) => `${item.dexterity}`,
+      key: 'dexterity',
     },
     {
       title: 'Penalidade',
       dataIndex: 'penalty',
-      render: (_: any, item: any) => `${item.penalty}`,
+      key: 'penalty',
     },
     {
-      title: 'Magia',
+      title: 'Mágica',
       dataIndex: 'magic',
-      render: (_: any, item: any) => `${item.magic}%`,
+      key: 'magic',
     },
     {
-      title: 'Desloc(P)',
+      title: 'Desloc (P)',
       dataIndex: 'displacement_s',
-      render: (_: any, item: any) => `${item.displacement_s} m`,
+      key: 'displacement_s',
     },
     {
-      title: 'Desloc(M)',
+      title: 'Desloc (M)',
       dataIndex: 'displacement_m',
-      render: (_: any, item: any) => `${item.displacement_m} m`,
+      key: 'displacement_m',
     },
     {
       title: 'Peso',
       dataIndex: 'weight',
-      render: (_: any, item: any) => `${item.weight} kg`,
+      render: (_, item) => `${item.weight} kg`,
     },
     {
       title: 'Preço',
       dataIndex: 'price',
-      render: (_: any, item: any) => `${item.price} PO`,
+      render: (_, item) => `${item.price || 0} PO`,
     },
     {
       title: 'Livro',
       dataIndex: 'book',
-      render: (_: any, item: any) => `${item.book}`,
+      key: 'book',
     },
     {
       title: 'Versão',
       dataIndex: 'version',
-      render: (_: any, item: any) => `${item.version}`,
+      key: 'version',
     },
     {
       title: 'Comprar',
       dataIndex: 'buy',
-      render: (_: any, item: any) => <ModalArmorCreate armor={item} />,
+      render: (_, item) => (
+        <ModalArmorBind armor={{ id: String(item.id), name: item.name }} />
+      ),
     },
   ]
 
@@ -141,141 +198,176 @@ export default function Armor() {
     <Styles.Container>
       <Styles.ContentContainer>
         <Styles.HeaderContainer>
-          <h1>Cadastro de Armaduras e Escudos</h1>
+          <h1>Cadastro de Armaduras</h1>
 
           <FaPlusCircle
             color="#8e0e00"
             size={40}
             onClick={handleAdd}
-            cursor={'pointer'}
+            style={{ cursor: 'pointer' }}
           />
         </Styles.HeaderContainer>
 
         <Styles.FormContainer showform={showform}>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Styles.InputContainer loading={loading ? 1 : 0}>
+            <Styles.InputContainer>
               <div>
-                <label htmlFor="character">Tipo</label>
-                <Controller
-                  control={control}
-                  name="type"
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      showSearch
-                      style={{ width: 200 }}
-                      placeholder="Escolha o Tipo"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        typeof option?.children === 'string' &&
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                    >
-                      <Option value={1}>ARMADURA</Option>
-                      <Option value={2}>ESCUDO</Option>
-                      <Option value={3}>NATURAL</Option>
-                      <Option value={4}>DEFLEXÃO</Option>
-                      <Option value={5}>OUTRO</Option>
-                    </Select>
-                  )}
-                />
-              </div>
-              <div>
-                <label htmlFor="character">Nome</label>
+                <label htmlFor="name">Nome</label>
                 <Styles.InputLarge {...register('name', { required: true })} />
               </div>
               <div>
-                <label htmlFor="character">Bonus</label>
-                <Styles.InputMed {...register('bonus', { required: true })} />
+                <label htmlFor="type">Tipo</label>
+                <Controller
+                  name="type"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Styles.SelectFormated
+                      {...field}
+                      size="large"
+                      showSearch
+                      style={{ width: '100%' }}
+                      placeholder="Escolha o Tipo"
+                      optionFilterProp="children"
+                      filterOption={(input, option) => {
+                        if (!input || !option?.children) return false
+                        return (
+                          String(option.children)
+                            .toLowerCase()
+                            .indexOf(String(input).toLowerCase()) >= 0
+                        )
+                      }}
+                    >
+                      <Option value="1">Armadura</Option>
+                      <Option value="2">Escudo</Option>
+                      <Option value="3">Natural</Option>
+                      <Option value="5">Outros</Option>
+                    </Styles.SelectFormated>
+                  )}
+                />
+              </div>
+            </Styles.InputContainer>
+
+            <Styles.InputContainer>
+              <div>
+                <label htmlFor="bonus">Bônus</label>
+                <Styles.InputMed
+                  type="number"
+                  {...register('bonus', { required: true })}
+                />
               </div>
               <div>
-                <label htmlFor="character">Dex Maxima</label>
+                <label htmlFor="dexterity">Destreza</label>
                 <Styles.InputMed
+                  type="number"
                   {...register('dexterity', { required: true })}
                 />
               </div>
               <div>
-                <label htmlFor="character">Penalidade</label>
-                <Styles.InputMed {...register('penalty', { required: true })} />
+                <label htmlFor="penalty">Penalidade</label>
+                <Styles.InputMed
+                  type="number"
+                  {...register('penalty', { required: true })}
+                />
               </div>
               <div>
-                <label htmlFor="character">Magia</label>
-                <Styles.InputMed {...register('magic', { required: true })} />
+                <label htmlFor="magic">Mágica</label>
+                <Styles.InputMed
+                  type="number"
+                  {...register('magic', { required: true })}
+                />
               </div>
             </Styles.InputContainer>
 
-            <Styles.InputContainer loading={loading ? 1 : 0}>
+            <Styles.InputContainer>
               <div>
-                <label htmlFor="character">Desloc (P)</label>
+                <label htmlFor="displacement_s">Desloc (P)</label>
                 <Styles.InputMed
+                  type="number"
                   {...register('displacement_s', { required: true })}
                 />
               </div>
               <div>
-                <label htmlFor="character">Desloc (M)</label>
+                <label htmlFor="displacement_m">Desloc (M)</label>
                 <Styles.InputMed
+                  type="number"
                   {...register('displacement_m', { required: true })}
                 />
               </div>
               <div>
-                <label htmlFor="character">Peso</label>
-                <Styles.InputMed {...register('weight', { required: true })} />
+                <label htmlFor="weight">Peso</label>
+                <Styles.InputMed
+                  type="number"
+                  step="0.1"
+                  {...register('weight', { required: true })}
+                />
               </div>
               <div>
-                <label htmlFor="character">Preço</label>
-                <Styles.InputMed {...register('price', { required: true })} />
+                <label htmlFor="price">Preço</label>
+                <Styles.InputMed
+                  type="number"
+                  {...register('price', { required: true })}
+                />
               </div>
+            </Styles.InputContainer>
+
+            <Styles.InputContainer>
               <div>
-                <label htmlFor="character">Livro</label>
+                <label htmlFor="book">Livro</label>
                 <Styles.InputLarge {...register('book', { required: true })} />
               </div>
 
               <div>
-                <label htmlFor="character">Versão</label>
+                <label htmlFor="version">Versão</label>
                 <Controller
-                  control={control}
                   name="version"
+                  control={control}
+                  rules={{ required: true }}
                   render={({ field }) => (
-                    <Select
+                    <Styles.SelectFormated
                       {...field}
+                      size="large"
                       showSearch
-                      style={{ width: 180 }}
+                      style={{ width: '100%' }}
                       placeholder="Escolha a Versão"
                       optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        typeof option?.children === 'string' &&
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
+                      filterOption={(input, option) => {
+                        if (!input || !option?.children) return false
+                        return (
+                          String(option.children)
+                            .toLowerCase()
+                            .indexOf(String(input).toLowerCase()) >= 0
+                        )
+                      }}
                     >
-                      <Option value="V 1.0e">V 1.0e</Option>
-                      <Option value="V 2.0e">V 2.0e</Option>
-                      <Option value="V 3.0e">V 3.0e</Option>
-                      <Option value="V 3.5e">V 3.5e</Option>
-                      <Option value="V 4.0e">V 4.0e</Option>
-                      <Option value="V 5.0e">V 5.0e</Option>
-                    </Select>
+                      <Option value="V 1.0e">Versão 1.0e</Option>
+                      <Option value="V 2.0e">Versão 2.0e</Option>
+                      <Option value="V 3.0e">Versão 3.0e</Option>
+                      <Option value="V 3.5e">Versão 3.5e</Option>
+                      <Option value="V 4.0e">Versão 4.0e</Option>
+                      <Option value="V 5.0e">Versão 5.0e</Option>
+                    </Styles.SelectFormated>
                   )}
                 />
               </div>
             </Styles.InputContainer>
 
-            <Styles.InputContainer loading={loading ? 1 : 0}>
+            <Styles.InputContainer>
               <Button type="submit" TextButton="Gravar" />
             </Styles.InputContainer>
           </form>
-          <Styles.TableContainer>
-            <Styles.MyTable
-              rowKey="id"
-              dataSource={list}
-              columns={columns}
-              pagination={{ pageSize: 15 }}
-            />
-          </Styles.TableContainer>
         </Styles.FormContainer>
+
+        <Styles.TableContainer>
+          <Styles.MyTable
+            rowKey="id"
+            dataSource={list}
+            columns={columns as any}
+            loading={loading}
+            pagination={{ pageSize: 15 }}
+            size="small"
+          />
+        </Styles.TableContainer>
       </Styles.ContentContainer>
     </Styles.Container>
   )

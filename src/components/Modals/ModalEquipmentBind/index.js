@@ -26,7 +26,7 @@ const customStyles = {
 
 Modal.setAppElement('#root')
 
-export default function ModalEquipmentCreate({ equipment }) {
+export default function ModalEquipmentBind({ equipment }) {
   const { handleSubmit, register, setValue } = useForm()
   const [modalIsOpen, setIsOpen] = useState(false)
   const [selectedEquipment, setSelectedEquipment] = useState()

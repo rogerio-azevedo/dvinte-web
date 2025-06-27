@@ -4,7 +4,7 @@ import { Select } from 'antd'
 
 import Button from '../../components/Button'
 import { FaPlusCircle } from 'react-icons/fa'
-import ModalEquipmentCreate from '../../components/Modals/ModalEquipmentCreate'
+import ModalEquipmentBind from '../../components/Modals/ModalEquipmentBind'
 
 import api from '../../services/api'
 
@@ -119,7 +119,7 @@ export default function Equipment() {
     {
       title: 'Comprar',
       dataIndex: 'buy',
-      render: (text, item) => <ModalEquipmentCreate equipment={item} />,
+      render: (text, item) => <ModalEquipmentBind equipment={item} />,
     },
   ]
 

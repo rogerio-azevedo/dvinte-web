@@ -1,14 +1,14 @@
+/* eslint-disable no-console */
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-
 import api from '../../../services/api'
+import { socket, connect, emit } from '../../../services/socket'
 
 import * as Styles from './styles'
 import { useEffect } from 'react'
 
 export default function DamagesCounter() {
   const profile = useSelector(state => state.user.profile)
-
   const [damages, setDamages] = useState([])
 
   async function loadDamage(type) {
@@ -21,30 +21,68 @@ export default function DamagesCounter() {
     setDamages(response.data)
   }
 
-  function handleStartSession() {
-    api.post('combats', {
-      id: 0,
-      user_id: profile.id,
-      user: profile.name,
-      message: 'Sessão Iniciada!!!',
-      result: 0,
-      type: 0,
-    })
+  async function handleStartSession() {
+    try {
+      const message = {
+        id: profile.id,
+        user_id: profile.id,
+        user: profile.name,
+        message: 'Iniciou uma nova aventura',
+        result: 0,
+        type: 0,
+        isCrit: 'false',
+      }
+
+      emit('chat.message', message)
+      loadDamage('session')
+    } catch (err) {
+      console.error('[DamagesCounter] Erro ao iniciar sessão:', err)
+    }
   }
 
-  function handleStartCombat() {
-    api.post('combats', {
-      id: 0,
-      user_id: profile.id,
-      user: profile.name,
-      message: 'Combate Iniciado!!!',
-      result: 0,
-      type: 9,
-    })
+  async function handleStartCombat() {
+    try {
+      const message = {
+        id: profile.id,
+        user_id: profile.id,
+        user: profile.name,
+        message: 'Iniciou um novo combate',
+        result: 0,
+        type: 8,
+        isCrit: 'false',
+      }
+
+      emit('chat.message', message)
+      loadDamage('combat')
+    } catch (err) {
+      console.error('[DamagesCounter] Erro ao iniciar combate:', err)
+    }
   }
 
   useEffect(() => {
     loadDamage()
+
+    // Escuta mensagens do chat
+    socket.on('chat.message', message => {
+      // Se for uma mensagem de início de sessão ou combate, atualiza a lista
+      if (message.type === 0) {
+        loadDamage('session')
+      } else if (message.type === 8) {
+        loadDamage('combat')
+      } else if (message.type === 4) {
+        // Se for dano, recarrega a lista atual
+        loadDamage()
+      }
+    })
+
+    // Conecta o websocket se ainda não estiver conectado
+    if (!socket.connected) {
+      connect()
+    }
+
+    return () => {
+      socket.off('chat.message')
+    }
   }, [])
 
   return (

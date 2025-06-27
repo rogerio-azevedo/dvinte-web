@@ -1,6 +1,10 @@
 import styled from 'styled-components'
 import { darken } from 'polished'
 
+interface ButtonProps {
+  disabled?: boolean
+}
+
 export const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -95,7 +99,7 @@ export const Button = styled.button`
   box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.6);
 `
 
-export const ButtonInit = styled.button`
+export const ButtonInit = styled.button<ButtonProps>`
   color: #6f0000;
   width: 200px;
   height: 40px;
@@ -107,8 +111,10 @@ export const ButtonInit = styled.button`
   border-radius: 4px;
   border: 0;
   margin-top: 20px;
+  opacity: ${props => (props.disabled ? 0.6 : 1)};
+  cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: ${darken(0.1, '#200122')};
     color: #fff;
 

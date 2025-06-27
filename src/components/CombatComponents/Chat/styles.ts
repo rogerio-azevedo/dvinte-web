@@ -1,50 +1,61 @@
 import styled from 'styled-components'
-import { darken } from 'polished'
 
-export const Container = styled.div`
-  flex-direction: column;
-  display: flex;
-  width: 100%;
-  overflow: auto;
+interface MessageProps {
+  from?: 0 | 1;
+}
 
-  h2 {
-    margin-top: 20px;
-    position: sticky;
-    top: 0;
-  }
-`
+interface MessageStyleProps extends MessageProps {
+  crit?: 'HIT' | 'FAIL' | 'NORMAL';
+}
 
 export const ChatContainer = styled.div`
-  width: 100%;
-  flex: 1;
-  flex-direction: row;
+  display: flex;
+  width: auto;
+  flex-direction: column;
   font-family: Arial, sans-serif;
   align-self: left;
+  height: 100%;
+  overflow: auto;
 `
 
 export const ChatHistory = styled.div`
   padding: 30px 30px 20px;
   border-bottom: 2px solid white;
+  overflow: auto;
+  height: 100%;
 `
 
-export const MessageData = styled.div`
+export const MessageData =
+  styled.div <
+  MessageProps >
+  `
   margin-bottom: 15px;
   text-align: ${props => (props.from ? 'right' : 'left')};
 `
-export const MessageDateTime = styled.span`
+
+export const MessageDateTime =
+  styled.span <
+  MessageProps >
+  `
   color: #999;
   padding-left: 6px;
   font-size: 12px;
 `
 
-export const MessageDataName = styled.span`
+export const MessageDataName =
+  styled.span <
+  MessageProps >
+  `
   color: #000;
   padding-left: 6px;
   font-size: 14px;
   float: ${props => (props.from ? 'right' : 'left')};
 `
 
-export const Message = styled.div`
+export const Message =
+  styled.div <
+  MessageStyleProps >
+  `
   padding: 8px 12px;
   line-height: 26px;
   font-size: 14px;
@@ -52,6 +63,7 @@ export const Message = styled.div`
   margin-bottom: 30px;
   width: 100%;
   position: relative;
+
   color: ${props =>
     props.crit === 'HIT'
       ? '#0000FF'
@@ -77,14 +89,20 @@ export const Message = styled.div`
   }
 `
 
-export const MessageContainer = styled.div`
+export const MessageContainer =
+  styled.div <
+  MessageProps >
+  `
   display: flex;
   flex-direction: column;
   display: inline-block;
   text-align: ${props => (props.from ? 'right' : 'left')};
 `
 
-export const ListMessage = styled.li`
+export const ListMessage =
+  styled.li <
+  MessageProps >
+  `
   list-style: none;
   text-align: ${props => (props.from ? 'right' : 'left')};
 
@@ -101,78 +119,21 @@ export const ListMessage = styled.li`
 export const FormMessage = styled.form`
   background: #8e0e00;
   padding: 8px;
-  border-radius: 4px;
+  display: flex;
+  flex-direction: flex-end;
 `
 
 export const InputMessage = styled.input`
   border: 1px solid #dcdcdc;
   border-radius: 5px;
   color: #333;
-  font-size: 1.2rem;
-  padding: 0.5rem 1rem;
+  font-size: 16px;
+  padding: 10px 10px;
   width: 100%;
 
   :focus {
     border-color: #a3f7ff;
     box-shadow: 0 0 7px #a3f7ff;
     outline: none;
-  }
-`
-
-export const DiceContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
-  margin-bottom: 10px;
-`
-
-export const InputMulti = styled.input`
-  height: 32px;
-  text-align: center;
-  font-size: 18px;
-  padding: 11px;
-  border-radius: 4px;
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.12);
-  border: none;
-  background: #fff;
-  transition: background 0.3s;
-  color: #000;
-  margin-right: 10px;
-  cursor: pointer;
-
-  -webkit-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
-  -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
-  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
-
-  &:hover {
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
-  }
-`
-
-export const Dice = styled.div`
-  background: #8e0e00;
-  height: 35px;
-  width: 50px;
-  margin: 3px;
-  border-radius: 4px;
-  cursor: pointer;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background: ${darken(0.1, '#200122')};
-
-    -webkit-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
-    -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
-    box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
-  }
-
-  strong {
-    color: #fff;
-    font-size: 16px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 `

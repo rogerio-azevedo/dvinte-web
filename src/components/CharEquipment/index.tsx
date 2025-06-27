@@ -1,33 +1,51 @@
-import React, { useEffect } from 'react'
+/* eslint-disable no-console */
+
+import { useEffect } from 'react'
 import { FaTimes } from 'react-icons/fa'
 import api from '../../services/api'
 
 import { Container, InputLarge, InputMed, InputShort, LabelDel } from './styles'
 
+interface Equipment {
+  id: number
+  name: string
+  str_temp: number
+  dex_temp: number
+  con_temp: number
+  int_temp: number
+  wis_temp: number
+  cha_temp: number
+  weight: number
+  price: number
+}
+
 interface CharEquipmentProps {
-  equipments: any[]
+  equipments: Equipment[]
   char: number
 }
 
-export default function CharEquipment({
-  equipments,
-  char,
-}: CharEquipmentProps) {
-  async function handleRemove(item: any) {
-    await api.delete(`characterequipments/${item.id}`, {
-      params: {
-        char: char,
-      },
-    })
+const CharEquipment: React.FC<CharEquipmentProps> = ({ equipments, char }) => {
+  const handleRemove = async (item: Equipment): Promise<void> => {
+    try {
+      await api.delete(`characterequipments/${item.id}`, {
+        params: {
+          char: char,
+        },
+      })
+    } catch (error) {
+      console.error('Erro ao remover equipamento:', error)
+    }
   }
 
-  useEffect(() => {}, [equipments])
+  useEffect(() => {
+    // Efeito executado quando equipments muda
+  }, [equipments])
 
   return (
     <Container>
       <ul>
         {equipments?.map(item => (
-          <li key={Math.random()}>
+          <li key={item.id}>
             <div>
               <label htmlFor="inputEquip">Nome</label>
               <InputLarge readOnly defaultValue={item.name} />
@@ -81,3 +99,5 @@ export default function CharEquipment({
     </Container>
   )
 }
+
+export default CharEquipment

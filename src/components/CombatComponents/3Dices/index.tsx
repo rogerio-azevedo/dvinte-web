@@ -1,29 +1,42 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, ChangeEvent } from 'react'
 //import { useSelector } from 'react-redux'
 
 //import api from '../../../services/api'
 
 import * as Styles from './styles'
 
-export default function Dices() {
-  //const profile = useSelector(state => state.user.profile)
-  const [multiplier, setMultiplier] = useState(1)
-  const [input, setInput] = useState('d20')
-  const inputRef = useRef(null)
+type DiceType = 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20'
 
-  function handleDice(type) {
+const Dices: React.FC = () => {
+  //const profile = useSelector(state => state.user.profile)
+  const [multiplier, setMultiplier] = useState<number>(1)
+  const [input, setInput] = useState<DiceType>('d20')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleDice = (type: DiceType): void => {
     setInput(type)
   }
 
-  function handleTest(type) {
+  const handleTest = (): void => {
     setTimeout(() => {
       console.log(inputRef.current)
     }, 3500)
   }
 
-  // function handleCalculateTotal(sides) {
+  const handleMultiplierChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const value = parseInt(e.target.value, 10)
+    if (!isNaN(value) && value >= 1 && value <= 10) {
+      setMultiplier(value)
+    }
+  }
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    console.log(e.target.value)
+  }
+
+  // function handleCalculateTotal(sides: number) {
   //   let calc = 0
-  //   const random = () => {
+  //   const random = (): number => {
   //     return Math.floor(Math.random() * sides) + 1
   //   }
 
@@ -53,7 +66,7 @@ export default function Dices() {
           ref={inputRef}
           //style={{ display: 'none' }}
           id="dices"
-          onChange={e => console.log(e)}
+          onChange={handleInputChange}
         />
 
         <Styles.InputMulti
@@ -61,7 +74,7 @@ export default function Dices() {
           min="1"
           max="10"
           placeholder="1"
-          onChange={e => setMultiplier(e.target.value)}
+          onChange={handleMultiplierChange}
         />
         <Styles.DiceButton id="throw" onClick={handleTest}>
           Rolar
@@ -74,7 +87,7 @@ export default function Dices() {
           id="set"
           style={{ display: 'none' }}
           value={`${multiplier}${input}`}
-          onChange={() => setInput()}
+          readOnly
         />
       </div>
 
@@ -106,3 +119,5 @@ export default function Dices() {
     </Styles.Container>
   )
 }
+
+export default Dices

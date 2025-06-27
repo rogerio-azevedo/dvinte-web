@@ -1,6 +1,12 @@
 import styled from 'styled-components'
 import { darken } from 'polished'
 
+type DiceType = 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20'
+
+interface DiceProps {
+  input: DiceType
+}
+
 export const Container = styled.div`
   display: flex;
   align-items: center;
@@ -13,6 +19,7 @@ export const Container = styled.div`
     margin-top: 20px;
   }
 `
+
 export const DiceContainer = styled.div`
   display: flex;
   align-items: center;
@@ -45,13 +52,14 @@ export const InputMulti = styled.input`
   }
 `
 
-export const Dice4 = styled.button`
+export const Dice4 = styled.button<DiceProps>`
   background: ${props => (props.input === 'd4' ? '#200122' : '#8e0e00')};
   height: 35px;
   width: 48px;
   margin: 3px;
   border-radius: 4px;
   cursor: pointer;
+  border: none;
 
   display: flex;
   align-items: center;
@@ -72,7 +80,7 @@ export const Dice4 = styled.button`
   }
 `
 
-export const Dice6 = styled.div`
+export const Dice6 = styled.div<DiceProps>`
   background: ${props => (props.input === 'd6' ? '#200122' : '#8e0e00')};
   height: 35px;
   width: 48px;
@@ -99,7 +107,7 @@ export const Dice6 = styled.div`
   }
 `
 
-export const Dice8 = styled.div`
+export const Dice8 = styled.div<DiceProps>`
   background: ${props => (props.input === 'd8' ? '#200122' : '#8e0e00')};
   height: 35px;
   width: 48px;
@@ -126,7 +134,7 @@ export const Dice8 = styled.div`
   }
 `
 
-export const Dice10 = styled.div`
+export const Dice10 = styled.div<DiceProps>`
   background: ${props => (props.input === 'd10' ? '#200122' : '#8e0e00')};
   height: 35px;
   width: 48px;
@@ -153,7 +161,7 @@ export const Dice10 = styled.div`
   }
 `
 
-export const Dice12 = styled.div`
+export const Dice12 = styled.div<DiceProps>`
   background: ${props => (props.input === 'd12' ? '#200122' : '#8e0e00')};
   height: 35px;
   width: 48px;
@@ -180,7 +188,7 @@ export const Dice12 = styled.div`
   }
 `
 
-export const Dice20 = styled.div`
+export const Dice20 = styled.div<DiceProps>`
   background: ${props => (props.input === 'd20' ? '#200122' : '#8e0e00')};
   height: 35px;
   width: 48px;
@@ -222,6 +230,7 @@ export const DiceButton = styled.button`
   border-radius: 4px;
   cursor: pointer;
   color: #fff;
+  border: none;
 
   display: flex;
   align-items: center;

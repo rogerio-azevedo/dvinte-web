@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import React, { useState, useEffect } from 'react'
 import { Stage, Layer, Image } from 'react-konva'
 import useImage from 'use-image'
@@ -8,19 +10,28 @@ import { Container } from './styles'
 
 import api from '../../../services/api'
 
-export default function RenderWorldMap() {
+// Interfaces
+interface MapData {
+  world?: string
+}
+
+const RenderWorldMap: React.FC = () => {
   // const [stagePos, setStagePos] = useState({ x: 0, y: 0 })
-  const [mapData, setMapData] = useState({})
+  const [mapData, setMapData] = useState<MapData>({})
   const [stageScale, setStageScale] = useState(1)
   const [stageX, setStageX] = useState(0)
   const [stageY, setStageY] = useState(0)
 
-  async function getMap() {
-    const response = await api.get('maps/1')
-    setMapData(response.data)
+  const getMap = async (): Promise<void> => {
+    try {
+      const response = await api.get('maps/1')
+      setMapData(response.data || {})
+    } catch (error) {
+      console.error('Erro ao carregar mapa mundial:', error)
+    }
   }
 
-  function handleWheel(e) {
+  const handleWheel = (e: any): void => {
     e.evt.preventDefault()
 
     const scaleBy = 1.08
@@ -45,17 +56,19 @@ export default function RenderWorldMap() {
   }
 
   useEffect(() => {
-    const handleMaps = Maps => setMapData(Maps)
+    const handleMaps = (Maps: MapData) => setMapData(Maps)
 
     socket.on('map.message', handleMaps)
 
-    return () => socket.off('map.message', handleMaps)
+    return () => {
+      socket.off('map.message', handleMaps)
+    }
   }, [mapData])
 
   useEffect(() => {
     getMap()
     connect()
-  }, []) // eslint-disable-line
+  }, [])
 
   const [map] = useImage(mapData?.world || '/tir-nakhor.png')
 
@@ -89,3 +102,5 @@ export default function RenderWorldMap() {
     </Container>
   )
 }
+
+export default RenderWorldMap

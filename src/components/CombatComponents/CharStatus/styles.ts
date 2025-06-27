@@ -25,6 +25,7 @@ export const GroupStatus = styled.div`
   flex-direction: row;
   margin-top: 10px;
 `
+
 export const Resume = styled.div`
   display: flex;
   flex-direction: column;
@@ -66,6 +67,7 @@ export const Button = styled.button`
   border-radius: 4px;
   border: 0;
   margin-top: 20px;
+  cursor: pointer;
 
   &:hover {
     background: ${darken(0.1, '#200122')};

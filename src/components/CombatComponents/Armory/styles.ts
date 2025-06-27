@@ -1,6 +1,10 @@
 import styled from 'styled-components'
 import { darken } from 'polished'
 
+interface MapContainerProps {
+  show: boolean
+}
+
 export const Container = styled.div`
   display: flex;
   flex-direction: row;
@@ -11,7 +15,7 @@ export const Container = styled.div`
   height: 100%;
 `
 
-export const MapContainer = styled.div`
+export const MapContainer = styled.div<MapContainerProps>`
   position: absolute;
   //width: ${props => (props.show ? '80%' : '100%')} !important;
   height: 100% !important;
@@ -66,6 +70,7 @@ export const AttackContainer = styled.div`
     margin-right: 8px;
     margin-left: 8px;
     border: 0;
+    cursor: pointer;
 
     &:hover {
       background: ${darken(0.1, '#200122')};
@@ -80,4 +85,18 @@ export const AttackContainer = styled.div`
 
 export const WeaponContainer = styled.div`
   display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+
+  label {
+    margin-right: 10px;
+    font-weight: 600;
+    color: #6f0000;
+  }
+
+  p {
+    color: #666;
+    font-style: italic;
+    margin: 0;
+  }
 `

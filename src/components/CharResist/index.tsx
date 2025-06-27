@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   Container,
   MainResistContainer,
@@ -8,18 +9,30 @@ import {
   InputResit,
 } from './styles'
 
-interface CharResistProps {
-  resist: any
+interface Resistance {
+  Fortitude: number
+  Reflex: number
+  Will: number
+  ConMod: number
+  ConModTemp?: number
+  DexMod: number
+  DexModTemp?: number
+  WisMod: number
+  WisModTemp?: number
 }
 
-export default function CharResist({ resist }: CharResistProps) {
+interface CharResistProps {
+  resist: Resistance
+}
+
+const CharResist: React.FC<CharResistProps> = ({ resist }) => {
   const fortitude = resist.Fortitude
   const reflex = resist.Reflex
   const will = resist.Will
 
-  const forMod = resist.ConModTemp ? resist.ConModTemp : resist.ConMod
-  const refMod = resist.DexModTemp ? resist.DexModTemp : resist.DexMod
-  const wisMod = resist.WisModTemp ? resist.WisModTemp : resist.WisMod
+  const forMod = resist.ConModTemp ?? resist.ConMod
+  const refMod = resist.DexModTemp ?? resist.DexMod
+  const wisMod = resist.WisModTemp ?? resist.WisMod
 
   const forTotal = Number(fortitude) + Number(forMod)
   const refTotal = Number(reflex) + Number(refMod)
@@ -116,3 +129,5 @@ export default function CharResist({ resist }: CharResistProps) {
     </Container>
   )
 }
+
+export default CharResist

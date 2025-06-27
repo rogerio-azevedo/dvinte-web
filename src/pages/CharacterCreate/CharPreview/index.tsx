@@ -13,6 +13,12 @@ import ButtonNext from '../../../components/ButtonNext'
 
 import * as Styles from './styles'
 
+interface CharacterClass {
+  id: number
+  className: string
+  level: number
+}
+
 interface Character {
   name: string
   age: string
@@ -33,7 +39,7 @@ interface Character {
   race_id: string
   divinity_id: string
   is_ativo: boolean
-  classe: any[]
+  classe: CharacterClass[]
   attributes: {
     str: number
     dex: number
@@ -53,7 +59,7 @@ export default function CharPreview() {
   const [divinity, setDivinity] = useState<string | undefined>()
   const [alignment, setAlignment] = useState<string | undefined>()
 
-  function getGender(gender: string) {
+  function getGender(gender: string): string {
     if (gender === 'M' || gender === '1') {
       return 'MASCULINO'
     }
@@ -63,7 +69,7 @@ export default function CharPreview() {
     return 'MASCULINO' // fallback
   }
 
-  function getSize(size: string) {
+  function getSize(size: string): string {
     if (size === '1') {
       return 'PEQUENO'
     }
@@ -79,7 +85,7 @@ export default function CharPreview() {
   useEffect(() => {
     // Carregar dados básicos se disponíveis
     if (state.base) {
-      const characterData = {
+      const characterData: Character = {
         name: state.base.name || '',
         age: state.base.age || '',
         gender: state.base.gender || '',
@@ -124,7 +130,7 @@ export default function CharPreview() {
   }, [state.base, state.portrait, state.classe, state.attributes])
 
   useEffect(() => {
-    async function loadPortrait() {
+    async function loadPortrait(): Promise<void> {
       try {
         const response = await api.get(`/portraits/${state.portrait}`)
         setPortrait(response.data.url)
@@ -147,7 +153,7 @@ export default function CharPreview() {
       return
     }
 
-    async function loadRace() {
+    async function loadRace(): Promise<void> {
       try {
         const response = await api.get(`races/${state.base.race}`)
         setRace(response.data.name)
@@ -166,7 +172,7 @@ export default function CharPreview() {
       return
     }
 
-    async function loadDivinitie() {
+    async function loadDivinitie(): Promise<void> {
       try {
         const response = await api.get(`divinities/${state.base.divinity}`)
         setDivinity(response.data.name)
@@ -185,7 +191,7 @@ export default function CharPreview() {
       return
     }
 
-    async function loadAlignment() {
+    async function loadAlignment(): Promise<void> {
       try {
         const response = await api.get(`alignments/${state.base.alignment}`)
         setAlignment(response.data.name)
@@ -198,13 +204,13 @@ export default function CharPreview() {
     loadAlignment()
   }, [state.base?.alignment])
 
-  async function handleSave() {
+  async function handleSave(): Promise<void> {
     try {
       // Função auxiliar para converter string para número com fallback
       const toNumber = (
         value: string | undefined | null,
         fallback: number = 1
-      ) => {
+      ): number => {
         if (
           !value ||
           value === '' ||
@@ -218,14 +224,14 @@ export default function CharPreview() {
       }
 
       // Função específica para converter gender
-      const convertGender = (gender: string | undefined) => {
+      const convertGender = (gender: string | undefined): number => {
         if (gender === 'M' || gender === '1') return 1
         if (gender === 'F' || gender === '2') return 2
         return 1 // fallback para masculino
       }
 
       // Função específica para converter size
-      const convertSize = (size: string | undefined) => {
+      const convertSize = (size: string | undefined): number => {
         if (size === 'PEQUENO' || size === '1') return 1
         if (size === 'MEDIO' || size === '2') return 2
         if (size === 'GRANDE' || size === '3') return 3
@@ -289,7 +295,7 @@ export default function CharPreview() {
       actions.resetCharacter()
       localStorage.removeItem('character_creation_in_progress')
       history.push('/characters')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao criar personagem:', error)
       console.error('📋 Response data:', error.response?.data)
       toast.error('Houve um erro ao criar o Personagem')
@@ -327,11 +333,11 @@ export default function CharPreview() {
             <Styles.BaseContainer>
               <Styles.LineContaniner>
                 <div>
-                  <Styles.InputLarge readOnly value={character?.name} />
+                  <Styles.InputLarge readOnly value={character?.name || ''} />
                   <label htmlFor="CharName">Nome do Personagem</label>
                 </div>
                 <div>
-                  <Styles.InputShort readOnly value={character?.level} />
+                  <Styles.InputShort readOnly value={character?.level || ''} />
                   <label htmlFor="CharAge">Level</label>
                 </div>
 
@@ -353,7 +359,7 @@ export default function CharPreview() {
 
               <Styles.LineContaniner>
                 <div>
-                  <Styles.InputShort readOnly value={character?.age} />
+                  <Styles.InputShort readOnly value={character?.age || ''} />
                   <label htmlFor="CharAge">Idade</label>
                 </div>
 
@@ -382,23 +388,23 @@ export default function CharPreview() {
 
               <Styles.LineContaniner>
                 <div>
-                  <Styles.InputShort value={character?.height} />
+                  <Styles.InputShort value={character?.height || ''} />
                   <label htmlFor="CharHeight">Altura</label>
                 </div>
                 <div>
-                  <Styles.InputShort readOnly value={character?.weight} />
+                  <Styles.InputShort readOnly value={character?.weight || ''} />
                   <label htmlFor="CharWeight">Peso</label>
                 </div>
                 <div>
-                  <Styles.InputMed readOnly value={character?.eye} />
+                  <Styles.InputMed readOnly value={character?.eye || ''} />
                   <label htmlFor="CharEye">Olhos</label>
                 </div>
                 <div>
-                  <Styles.InputMed readOnly value={character?.hair} />
+                  <Styles.InputMed readOnly value={character?.hair || ''} />
                   <label htmlFor="CharHair">Cabelos</label>
                 </div>
                 <div>
-                  <Styles.InputMed readOnly value={character?.skin} />
+                  <Styles.InputMed readOnly value={character?.skin || ''} />
                   <label htmlFor="CharSkin">Pele</label>
                 </div>
               </Styles.LineContaniner>
@@ -411,7 +417,7 @@ export default function CharPreview() {
                 <Styles.ValueContainer>
                   <Styles.AttrsValue
                     readOnly
-                    value={character?.attributes?.str}
+                    value={character?.attributes?.str || 0}
                   />
                 </Styles.ValueContainer>
               </Styles.GroupContainer>
@@ -421,7 +427,7 @@ export default function CharPreview() {
                 <Styles.ValueContainer>
                   <Styles.AttrsValue
                     readOnly
-                    value={character?.attributes?.dex}
+                    value={character?.attributes?.dex || 0}
                   />
                 </Styles.ValueContainer>
               </Styles.GroupContainer>
@@ -431,7 +437,7 @@ export default function CharPreview() {
                 <Styles.ValueContainer>
                   <Styles.AttrsValue
                     readOnly
-                    value={character?.attributes?.con}
+                    value={character?.attributes?.con || 0}
                   />
                 </Styles.ValueContainer>
               </Styles.GroupContainer>
@@ -441,7 +447,7 @@ export default function CharPreview() {
                 <Styles.ValueContainer>
                   <Styles.AttrsValue
                     readOnly
-                    value={character?.attributes?.int}
+                    value={character?.attributes?.int || 0}
                   />
                 </Styles.ValueContainer>
               </Styles.GroupContainer>
@@ -451,7 +457,7 @@ export default function CharPreview() {
                 <Styles.ValueContainer>
                   <Styles.AttrsValue
                     readOnly
-                    value={character?.attributes?.wis}
+                    value={character?.attributes?.wis || 0}
                   />
                 </Styles.ValueContainer>
               </Styles.GroupContainer>
@@ -461,17 +467,17 @@ export default function CharPreview() {
                 <Styles.ValueContainer>
                   <Styles.AttrsValue
                     readOnly
-                    value={character?.attributes?.cha}
+                    value={character?.attributes?.cha || 0}
                   />
                 </Styles.ValueContainer>
               </Styles.GroupContainer>
             </Styles.AttributesContainer>
             <Styles.ClassContainer>
               <ul>
-                {character?.classe?.map(item => (
-                  <li key={Math.random()}>
-                    <Styles.ClassInput readOnly value={item.className} />
-                    <Styles.ClassValueInput readOnly value={item.level} />
+                {character?.classe?.map((item, index) => (
+                  <li key={item.id || `class-${index}`}>
+                    <Styles.ClassInput readOnly value={item.className || ''} />
+                    <Styles.ClassValueInput readOnly value={item.level || 0} />
                   </li>
                 ))}
               </ul>

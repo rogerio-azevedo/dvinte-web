@@ -1,38 +1,70 @@
 /* eslint-disable no-console */
 import React, { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
+import { toast } from 'react-toastify'
 import api from '../../../services/api'
 import { connect, socket } from '../../../services/socket'
 
 import * as Styles from './styles'
 
-export default function Initiatives({ from = 0, profile = {}, charInit = 0 }) {
-  const [initiatives, setInitiatives] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
+interface Profile {
+  id: number
+  name: string
+}
 
-  async function loadInitiative() {
+interface Initiative {
+  _id: string
+  user_id: number
+  user: string
+  initiative: number
+}
+
+interface SocketInitiativeData {
+  id: string
+}
+
+interface InitiativesProps {
+  from?: number
+  profile?: Profile
+  charInit?: number
+}
+
+export default function Initiatives({
+  from = 0,
+  profile = { id: 0, name: '' },
+  charInit = 0,
+}: InitiativesProps) {
+  const [initiatives, setInitiatives] = useState<Initiative[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+
+  async function loadInitiative(): Promise<void> {
     try {
       const response = await api.get('/initiatives')
-      setInitiatives(response.data)
+      const initiativesData: Initiative[] = Array.isArray(response.data)
+        ? response.data
+        : []
+      setInitiatives(initiativesData)
     } catch (error) {
       console.error('Erro ao carregar iniciativas:', error)
+      setInitiatives([])
     }
   }
 
-  async function handleInitiative() {
+  async function handleInitiative(): Promise<void> {
     try {
       setIsLoading(true)
+
+      // Validação dos dados do perfil
+      if (!profile || !profile.id || !profile.name) {
+        console.error('Dados do perfil inválidos:', profile)
+        toast.error('Dados do perfil inválidos')
+        return
+      }
+
       const dext = Number(charInit) || 0
       const dice = Math.floor(Math.random() * 20) + 1
       const initTotal = dext + dice
 
       const rolled = `Rolou iniciativa d20: ${dice} + ${dext} de destreza, com resultado: ${initTotal}`
-
-      // Primeiro, vamos garantir que temos os dados necessários
-      if (!profile || !profile.id || !profile.name) {
-        console.error('Dados do perfil inválidos:', profile)
-        return
-      }
 
       // Log dos dados que serão enviados
       console.log('Dados da iniciativa:', {
@@ -53,25 +85,28 @@ export default function Initiatives({ from = 0, profile = {}, charInit = 0 }) {
 
       // Post para a iniciativa
       const response = await api.post('initiatives', {
-        user_id: Number(profile.id), // Garantir que é número
-        user: String(profile.name), // Garantir que é string
-        initiative: Number(initTotal), // Garantir que é número
+        user_id: Number(profile.id),
+        user: String(profile.name),
+        initiative: Number(initTotal),
       })
 
       // Atualiza localmente também para feedback imediato
-      setInitiatives(prev => [...prev, response.data])
-    } catch (error) {
+      if (response.data) {
+        setInitiatives(prev => [...prev, response.data])
+      }
+    } catch (error: any) {
       console.error('Erro ao rolar iniciativa:', error)
       if (error.response) {
         console.error('Resposta do servidor:', error.response.data)
       }
+      toast.error('Erro ao rolar iniciativa')
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    const handleNewInit = newInitiative => {
+    const handleNewInit = (newInitiative: Initiative): void => {
       console.log('Nova iniciativa recebida:', newInitiative)
       setInitiatives(prevInitiatives => {
         // Verifica se a iniciativa já existe para evitar duplicatas
@@ -85,12 +120,12 @@ export default function Initiatives({ from = 0, profile = {}, charInit = 0 }) {
       })
     }
 
-    const handleClearInit = () => {
+    const handleClearInit = (): void => {
       console.log('Limpando iniciativas via socket')
       setInitiatives([])
     }
 
-    const handleDeleteInit = data => {
+    const handleDeleteInit = (data: SocketInitiativeData): void => {
       console.log('Removendo iniciativa:', data)
       if (data.id) {
         setInitiatives(prev => prev.filter(init => init._id !== data.id))
@@ -116,14 +151,16 @@ export default function Initiatives({ from = 0, profile = {}, charInit = 0 }) {
       socket.off('init.clear', handleClearInit)
       socket.off('init.delete', handleDeleteInit)
     }
-  }, []) // Empty dependency array since we want this to run only once
+  }, [])
 
-  async function clearInitiatives() {
+  async function clearInitiatives(): Promise<void> {
     try {
       await api.delete('initiatives')
       setInitiatives([])
+      toast.success('Iniciativas limpas com sucesso')
     } catch (error) {
       console.error('Erro ao limpar iniciativas:', error)
+      toast.error('Erro ao limpar iniciativas')
     }
   }
 
@@ -147,9 +184,9 @@ export default function Initiatives({ from = 0, profile = {}, charInit = 0 }) {
         <Styles.InitBoardContainer>
           <ul>
             {initiatives
-              ?.sort((a, b) => b.initiative - a.initiative)
-              .map(item => (
-                <li key={item._id || Math.random()}>
+              .sort((a, b) => b.initiative - a.initiative)
+              .map((item, index) => (
+                <li key={item._id || `initiative-${index}`}>
                   <Styles.InitUser readOnly defaultValue={item.user} />
                   <Styles.InitValue readOnly defaultValue={item.initiative} />
                 </li>
@@ -157,6 +194,7 @@ export default function Initiatives({ from = 0, profile = {}, charInit = 0 }) {
           </ul>
         </Styles.InitBoardContainer>
       </Styles.InitContainer>
+
       <Styles.ButtonsContainer>
         <Styles.Button type="button" onClick={clearInitiatives}>
           Limpar
@@ -167,13 +205,4 @@ export default function Initiatives({ from = 0, profile = {}, charInit = 0 }) {
       </Styles.ButtonsContainer>
     </Styles.Container>
   )
-}
-
-Initiatives.propTypes = {
-  profile: PropTypes.shape({
-    id: PropTypes.number,
-    name: PropTypes.string,
-  }),
-  charInit: PropTypes.number,
-  from: PropTypes.number,
 }

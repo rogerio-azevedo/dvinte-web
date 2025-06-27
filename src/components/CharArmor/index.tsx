@@ -1,28 +1,48 @@
+/* eslint-disable no-console */
+
 import { FaTimes } from 'react-icons/fa'
 import api from '../../services/api'
 
 import { Container, InputLarge, InputMed, InputShort, LabelDel } from './styles'
 
+interface Armor {
+  id: number
+  name: string
+  type: string
+  bonus: number
+  defense: number
+  dexterity: number
+  penalty: number
+  displacement_m: number
+  displacement_s: number
+  weight: number
+  price: number
+}
+
 interface CharArmorProps {
-  armors: any[]
+  armors: Armor[]
   size: string
   char: number
 }
 
-export default function CharArmor({ armors, size, char }: CharArmorProps) {
-  async function handleRemove(item: any) {
-    await api.delete(`characterarmors/${item.id}`, {
-      params: {
-        char: char,
-      },
-    })
+const CharArmor: React.FC<CharArmorProps> = ({ armors, size, char }) => {
+  const handleRemove = async (item: Armor): Promise<void> => {
+    try {
+      await api.delete(`characterarmors/${item.id}`, {
+        params: {
+          char: char,
+        },
+      })
+    } catch (error) {
+      console.error('Erro ao remover armadura:', error)
+    }
   }
 
   return (
     <Container>
       <ul>
         {armors.map(item => (
-          <li key={Math.random()}>
+          <li key={item.id}>
             <div>
               <label htmlFor="name">Nome</label>
               <InputLarge readOnly defaultValue={item.name} />
@@ -81,3 +101,5 @@ export default function CharArmor({ armors, size, char }: CharArmorProps) {
     </Container>
   )
 }
+
+export default CharArmor

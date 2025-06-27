@@ -1,6 +1,10 @@
 import styled from 'styled-components'
 import { darken } from 'polished'
 
+interface ButtonProps {
+  loading?: boolean
+}
+
 export const Container = styled.div`
   display: flex;
   justify-content: center;
@@ -302,7 +306,8 @@ export const Page = styled.div`
   margin: 10px;
   cursor: pointer;
 `
-export const Button = styled.button`
+
+export const Button = styled.button<ButtonProps>`
   height: 40px;
   width: 120px;
   background: #8e0e00;

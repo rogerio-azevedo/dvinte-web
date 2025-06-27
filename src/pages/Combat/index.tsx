@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
@@ -55,6 +57,11 @@ export default function Combat(): React.JSX.Element {
   const [charInit, setCharInit] = useState<number | undefined>()
   const [character, setCharacter] = useState<Character | undefined>()
   const [tokens, setTokens] = useState<Token[]>([])
+
+  // Debug: log quando tokens mudam
+  useEffect(() => {
+    console.log('🔄 Combat: tokens state updated:', tokens)
+  }, [tokens])
   const [fortitude, setFortitude] = useState<number | undefined>()
   const [reflex, setReflex] = useState<number | undefined>()
   const [will, setWill] = useState<number | undefined>()
@@ -85,8 +92,10 @@ export default function Combat(): React.JSX.Element {
 
       // Garantir que sempre seja um array
       const tokensData = Array.isArray(response.data) ? response.data : []
+      console.log('🔄 Combat: Loaded tokens from API:', tokensData)
       setTokens(tokensData)
     } catch (e) {
+      console.error('🔴 Combat: Error loading tokens:', e)
       toast.error('Houve um problema ao carregar as Tokens dos Personagens!')
     }
   }

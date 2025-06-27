@@ -66,6 +66,7 @@ export const DamageValue = styled.input`
   -moz-box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.6);
   box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.6);
 `
+
 export const Button = styled.button`
   color: #6f0000;
   width: 90px;

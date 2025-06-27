@@ -5,8 +5,12 @@ interface FormContainerProps {
   showform: 'hide' | 'show'
 }
 
-interface InputContainerProps {
-  loading: number
+interface InputShortProps {
+  readOnly?: boolean
+}
+
+interface InputLargeProps {
+  readOnly?: boolean
 }
 
 export const Container = styled.div`

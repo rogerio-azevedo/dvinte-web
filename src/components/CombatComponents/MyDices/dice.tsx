@@ -1,14 +1,64 @@
 import * as CANNON from 'cannon'
 import * as THREE from 'three'
 
-let define = undefined
+declare const define: any
+
+interface DiceOptions {
+  size?: number
+  fontColor?: string
+  backColor?: string
+}
+
+interface DiceVectors {
+  position: CANNON.Vec3
+  quaternion: CANNON.Quaternion
+  velocity: CANNON.Vec3
+  angularVelocity: CANNON.Vec3
+}
+
+interface DiceValue {
+  dice: DiceObject
+  value: number
+  vectors?: DiceVectors
+  stableCount?: number
+}
+
+interface MaterialOptions {
+  specular: number
+  color: number
+  shininess: number
+  flatShading: boolean
+  map?: THREE.Texture
+}
+
+interface ChamferGeometry {
+  vectors: THREE.Vector3[]
+  faces: number[][]
+}
+
+// Extend Three.js types with custom properties
+interface DiceGeometry extends THREE.Geometry {
+  cannon_shape?: CANNON.ConvexPolyhedron
+}
+
+interface DiceVector3 extends THREE.Vector3 {
+  index?: number
+}
+
+interface DiceMesh extends THREE.Mesh {
+  body?: CANNON.Body
+  diceObject?: DiceObject
+  geometry: DiceGeometry
+}
 
 class DiceManagerClass {
-  constructor() {
-    this.world = null
-  }
+  public world: CANNON.World | null = null
+  public throwRunning: boolean = false
+  public diceBodyMaterial!: CANNON.Material
+  public floorBodyMaterial!: CANNON.Material
+  public barrierBodyMaterial!: CANNON.Material
 
-  setWorld(world) {
+  setWorld(world: CANNON.World): void {
     this.world = world
 
     this.diceBodyMaterial = new CANNON.Material()
@@ -40,18 +90,12 @@ class DiceManagerClass {
     )
   }
 
-  /**
-   *
-   * @param {array} diceValues
-   * @param {DiceObject} [diceValues.dice]
-   * @param {number} [diceValues.value]
-   *
-   */
-  prepareValues(diceValues) {
-    if (this.throwRunning)
+  prepareValues(diceValues: DiceValue[]): void {
+    if (this.throwRunning) {
       throw new Error(
         'Cannot start another throw. Please wait, till the current throw is finished.'
       )
+    }
 
     for (let i = 0; i < diceValues.length; i++) {
       if (
@@ -59,11 +103,7 @@ class DiceManagerClass {
         diceValues[i].dice.values < diceValues[i].value
       ) {
         throw new Error(
-          'Cannot throw die to value ' +
-            diceValues[i].value +
-            ', because it has only ' +
-            diceValues[i].dice.values +
-            ' sides.'
+          `Cannot throw die to value ${diceValues[i].value}, because it has only ${diceValues[i].dice.values} sides.`
         )
       }
     }
@@ -76,108 +116,135 @@ class DiceManagerClass {
       diceValues[i].stableCount = 0
     }
 
-    let check = () => {
+    const check = (): void => {
       let allStable = true
       for (let i = 0; i < diceValues.length; i++) {
         if (diceValues[i].dice.isFinished()) {
-          diceValues[i].stableCount++
+          diceValues[i].stableCount = (diceValues[i].stableCount || 0) + 1
         } else {
           diceValues[i].stableCount = 0
         }
 
-        if (diceValues[i].stableCount < 50) {
+        if ((diceValues[i].stableCount || 0) < 50) {
           allStable = false
         }
       }
 
       if (allStable) {
-        DiceManager.world.removeEventListener('postStep', check)
+        if (this.world) {
+          this.world.removeEventListener('postStep', check)
+        }
 
         for (let i = 0; i < diceValues.length; i++) {
           diceValues[i].dice.shiftUpperValue(diceValues[i].value)
-          diceValues[i].dice.setVectors(diceValues[i].vectors)
+          if (diceValues[i].vectors) {
+            diceValues[i].dice.setVectors(diceValues[i].vectors)
+          }
           diceValues[i].dice.simulationRunning = false
         }
 
         this.throwRunning = false
       } else {
-        DiceManager.world.step(DiceManager.world.dt)
+        if (this.world) {
+          this.world.step(this.world.dt)
+        }
       }
     }
 
-    this.world.addEventListener('postStep', check)
+    if (this.world) {
+      this.world.addEventListener('postStep', check)
+    }
   }
 }
 
-class DiceObject {
-  /**
-   * @constructor
-   * @param {object} options
-   * @param {Number} [options.size = 100]
-   * @param {Number} [options.fontColor = '#ffffff']
-   * @param {Number} [options.backColor = '#200122']
-   */
-  constructor(options) {
-    options = this.setDefaults(options, {
+export class DiceObject {
+  public object: DiceMesh | null = null
+  public size: number
+  public invertUpside: boolean = false
+  public materialOptions: MaterialOptions
+  public labelColor: string
+  public diceColor: string
+  public simulationRunning: boolean = false
+  public values!: number
+  public mass!: number
+  public inertia!: number
+  public tab!: number
+  public af!: number
+  public chamfer!: number
+  public vertices!: number[][]
+  public faces!: number[][]
+  public scaleFactor!: number
+  public faceTexts!: (string | string[])[]
+  public textMargin!: number
+  public customTextTextureFunction?: (
+    text: string | string[],
+    color: string,
+    backColor: string
+  ) => THREE.Texture
+
+  constructor(options: DiceOptions = {}) {
+    const defaultOptions = this.setDefaults(options, {
       size: 100,
       fontColor: '#ffffff',
       backColor: '#200122',
     })
 
-    this.object = null
-    this.size = options.size
-    this.invertUpside = false
-
+    this.size = defaultOptions.size
     this.materialOptions = {
       specular: 0x172022,
       color: 0xf0f0f0,
       shininess: 40,
       flatShading: true,
     }
-    this.labelColor = options.fontColor
-    this.diceColor = options.backColor
+    this.labelColor = defaultOptions.fontColor
+    this.diceColor = defaultOptions.backColor
   }
 
-  setDefaults(options, defaults) {
-    options = options || {}
+  protected setDefaults(
+    options: DiceOptions,
+    defaults: Required<DiceOptions>
+  ): Required<DiceOptions> {
+    const result = { ...defaults }
 
-    for (let key in defaults) {
-      if (!defaults.hasOwnProperty(key)) continue
-
-      if (!(key in options)) {
-        options[key] = defaults[key]
+    for (const key in defaults) {
+      if (key in options) {
+        ;(result as any)[key] = (options as any)[key]
       }
     }
 
-    return options
+    return result
   }
 
-  emulateThrow(callback) {
+  emulateThrow(callback: (value: number) => void): void {
     let stableCount = 0
 
-    let check = () => {
+    const check = (): void => {
       if (this.isFinished()) {
         stableCount++
 
         if (stableCount === 50) {
-          DiceManager.world.removeEventListener('postStep', check)
+          DiceManager.world?.removeEventListener('postStep', check)
           callback(this.getUpsideValue())
         }
       } else {
         stableCount = 0
       }
 
-      DiceManager.world.step(DiceManager.world.dt)
+      if (DiceManager.world) {
+        DiceManager.world.step(DiceManager.world.dt)
+      }
     }
 
-    DiceManager.world.addEventListener('postStep', check)
+    DiceManager.world?.addEventListener('postStep', check)
   }
 
-  isFinished() {
-    let threshold = 1
+  isFinished(): boolean {
+    const threshold = 1
 
-    let angularVelocity = this.object.body.angularVelocity
-    let velocity = this.object.body.velocity
+    if (!this.object?.body) return false
+
+    const angularVelocity = this.object.body.angularVelocity
+    const velocity = this.object.body.velocity
 
     return (
       Math.abs(angularVelocity.x) < threshold &&
@@ -189,27 +256,38 @@ class DiceObject {
     )
   }
 
-  getUpsideValue() {
-    let vector = new THREE.Vector3(0, this.invertUpside ? -1 : 1)
-    let closest_face
+  getUpsideValue(): number {
+    if (!this.object || !this.object.geometry.faces) return 0
+
+    const vector = new THREE.Vector3(0, this.invertUpside ? -1 : 1, 0)
+    let closest_face: THREE.Face3 | undefined
     let closest_angle = Math.PI * 2
+
     for (let i = 0; i < this.object.geometry.faces.length; ++i) {
-      let face = this.object.geometry.faces[i]
+      const face = this.object.geometry.faces[i]
       if (face.materialIndex === 0) continue
 
-      let angle = face.normal
+      const angle = face.normal
         .clone()
-        .applyQuaternion(this.object.body.quaternion)
+        .applyQuaternion(
+          this.object.body?.quaternion || new CANNON.Quaternion()
+        )
         .angleTo(vector)
+
       if (angle < closest_angle) {
         closest_angle = angle
         closest_face = face
       }
     }
-    return closest_face.materialIndex - 1
+
+    return closest_face ? closest_face.materialIndex - 1 : 0
   }
 
-  getCurrentVectors() {
+  getCurrentVectors(): DiceVectors {
+    if (!this.object?.body) {
+      throw new Error('Dice object not initialized')
+    }
+
     return {
       position: this.object.body.position.clone(),
       quaternion: this.object.body.quaternion.clone(),
@@ -218,17 +296,20 @@ class DiceObject {
     }
   }
 
-  setVectors(vectors) {
+  setVectors(vectors: DiceVectors): void {
+    if (!this.object?.body) return
+
     this.object.body.position = vectors.position
     this.object.body.quaternion = vectors.quaternion
     this.object.body.velocity = vectors.velocity
     this.object.body.angularVelocity = vectors.angularVelocity
   }
 
-  shiftUpperValue(toValue) {
-    let geometry = this.object.geometry.clone()
+  shiftUpperValue(toValue: number): void {
+    if (!this.object || !this.object.geometry.faces) return
 
-    let fromValue = this.getUpsideValue()
+    const geometry = this.object.geometry.clone() as DiceGeometry
+    const fromValue = this.getUpsideValue()
 
     for (let i = 0, l = geometry.faces.length; i < l; ++i) {
       let materialIndex = geometry.faces[i].materialIndex
@@ -243,13 +324,41 @@ class DiceObject {
 
     if (this.values === 4 && toValue !== fromValue) {
       // to shift faces on a d4, we need to alter faceTexts and recreate the textures from it
-      let num = toValue - fromValue
-      if (num < 0) num += 4
+      const num =
+        toValue - fromValue < 0 ? toValue - fromValue + 4 : toValue - fromValue
       this.faceTexts = [
-        [[], [0, 0, 0], [2, 4, 3], [1, 3, 4], [2, 1, 4], [1, 2, 3]],
-        [[], [0, 0, 0], [2, 3, 4], [3, 1, 4], [2, 4, 1], [3, 2, 1]],
-        [[], [0, 0, 0], [4, 3, 2], [3, 4, 1], [4, 2, 1], [3, 1, 2]],
-        [[], [0, 0, 0], [4, 2, 3], [1, 4, 3], [4, 1, 2], [1, 3, 2]],
+        [
+          [],
+          ['0', '0', '0'],
+          ['2', '4', '3'],
+          ['1', '3', '4'],
+          ['2', '1', '4'],
+          ['1', '2', '3'],
+        ],
+        [
+          [],
+          ['0', '0', '0'],
+          ['2', '3', '4'],
+          ['3', '1', '4'],
+          ['2', '4', '1'],
+          ['3', '2', '1'],
+        ],
+        [
+          [],
+          ['0', '0', '0'],
+          ['4', '3', '2'],
+          ['3', '4', '1'],
+          ['4', '2', '1'],
+          ['3', '1', '2'],
+        ],
+        [
+          [],
+          ['0', '0', '0'],
+          ['4', '2', '3'],
+          ['1', '4', '3'],
+          ['4', '1', '2'],
+          ['1', '3', '2'],
+        ],
       ][num]
       this.object.material = this.getMaterials()
     }
@@ -257,44 +366,63 @@ class DiceObject {
     this.object.geometry = geometry
   }
 
-  getChamferGeometry(vectors, faces, chamfer) {
-    let chamfer_vectors = [],
-      chamfer_faces = [],
-      corner_faces = new Array(vectors.length)
-    for (let i = 0; i < vectors.length; ++i) corner_faces[i] = []
+  private getChamferGeometry(
+    vectors: THREE.Vector3[],
+    faces: number[][],
+    chamfer: number
+  ): ChamferGeometry {
+    const chamfer_vectors: THREE.Vector3[] = []
+    const chamfer_faces: number[][] = []
+    const corner_faces: number[][] = new Array(vectors.length)
+
+    for (let i = 0; i < vectors.length; ++i) {
+      corner_faces[i] = []
+    }
+
     for (let i = 0; i < faces.length; ++i) {
-      var ii = faces[i],
-        fl = ii.length - 1
-      let center_point = new THREE.Vector3()
-      let face = new Array(fl)
+      const ii = faces[i]
+      const fl = ii.length - 1
+      const center_point = new THREE.Vector3()
+      const face = new Array(fl)
+
       for (let j = 0; j < fl; ++j) {
-        var vv = vectors[ii[j]].clone()
+        const vv = vectors[ii[j]].clone()
         center_point.add(vv)
         corner_faces[ii[j]].push((face[j] = chamfer_vectors.push(vv) - 1))
       }
+
       center_point.divideScalar(fl)
+
       for (let j = 0; j < fl; ++j) {
-        let vv = chamfer_vectors[face[j]]
+        const vv = chamfer_vectors[face[j]]
         vv.subVectors(vv, center_point)
           .multiplyScalar(chamfer)
           .addVectors(vv, center_point)
       }
+
       face.push(ii[fl])
       chamfer_faces.push(face)
     }
+
     for (let i = 0; i < faces.length - 1; ++i) {
       for (let j = i + 1; j < faces.length; ++j) {
-        var pairs = [],
-          lastm = -1
+        const pairs: number[][] = []
+        let lastm = -1
+
         for (let m = 0; m < faces[i].length - 1; ++m) {
-          let n = faces[j].indexOf(faces[i][m])
+          const n = faces[j].indexOf(faces[i][m])
           if (n >= 0 && n < faces[j].length - 1) {
-            if (lastm >= 0 && m !== lastm + 1) pairs.unshift([i, m], [j, n])
-            else pairs.push([i, m], [j, n])
+            if (lastm >= 0 && m !== lastm + 1) {
+              pairs.unshift([i, m], [j, n])
+            } else {
+              pairs.push([i, m], [j, n])
+            }
             lastm = m
           }
         }
+
         if (pairs.length !== 4) continue
+
         chamfer_faces.push([
           chamfer_faces[pairs[0][0]][pairs[0][1]],
           chamfer_faces[pairs[1][0]][pairs[1][1]],
@@ -304,16 +432,18 @@ class DiceObject {
         ])
       }
     }
+
     for (let i = 0; i < corner_faces.length; ++i) {
-      let cf = corner_faces[i],
-        face = [cf[0]],
-        count = cf.length - 1
+      const cf = corner_faces[i]
+      const face = [cf[0]]
+      let count = cf.length - 1
+
       while (count) {
         for (let m = faces.length; m < chamfer_faces.length; ++m) {
-          var index = chamfer_faces[m].indexOf(face[face.length - 1])
+          const index = chamfer_faces[m].indexOf(face[face.length - 1])
           if (index >= 0 && index < 4) {
-            if (--index === -1) index = 3
-            let next_vertex = chamfer_faces[m][index]
+            const nextIndex = index === 0 ? 3 : index - 1
+            const next_vertex = chamfer_faces[m][nextIndex]
             if (cf.indexOf(next_vertex) >= 0) {
               face.push(next_vertex)
               break
@@ -322,37 +452,48 @@ class DiceObject {
         }
         --count
       }
+
       face.push(-1)
       chamfer_faces.push(face)
     }
+
     return { vectors: chamfer_vectors, faces: chamfer_faces }
   }
 
-  makeGeometry(vertices, faces, radius, tab, af) {
-    let geom = new THREE.Geometry()
+  private makeGeometry(
+    vertices: THREE.Vector3[],
+    faces: number[][],
+    radius: number,
+    tab: number,
+    af: number
+  ): DiceGeometry {
+    const geom = new THREE.Geometry() as DiceGeometry
+
     for (let i = 0; i < vertices.length; ++i) {
-      let vertex = vertices[i].multiplyScalar(radius)
+      const vertex = vertices[i].multiplyScalar(radius) as DiceVector3
       vertex.index = geom.vertices.push(vertex) - 1
     }
+
     for (let i = 0; i < faces.length; ++i) {
-      let ii = faces[i],
-        fl = ii.length - 1
-      let aa = (Math.PI * 2) / fl
+      const ii = faces[i]
+      const fl = ii.length - 1
+      const aa = (Math.PI * 2) / fl
+
       for (let j = 0; j < fl - 2; ++j) {
-        geom.faces.push(
-          new THREE.Face3(
-            ii[0],
-            ii[j + 1],
-            ii[j + 2],
-            [
-              geom.vertices[ii[0]],
-              geom.vertices[ii[j + 1]],
-              geom.vertices[ii[j + 2]],
-            ],
-            0,
-            ii[fl] + 1
-          )
+        const face = new THREE.Face3(
+          ii[0],
+          ii[j + 1],
+          ii[j + 2],
+          [
+            geom.vertices[ii[0]],
+            geom.vertices[ii[j + 1]],
+            geom.vertices[ii[j + 2]],
+          ],
+          undefined,
+          ii[fl] + 1
         )
+        geom.faces.push(face)
+
         geom.faceVertexUvs[0].push([
           new THREE.Vector2(
             (Math.cos(af) + 1 + tab) / 2 / (1 + tab),
@@ -369,78 +510,97 @@ class DiceObject {
         ])
       }
     }
+
     geom.computeFaceNormals()
     geom.boundingSphere = new THREE.Sphere(new THREE.Vector3(), radius)
     return geom
   }
 
-  createShape(vertices, faces, radius) {
-    let cv = new Array(vertices.length),
-      cf = new Array(faces.length)
+  private createShape(
+    vertices: THREE.Vector3[],
+    faces: number[][],
+    radius: number
+  ): CANNON.ConvexPolyhedron {
+    const cv = new Array(vertices.length)
+    const cf = new Array(faces.length)
+
     for (let i = 0; i < vertices.length; ++i) {
-      let v = vertices[i]
+      const v = vertices[i]
       cv[i] = new CANNON.Vec3(v.x * radius, v.y * radius, v.z * radius)
     }
+
     for (let i = 0; i < faces.length; ++i) {
       cf[i] = faces[i].slice(0, faces[i].length - 1)
     }
+
     return new CANNON.ConvexPolyhedron(cv, cf)
   }
 
-  getGeometry() {
-    let radius = this.size * this.scaleFactor
+  getGeometry(): DiceGeometry {
+    const radius = this.size * this.scaleFactor
 
-    let vectors = new Array(this.vertices.length)
+    const vectors = new Array(this.vertices.length)
     for (let i = 0; i < this.vertices.length; ++i) {
       vectors[i] = new THREE.Vector3().fromArray(this.vertices[i]).normalize()
     }
 
-    let chamferGeometry = this.getChamferGeometry(
+    const chamferGeometry = this.getChamferGeometry(
       vectors,
       this.faces,
       this.chamfer
     )
-    let geometry = this.makeGeometry(
+    const geometry = this.makeGeometry(
       chamferGeometry.vectors,
       chamferGeometry.faces,
       radius,
       this.tab,
       this.af
     )
+
     geometry.cannon_shape = this.createShape(vectors, this.faces, radius)
 
     return geometry
   }
 
-  calculateTextureSize(approx) {
+  protected calculateTextureSize(approx: number): number {
     return Math.max(
       128,
       Math.pow(2, Math.floor(Math.log(approx) / Math.log(2)))
     )
   }
 
-  createTextTexture(text, color, backColor) {
-    let canvas = document.createElement('canvas')
-    let context = canvas.getContext('2d')
-    let ts =
+  private createTextTexture(
+    text: string | string[],
+    color: string,
+    backColor: string
+  ): THREE.Texture {
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')!
+    const ts =
       this.calculateTextureSize(this.size / 2 + this.size * this.textMargin) * 2
+
     canvas.width = canvas.height = ts
-    context.font = ts / (1 + 2 * this.textMargin) + 'pt Arial'
+    context.font = `${ts / (1 + 2 * this.textMargin)}pt Arial`
     context.fillStyle = backColor
     context.fillRect(0, 0, canvas.width, canvas.height)
     context.textAlign = 'center'
     context.textBaseline = 'middle'
     context.fillStyle = color
-    context.fillText(text, canvas.width / 2, canvas.height / 2)
-    let texture = new THREE.Texture(canvas)
+
+    const textContent = Array.isArray(text) ? text.join('') : text
+    context.fillText(textContent, canvas.width / 2, canvas.height / 2)
+
+    const texture = new THREE.Texture(canvas)
     texture.needsUpdate = true
     return texture
   }
 
-  getMaterials() {
-    let materials = []
+  getMaterials(): THREE.Material[] {
+    const materials: THREE.Material[] = []
+
     for (let i = 0; i < this.faceTexts.length; ++i) {
-      let texture = null
+      let texture: THREE.Texture
+
       if (this.customTextTextureFunction) {
         texture = this.customTextTextureFunction(
           this.faceTexts[i],
@@ -456,53 +616,65 @@ class DiceObject {
       }
 
       materials.push(
-        new THREE.MeshPhongMaterial(
-          Object.assign({}, this.materialOptions, { map: texture })
-        )
+        new THREE.MeshPhongMaterial({
+          ...this.materialOptions,
+          map: texture,
+        })
       )
     }
+
     return materials
   }
 
-  getObject() {
+  getObject(): DiceMesh | null {
     return this.object
   }
 
-  create() {
-    if (!DiceManager.world)
+  create(): DiceMesh {
+    if (!DiceManager.world) {
       throw new Error('You must call DiceManager.setWorld(world) first.')
-    this.object = new THREE.Mesh(this.getGeometry(), this.getMaterials())
+    }
 
-    this.object.reveiceShadow = true
+    this.object = new THREE.Mesh(
+      this.getGeometry(),
+      this.getMaterials()
+    ) as DiceMesh
+
+    this.object.receiveShadow = true
     this.object.castShadow = true
     this.object.diceObject = this
+
     this.object.body = new CANNON.Body({
       mass: this.mass,
       shape: this.object.geometry.cannon_shape,
       material: DiceManager.diceBodyMaterial,
     })
+
     this.object.body.linearDamping = 0.1
     this.object.body.angularDamping = 0.1
+
     DiceManager.world.add(this.object.body)
 
     return this.object
   }
 
-  updateMeshFromBody() {
-    if (!this.simulationRunning) {
+  updateMeshFromBody(): void {
+    if (!this.simulationRunning && this.object?.body) {
       this.object.position.copy(this.object.body.position)
       this.object.quaternion.copy(this.object.body.quaternion)
     }
   }
 
-  updateBodyFromMesh() {
-    this.object.body.position.copy(this.object.position)
-    this.object.body.quaternion.copy(this.object.quaternion)
+  updateBodyFromMesh(): void {
+    if (this.object?.body) {
+      this.object.body.position.copy(this.object.position)
+      this.object.body.quaternion.copy(this.object.quaternion)
+    }
   }
 }
 
 export class DiceD4 extends DiceObject {
-  constructor(options) {
+  constructor(options: DiceOptions = {}) {
     super(options)
 
     this.tab = -0.1
@@ -530,31 +702,38 @@ export class DiceD4 extends DiceObject {
       ['2', '1', '4'],
       ['1', '2', '3'],
     ]
-    this.customTextTextureFunction = function (text, color, backColor) {
-      let canvas = document.createElement('canvas')
-      let context = canvas.getContext('2d')
-      let ts = this.calculateTextureSize(this.size / 2 + this.size * 2) * 2
+
+    this.customTextTextureFunction = (
+      text: string | string[],
+      color: string,
+      backColor: string
+    ): THREE.Texture => {
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d')!
+      const ts = this.calculateTextureSize(this.size / 2 + this.size * 2) * 2
+
       canvas.width = canvas.height = ts
-      context.font = ts / 5 + 'pt Arial'
+      context.font = `${ts / 5}pt Arial`
       context.fillStyle = backColor
       context.fillRect(0, 0, canvas.width, canvas.height)
       context.textAlign = 'center'
       context.textBaseline = 'middle'
       context.fillStyle = color
-      for (let i in text) {
-        context.fillText(
-          text[i],
-          canvas.width / 2,
-          canvas.height / 2 - ts * 0.3
-        )
+
+      const textArray = Array.isArray(text) ? text : [text]
+      for (const t of textArray) {
+        context.fillText(t, canvas.width / 2, canvas.height / 2 - ts * 0.3)
         context.translate(canvas.width / 2, canvas.height / 2)
         context.rotate((Math.PI * 2) / 3)
         context.translate(-canvas.width / 2, -canvas.height / 2)
       }
-      let texture = new THREE.Texture(canvas)
+
+      const texture = new THREE.Texture(canvas)
       texture.needsUpdate = true
       return texture
     }
+
+    this.textMargin = 1.0
     this.mass = 300
     this.inertia = 5
     this.invertUpside = true
@@ -564,7 +743,7 @@ export class DiceD4 extends DiceObject {
 }
 
 export class DiceD6 extends DiceObject {
-  constructor(options) {
+  constructor(options: DiceOptions = {}) {
     super(options)
 
     this.tab = 0.1
@@ -623,7 +802,7 @@ export class DiceD6 extends DiceObject {
 }
 
 export class DiceD8 extends DiceObject {
-  constructor(options) {
+  constructor(options: DiceOptions = {}) {
     super(options)
 
     this.tab = 0
@@ -682,7 +861,7 @@ export class DiceD8 extends DiceObject {
 }
 
 export class DiceD10 extends DiceObject {
-  constructor(options) {
+  constructor(options: DiceOptions = {}) {
     super(options)
 
     this.tab = 0
@@ -728,10 +907,10 @@ export class DiceD10 extends DiceObject {
       '3',
       '4',
       '5',
-      '.6',
+      '6',
       '7',
       '8',
-      '.9',
+      '9',
       '10',
       '11',
       '12',
@@ -753,11 +932,11 @@ export class DiceD10 extends DiceObject {
 }
 
 export class DiceD12 extends DiceObject {
-  constructor(options) {
+  constructor(options: DiceOptions = {}) {
     super(options)
 
-    let p = (1 + Math.sqrt(5)) / 2
-    let q = 1 / p
+    const p = (1 + Math.sqrt(5)) / 2
+    const q = 1 / p
 
     this.tab = 0.2
     this.af = -Math.PI / 4 / 2
@@ -808,10 +987,10 @@ export class DiceD12 extends DiceObject {
       '3',
       '4',
       '5',
-      '.6',
+      '6',
       '7',
       '8',
-      '.9',
+      '9',
       '10',
       '11',
       '12',
@@ -833,10 +1012,10 @@ export class DiceD12 extends DiceObject {
 }
 
 export class DiceD20 extends DiceObject {
-  constructor(options) {
+  constructor(options: DiceOptions = {}) {
     super(options)
 
-    let t = (1 + Math.sqrt(5)) / 2
+    const t = (1 + Math.sqrt(5)) / 2
 
     this.tab = -0.2
     this.af = -Math.PI / 4 / 2
@@ -887,10 +1066,10 @@ export class DiceD20 extends DiceObject {
       '3',
       '4',
       '5',
-      '.6',
+      '6',
       '7',
       '8',
-      '.9',
+      '9',
       '10',
       '11',
       '12',
@@ -911,43 +1090,40 @@ export class DiceD20 extends DiceObject {
   }
 }
 
-//---------------------------------------------//
-
 export const DiceManager = new DiceManagerClass()
 
+// Module exports for different environments
 if (typeof define === 'function' && define.amd) {
-  define(function () {
-    return {
-      DiceManager: DiceManager,
-      DiceD4: DiceD4,
-      DiceD6: DiceD6,
-      DiceD8: DiceD8,
-      DiceD10: DiceD10,
-      DiceD12: DiceD12,
-      DiceD20: DiceD20,
-    }
-  })
+  define(() => ({
+    DiceManager,
+    DiceD4,
+    DiceD6,
+    DiceD8,
+    DiceD10,
+    DiceD12,
+    DiceD20,
+  }))
 } else if (
   typeof module !== 'undefined' &&
   typeof module.exports !== 'undefined'
 ) {
   module.exports = {
-    DiceManager: DiceManager,
-    DiceD4: DiceD4,
-    DiceD6: DiceD6,
-    DiceD8: DiceD8,
-    DiceD10: DiceD10,
-    DiceD12: DiceD12,
-    DiceD20: DiceD20,
+    DiceManager,
+    DiceD4,
+    DiceD6,
+    DiceD8,
+    DiceD10,
+    DiceD12,
+    DiceD20,
   }
-} else {
-  window.Dice = {
-    DiceManager: DiceManager,
-    DiceD4: DiceD4,
-    DiceD6: DiceD6,
-    DiceD8: DiceD8,
-    DiceD10: DiceD10,
-    DiceD12: DiceD12,
-    DiceD20: DiceD20,
+} else if (typeof window !== 'undefined') {
+  ;(window as any).Dice = {
+    DiceManager,
+    DiceD4,
+    DiceD6,
+    DiceD8,
+    DiceD10,
+    DiceD12,
+    DiceD20,
   }
 }

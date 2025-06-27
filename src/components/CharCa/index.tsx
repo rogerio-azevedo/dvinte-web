@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   Container,
   InputResitContainer,
@@ -5,52 +6,41 @@ import {
   InputDefense,
 } from './styles'
 
+interface Armor {
+  id: number
+  type: number
+  bonus: number
+  defense: number
+  dexterity: number
+}
+
 interface CharCaProps {
-  armors: any[]
+  armors: Armor[]
   dextMod: number
 }
 
-export default function CharCa({ armors, dextMod }: CharCaProps) {
-  const armor =
-    armors
-      ?.filter(t => t.type === 1)
-      ?.reduce((acc, val) => {
-        return acc + (val.bonus + val.defense)
-      }, 0) || 0
+const CharCa: React.FC<CharCaProps> = ({ armors, dextMod }) => {
+  const calculateArmorTypeTotal = (type: number): number => {
+    return (
+      armors
+        ?.filter(t => t.type === type)
+        ?.reduce((acc, val) => {
+          return acc + (val.bonus + val.defense)
+        }, 0) || 0
+    )
+  }
 
-  const shield =
-    armors
-      ?.filter(t => t.type === 2)
-      ?.reduce((acc, val) => {
-        return acc + (val.bonus + val.defense)
-      }, 0) || 0
-
-  const natural =
-    armors
-      ?.filter(t => t.type === 3)
-      ?.reduce((acc, val) => {
-        return acc + (val.bonus + val.defense)
-      }, 0) || 0
-
-  const deflex =
-    armors
-      ?.filter(t => t.type === 4)
-      ?.reduce((acc, val) => {
-        return acc + (val.bonus + val.defense)
-      }, 0) || 0
-
-  const outros =
-    armors
-      ?.filter(t => t.type === 5)
-      ?.reduce((acc, val) => {
-        return acc + (val.bonus + val.defense)
-      }, 0) || 0
+  const armor = calculateArmorTypeTotal(1) // Armadura
+  const shield = calculateArmorTypeTotal(2) // Escudo
+  const natural = calculateArmorTypeTotal(3) // Armadura Natural
+  const deflex = calculateArmorTypeTotal(4) // Deflex
+  const outros = calculateArmorTypeTotal(5) // Outros
 
   const maxDext = Math.min(
     ...armors?.filter(t => t.dexterity > 0).map(item => item.dexterity)
   )
 
-  function calcDext(value: number) {
+  const calcDext = (value: number): number => {
     let dextBonus = 0
 
     if (value <= maxDext) {
@@ -65,7 +55,6 @@ export default function CharCa({ armors, dextMod }: CharCaProps) {
   }
 
   const bonusDext = calcDext(dextMod)
-
   const totalCa = 10 + shield + armor + bonusDext + natural + deflex + outros
 
   return (
@@ -111,3 +100,5 @@ export default function CharCa({ armors, dextMod }: CharCaProps) {
     </Container>
   )
 }
+
+export default CharCa

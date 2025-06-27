@@ -13,6 +13,7 @@ export const Container = styled.div`
     margin-top: 20px;
   }
 `
+
 export const DiceContainer = styled.div`
   display: flex;
   align-items: center;

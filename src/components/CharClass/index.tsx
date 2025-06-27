@@ -1,15 +1,22 @@
+import React from 'react'
 import { Container, ClassInput, ClassValueInput } from './styles'
 
-interface CharClassProps {
-  classes: any[]
+interface CharacterClass {
+  id: number
+  name: string
+  level: number
 }
 
-export default function CharClass({ classes }: CharClassProps) {
+interface CharClassProps {
+  classes: CharacterClass[]
+}
+
+const CharClass: React.FC<CharClassProps> = ({ classes }) => {
   return (
     <Container>
       <ul>
         {classes?.map(item => (
-          <li key={Math.random()}>
+          <li key={item.id}>
             <ClassInput readOnly defaultValue={item.name} />
             <ClassValueInput readOnly defaultValue={item.level} />
           </li>
@@ -18,3 +25,5 @@ export default function CharClass({ classes }: CharClassProps) {
     </Container>
   )
 }
+
+export default CharClass

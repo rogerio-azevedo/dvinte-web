@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react'
+/* eslint-disable no-console */
+
+import React, { useState, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { format, parseISO } from 'date-fns'
 import { utcToZonedTime } from 'date-fns-tz'
@@ -9,33 +11,59 @@ import { connect, socket } from '../../../services/socket'
 
 import * as Styles from './styles'
 
-export default function Chat() {
-  const { profile } = useSelector(state => state.user)
+interface Message {
+  id: number
+  user_id: number
+  user: string
+  message: string
+  result: number
+  type: number
+  date: string
+  isCrit?: 'HIT' | 'FAIL' | 'NORMAL'
+}
 
-  const [message, setMessage] = useState('')
-  const [messages, setMessages] = useState([])
+interface UserState {
+  profile: {
+    id: number
+    name: string
+  }
+}
+
+interface RootState {
+  user: UserState
+}
+
+export default function Chat() {
+  const { profile } = useSelector((state: RootState) => state.user)
+
+  const [message, setMessage] = useState<string>('')
+  const [messages, setMessages] = useState<Message[]>([])
 
   const from = profile.id
-  const messagesEndRef = React.createRef(null)
+  const messagesEndRef = useRef<HTMLLIElement>(null)
 
-  function scrollToBottom() {
+  function scrollToBottom(): void {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
-  function formatDate(date) {
+  function formatDate(date: string): string {
     const convertedDate = parseISO(date)
     const localDate = utcToZonedTime(convertedDate, 'America/Sao_Paulo')
 
     return format(localDate, 'dd-MM-yy HH:mm:ss')
   }
 
-  async function loadAllMessages() {
+  async function loadAllMessages(): Promise<void> {
     try {
       const response = await api.get('/combats')
-      setMessages(response.data)
-    } catch (e) {
+      const messagesData: Message[] = Array.isArray(response.data)
+        ? response.data
+        : []
+      setMessages(messagesData)
+    } catch (error) {
+      console.error('Erro ao carregar mensagens do chat:', error)
       toast.error('Houve um problema ao carregar as mensagens do Chat!')
     }
   }
@@ -44,36 +72,46 @@ export default function Chat() {
     scrollToBottom()
   })
 
-  const handleFormSubmit = event => {
+  const handleFormSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     event.preventDefault()
 
     if (message.trim()) {
-      api.post('combats', {
-        id: from,
-        user_id: profile.id,
-        user: profile.name,
-        message,
-        result: 0,
-        type: 1,
-      })
+      try {
+        await api.post('combats', {
+          id: from,
+          user_id: profile.id,
+          user: profile.name,
+          message,
+          result: 0,
+          type: 1,
+        })
 
-      setMessage('')
+        setMessage('')
+      } catch (error) {
+        console.error('Erro ao enviar mensagem:', error)
+        toast.error('Erro ao enviar mensagem')
+      }
     }
   }
 
   useEffect(() => {
-    const handleNewMessage = newMessage =>
-      setMessages([...messages, newMessage])
+    const handleNewMessage = (newMessage: Message): void => {
+      setMessages(prevMessages => [...prevMessages, newMessage])
+    }
 
     socket.on('chat.message', handleNewMessage)
 
-    return () => socket.off('chat.message', handleNewMessage)
-  }, [messages])
+    return () => {
+      socket.off('chat.message', handleNewMessage)
+    }
+  }, [])
 
   useEffect(() => {
     connect()
     loadAllMessages()
-  }, []) // eslint-disable-line
+  }, [])
 
   return (
     <Styles.ChatContainer>
@@ -81,9 +119,9 @@ export default function Chat() {
         <ul>
           {messages.map((m, index) => (
             <Styles.ListMessage
-              ref={messagesEndRef}
+              ref={index === messages.length - 1 ? messagesEndRef : null}
               from={from === m.id ? 1 : 0}
-              key={index} // eslint-disable-line
+              key={m.id || `message-${index}`}
             >
               <Styles.MessageData from={from === m.id ? 1 : 0}>
                 <Styles.MessageDateTime from={from === m.id ? 1 : 0}>
@@ -103,7 +141,9 @@ export default function Chat() {
 
       <Styles.FormMessage onSubmit={handleFormSubmit}>
         <Styles.InputMessage
-          onChange={e => setMessage(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setMessage(e.target.value)
+          }
           placeholder="Mensagem..."
           type="text"
           value={message}

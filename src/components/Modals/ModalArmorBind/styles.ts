@@ -1,7 +1,14 @@
 import styled from 'styled-components'
-import { darken } from 'polished'
 
-export const Container = styled.div``
+interface ButtonProps {
+  disabled?: boolean
+}
+
+export const Container = styled.div`
+  display: flex;
+  margin-left: 6px;
+  margin-right: 6px;
+`
 
 export const HeaderContainer = styled.div`
   display: flex;

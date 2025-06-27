@@ -35,6 +35,8 @@ export const Button = styled.button`
   border-radius: 4px;
   border: 0;
   margin: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
   &:hover {
     background: ${darken(0.1, '#200122')};
@@ -49,6 +51,7 @@ export const Button = styled.button`
   -moz-box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.6);
   box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.6);
 `
+
 export const InputContainer = styled.div`
   display: flex;
   flex-direction: row;
@@ -133,6 +136,46 @@ export const InputShort = styled.input`
   -webkit-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
   -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
   box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
+`
+
+export const RangeInput = styled.input`
+  width: 200px;
+  height: 6px;
+  border-radius: 5px;
+  background: #ddd;
+  outline: none;
+  margin-top: 8px;
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #6f0000;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: ${darken(0.1, '#6f0000')};
+    }
+  }
+
+  &::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #6f0000;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: ${darken(0.1, '#6f0000')};
+    }
+  }
 `
 
 export const SelectMed = styled.select`

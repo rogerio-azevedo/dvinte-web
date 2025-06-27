@@ -1,29 +1,66 @@
 /* eslint-disable no-console */
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import api from '../../../services/api'
 import { socket, connect, emit } from '../../../services/socket'
 
 import * as Styles from './styles'
-import { useEffect } from 'react'
+
+interface DamageItem {
+  user: string
+  damage: number
+}
+
+interface Message {
+  id: number
+  user_id: number
+  user: string
+  message: string
+  result: number
+  type: number
+  isCrit: string
+}
+
+interface UserProfile {
+  id: number
+  name: string
+}
+
+interface UserState {
+  profile: UserProfile
+}
+
+interface RootState {
+  user: UserState
+}
+
+type DamageType = 'session' | 'combat' | 'reload' | undefined
 
 export default function DamagesCounter() {
-  const profile = useSelector(state => state.user.profile)
-  const [damages, setDamages] = useState([])
+  const profile = useSelector((state: RootState) => state.user.profile)
+  const [damages, setDamages] = useState<DamageItem[]>([])
 
-  async function loadDamage(type) {
-    const response = await api.get('/damages', {
-      params: {
-        type: type,
-      },
-    })
+  async function loadDamage(type?: DamageType): Promise<void> {
+    try {
+      const response = await api.get('/damages', {
+        params: {
+          type: type,
+        },
+      })
 
-    setDamages(response.data)
+      const damagesData: DamageItem[] = Array.isArray(response.data)
+        ? response.data
+        : []
+      setDamages(damagesData)
+    } catch (error) {
+      console.error('[DamagesCounter] Erro ao carregar danos:', error)
+      setDamages([])
+    }
   }
 
-  async function handleStartSession() {
+  async function handleStartSession(): Promise<void> {
     try {
-      const message = {
+      const message: Message = {
         id: profile.id,
         user_id: profile.id,
         user: profile.name,
@@ -34,15 +71,15 @@ export default function DamagesCounter() {
       }
 
       emit('chat.message', message)
-      loadDamage('session')
+      await loadDamage('session')
     } catch (err) {
       console.error('[DamagesCounter] Erro ao iniciar sessão:', err)
     }
   }
 
-  async function handleStartCombat() {
+  async function handleStartCombat(): Promise<void> {
     try {
-      const message = {
+      const message: Message = {
         id: profile.id,
         user_id: profile.id,
         user: profile.name,
@@ -53,7 +90,7 @@ export default function DamagesCounter() {
       }
 
       emit('chat.message', message)
-      loadDamage('combat')
+      await loadDamage('combat')
     } catch (err) {
       console.error('[DamagesCounter] Erro ao iniciar combate:', err)
     }
@@ -63,7 +100,7 @@ export default function DamagesCounter() {
     loadDamage()
 
     // Escuta mensagens do chat
-    socket.on('chat.message', message => {
+    const handleChatMessage = (message: Message): void => {
       // Se for uma mensagem de início de sessão ou combate, atualiza a lista
       if (message.type === 0) {
         loadDamage('session')
@@ -73,7 +110,9 @@ export default function DamagesCounter() {
         // Se for dano, recarrega a lista atual
         loadDamage()
       }
-    })
+    }
+
+    socket.on('chat.message', handleChatMessage)
 
     // Conecta o websocket se ainda não estiver conectado
     if (!socket.connected) {
@@ -81,7 +120,7 @@ export default function DamagesCounter() {
     }
 
     return () => {
-      socket.off('chat.message')
+      socket.off('chat.message', handleChatMessage)
     }
   }, [])
 
@@ -108,8 +147,8 @@ export default function DamagesCounter() {
           <ul>
             {damages
               ?.sort((a, b) => b.damage - a.damage)
-              .map(item => (
-                <li key={Math.random()}>
+              .map((item, index) => (
+                <li key={`damage-${item.user}-${index}`}>
                   <Styles.DamageUser readOnly defaultValue={item.user} />
                   <Styles.DamageValue readOnly defaultValue={item.damage} />
                 </li>

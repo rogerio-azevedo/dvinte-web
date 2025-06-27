@@ -3,15 +3,20 @@ import * as THREE from 'three'
 
 import { Container } from './styles'
 
-const Tree = () => {
-  const [isAnimating, setAnimating] = useState(true)
-  const mount = useRef(null)
-  const controls = useRef(null)
+interface Controls {
+  start: () => void
+  stop: () => void
+}
 
-  const box = () => {
+const Tree: React.FC = () => {
+  const [isAnimating, setAnimating] = useState<boolean>(true)
+  const mount = useRef<HTMLDivElement>(null)
+  const controls = useRef<Controls | null>(null)
+
+  const box = (): (() => void) => {
     let width = window.innerWidth
     let height = window.innerHeight
-    let frameId
+    let frameId: number | null = null
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000)
@@ -26,11 +31,13 @@ const Tree = () => {
 
     renderer.setSize(width, height)
 
-    const renderScene = () => {
+    const renderScene = (): void => {
       renderer.render(scene, camera)
     }
 
-    const handleResize = () => {
+    const handleResize = (): void => {
+      if (!mount.current) return
+
       width = mount.current.clientWidth
       height = mount.current.clientHeight
       renderer.setSize(width, height)
@@ -39,7 +46,7 @@ const Tree = () => {
       renderScene()
     }
 
-    const animate = () => {
+    const animate = (): void => {
       cube.rotation.x += 0.01
       cube.rotation.y += 0.01
 
@@ -47,52 +54,64 @@ const Tree = () => {
       frameId = window.requestAnimationFrame(animate)
     }
 
-    const start = () => {
+    const start = (): void => {
       if (!frameId) {
         frameId = requestAnimationFrame(animate)
       }
     }
 
-    const stop = () => {
-      cancelAnimationFrame(frameId)
-      frameId = null
+    const stop = (): void => {
+      if (frameId) {
+        cancelAnimationFrame(frameId)
+        frameId = null
+      }
     }
 
-    mount.current.appendChild(renderer.domElement)
+    if (mount.current) {
+      mount.current.appendChild(renderer.domElement)
+    }
+
     window.addEventListener('resize', handleResize)
     start()
 
     controls.current = { start, stop }
 
-    return () => {
+    return (): void => {
       stop()
       window.removeEventListener('resize', handleResize)
-      mount.current.removeChild(renderer.domElement)
 
+      if (mount.current && renderer.domElement.parentNode === mount.current) {
+        mount.current.removeChild(renderer.domElement)
+      }
+
+      // Clean up Three.js resources
       scene.remove(cube)
       geometry.dispose()
       material.dispose()
+      renderer.dispose()
     }
   }
 
   useEffect(() => {
-    box()
+    const cleanup = box()
+    return cleanup
   }, [])
 
   useEffect(() => {
-    if (isAnimating) {
-      controls.current.start()
-    } else {
-      controls.current.stop() // eslint-disable-line
+    if (controls.current) {
+      if (isAnimating) {
+        controls.current.start()
+      } else {
+        controls.current.stop()
+      }
     }
   }, [isAnimating])
 
-  return (
-    <Container
-      ref={mount}
-      onClick={() => setAnimating(!isAnimating)}
-    ></Container>
-  )
+  const handleContainerClick = (): void => {
+    setAnimating(!isAnimating)
+  }
+
+  return <Container ref={mount} onClick={handleContainerClick} />
 }
 
 export default Tree

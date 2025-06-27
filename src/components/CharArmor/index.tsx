@@ -2,22 +2,8 @@
 
 import { FaTimes } from 'react-icons/fa'
 import api from '../../services/api'
-
+import { Armor, ArmorType } from '../../types/armor'
 import { Container, InputLarge, InputMed, InputShort, LabelDel } from './styles'
-
-interface Armor {
-  id: number
-  name: string
-  type: string
-  bonus: number
-  defense: number
-  dexterity: number
-  penalty: number
-  displacement_m: number
-  displacement_s: number
-  weight: number
-  price: number
-}
 
 interface CharArmorProps {
   armors: Armor[]
@@ -49,7 +35,7 @@ const CharArmor: React.FC<CharArmorProps> = ({ armors, size, char }) => {
             </div>
             <div>
               <label htmlFor="type">Tipo</label>
-              <InputShort readOnly defaultValue={item.type} />
+              <InputShort readOnly defaultValue={getArmorType(item.type)} />
             </div>
             <div>
               <label htmlFor="bonus">Bônus</label>
@@ -100,6 +86,21 @@ const CharArmor: React.FC<CharArmorProps> = ({ armors, size, char }) => {
       </ul>
     </Container>
   )
+}
+
+function getArmorType(type: number): string {
+  switch (type) {
+    case ArmorType.Armor:
+      return 'Armadura'
+    case ArmorType.Shield:
+      return 'Escudo'
+    case ArmorType.Natural:
+      return 'Natural'
+    case ArmorType.Others:
+      return 'Outros'
+    default:
+      return 'Desconhecido'
+  }
 }
 
 export default CharArmor

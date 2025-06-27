@@ -5,14 +5,7 @@ import {
   DefenseMainLabel,
   InputDefense,
 } from './styles'
-
-interface Armor {
-  id: number
-  type: number
-  bonus: number
-  defense: number
-  dexterity: number
-}
+import { Armor } from '../../types/armor'
 
 interface CharCaProps {
   armors: Armor[]

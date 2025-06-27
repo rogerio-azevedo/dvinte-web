@@ -1,85 +1,115 @@
+/* eslint-disable no-console */
+
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useForm, SubmitHandler } from 'react-hook-form'
 import api from '../../services/api'
 
 import Button from '../../components/Button'
-import { Container, FormContainer, ListItens } from './styles'
+import * as Styles from './styles'
 
-interface CampaignData {
+interface UserProfile {
+  id: number
+  name: string
+}
+
+interface RootState {
+  user: {
+    profile: UserProfile
+  }
+}
+
+interface Campaign {
+  id: number
+  name: string
+  description: string
+  user_id: number
+}
+
+interface CampaignFormData {
   name: string
   description: string
 }
 
 export default function Campaign() {
-  const profile = useSelector((state: any) => state.user.profile)
+  const profile = useSelector((state: RootState) => state.user.profile)
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CampaignData>()
-  const [list, setList] = useState([])
+    reset,
+  } = useForm<CampaignFormData>()
+
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    async function loadList() {
-      const response = await api.get('campaigns')
-
-      setList(response.data)
-      setLoading(false)
+    async function loadCampaigns() {
+      try {
+        setLoading(true)
+        const response = await api.get<Campaign[]>('campaigns')
+        setCampaigns(response.data)
+      } catch (error) {
+        console.error('Erro ao carregar campanhas:', error)
+      } finally {
+        setLoading(false)
+      }
     }
 
-    loadList()
+    loadCampaigns()
   }, [])
 
-  const onSubmit: SubmitHandler<CampaignData> = (data, e) => {
-    async function saveData() {
+  const onSubmit: SubmitHandler<CampaignFormData> = async data => {
+    try {
       setLoading(true)
-      const classe = await api.post('campaigns', {
+      const response = await api.post<Campaign>('campaigns', {
         name: data.name,
         description: data.description,
         user_id: profile.id,
       })
 
-      const newList = [classe.data, ...list]
-
-      setList(newList as never[])
+      setCampaigns(prevCampaigns => [response.data, ...prevCampaigns])
+      reset()
+    } catch (error) {
+      console.error('Erro ao salvar campanha:', error)
+    } finally {
       setLoading(false)
-
-      e?.target.reset()
     }
-    saveData()
   }
 
   return (
-    <Container>
+    <Styles.Container>
       <h2>Cadastro de Campanhas</h2>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <FormContainer>
-          <input
-            {...register('name', { required: true })}
-            placeholder="Informe a nome da Campanha"
-          />
-          {errors.name && <span>Essa informação é obrigatória</span>}
-          <input
-            {...register('description', { required: true })}
-            placeholder="Informe uma breve descrição"
-          />
-          {errors.description && <span>Essa informação é obrigatória</span>}
+        <Styles.FormContainer>
+          <div>
+            <input
+              {...register('name', { required: true })}
+              placeholder="Informe o nome da Campanha"
+            />
+            {errors.name && <span>Essa informação é obrigatória</span>}
+          </div>
+
+          <div>
+            <input
+              {...register('description', { required: true })}
+              placeholder="Informe uma breve descrição"
+            />
+            {errors.description && <span>Essa informação é obrigatória</span>}
+          </div>
+
           <Button type="submit" loading={loading ? 1 : 0} TextButton="Gravar" />
-        </FormContainer>
+        </Styles.FormContainer>
       </form>
 
-      <ListItens>
-        <div>
-          {list.map((item: any) => (
-            <ul key={item.id}>
-              <li>{item.name && item.name.toUpperCase()}</li>
-            </ul>
-          ))}
-        </div>
-      </ListItens>
-    </Container>
+      <Styles.ListItens>
+        {campaigns.map(campaign => (
+          <ul key={campaign.id}>
+            <li>{campaign.name.toUpperCase()}</li>
+          </ul>
+        ))}
+      </Styles.ListItens>
+    </Styles.Container>
   )
 }

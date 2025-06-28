@@ -5,10 +5,15 @@ import ReactTooltip from 'react-tooltip'
 import { Link } from 'react-router-dom'
 
 import api from '../../services/api'
-
-import { connect, socket } from '../../services/socket'
-
+import { connect } from '../../services/socket'
 import * as Styles from './styles'
+import {
+  RootState,
+  Character,
+  Token,
+  CharStatusData,
+  WeaponItem,
+} from './interfaces'
 
 import {
   FaComments,
@@ -31,38 +36,38 @@ import Savins from '../../components/CombatComponents/Savings'
 import ArmoryDelay from '../../components/CombatComponents/ArmoryDelay'
 import Initiatives from '../../components/CombatComponents/Initiatives'
 import DamagesCounter from '../../components/CombatComponents/DamagesCounter'
-import CharStatus from '../../components/CombatComponents/CharStatus'
+import CharStatusComponent from '../../components/CombatComponents/CharStatus'
 import LogBoard from '../../components/CombatComponents/LogBoard'
 import MapTool from '../../components/CombatComponents/MapTool'
-
 import RenderMap from '../../components/CombatComponents/RenderMap'
 import ScrollContainer from 'react-indiana-drag-scroll'
-
 import MyDices from '../../components/CombatComponents/MyDices'
 import { diceDataRequest } from '../../store/modules/dices/actions'
 
 export default function Play() {
-  const { profile } = useSelector(state => state.user)
-  const showMenu = useSelector(state => state.menu.chatMenu)
-  const { diceShow } = useSelector(state => state.dices)
+  const { profile } = useSelector((state: RootState) => state.user)
+  const showMenu = useSelector((state: RootState) => state.menu.chatMenu)
+  const { diceShow } = useSelector((state: RootState) => state.dices)
   const [allowDrag, setAllowDrag] = useState(false)
   const [menu, setMenu] = useState('attack')
 
-  const [charInit, setCharInit] = useState()
-  const [character, setCharacter] = useState()
-  const [tokens, setTokens] = useState()
-  const [fortitude, setFortitude] = useState()
-  const [reflex, setReflex] = useState()
-  const [will, setWill] = useState()
-  const [strength, setStrength] = useState()
-
-  const [maxDex, setMaxDex] = useState()
-  const [weapons, setWeapons] = useState()
-  const [charStatus, setCharStatus] = useState()
+  const [charInit, setCharInit] = useState<number>()
+  const [character, setCharacter] = useState<Character>()
+  const [tokens, setTokens] = useState<Token[]>()
+  const [fortitude, setFortitude] = useState<number>()
+  const [reflex, setReflex] = useState<number>()
+  const [will, setWill] = useState<number>()
+  const [strength, setStrength] = useState<number>()
+  const [maxDex, setMaxDex] = useState<number>()
+  const [weapons, setWeapons] = useState<WeaponItem[]>()
+  const [charStatus, setCharStatus] = useState<CharStatusData>()
   const dispatch = useDispatch()
 
-  const clickListener = event => {
-    if (event.target.tagName === 'CANVAS') {
+  const clickListener = (event: MouseEvent) => {
+    if (
+      event.target instanceof HTMLElement &&
+      event.target.tagName === 'CANVAS'
+    ) {
       dispatch(
         diceDataRequest({
           diceShow: false,
@@ -78,10 +83,10 @@ export default function Play() {
     }
   }, []) // eslint-disable-line
 
-  async function calcDext(dexMod) {
+  async function calcDext(dexMod: number): Promise<number> {
     let dextBonus = 0
 
-    if (dexMod <= maxDex) {
+    if (maxDex !== undefined && dexMod <= maxDex) {
       dextBonus = dexMod
     } else if (!maxDex || maxDex === 0) {
       dextBonus = dexMod
@@ -94,8 +99,7 @@ export default function Play() {
 
   async function GetTokens() {
     try {
-      const response = await api.get('/chartokens')
-
+      const response = await api.get<Token[]>('/chartokens')
       setTokens(response.data)
     } catch (e) {
       toast.error('Houve um problema ao carregar as Tokens dos Personagens!')
@@ -104,7 +108,7 @@ export default function Play() {
 
   async function getCharacter() {
     try {
-      const response = await api.get(`combats/${profile.id}`)
+      const response = await api.get<Character>(`combats/${profile.id}`)
       const char = response.data
       setCharacter(char)
 
@@ -144,10 +148,7 @@ export default function Play() {
       )
 
       setMaxDex(maxDext)
-
-      const charWeapons = char?.Weapon
-
-      setWeapons(charWeapons)
+      setWeapons(char?.Weapon)
 
       const bonusDext = await calcDext(DexMod)
       const ca = 10 + shield + armor + bonusDext + natural + outros
@@ -187,7 +188,7 @@ export default function Play() {
     GetTokens()
   }, []) // eslint-disable-line
 
-  function handleMenu(tipo) {
+  function handleMenu(tipo: string) {
     setMenu(tipo)
   }
 
@@ -315,14 +316,18 @@ export default function Play() {
           />
         ) : menu === 'attack' ? (
           <Styles.AttackContainer>
-            <ArmoryDelay character={character} weapons={weapons} />
+            <ArmoryDelay
+              character={character}
+              weapons={weapons}
+              loadChar={getCharacter}
+            />
             <h2>Painel Logs</h2>
             <LogBoard />
           </Styles.AttackContainer>
         ) : menu === 'damage' ? (
           <DamagesCounter />
         ) : menu === 'status' ? (
-          <CharStatus charStatus={charStatus} />
+          <CharStatusComponent charStatus={charStatus} />
         ) : menu === 'saves' ? (
           <Styles.SavesConteiner>
             <Styles.ButtonsContainer>

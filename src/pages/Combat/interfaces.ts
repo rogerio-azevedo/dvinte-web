@@ -65,13 +65,16 @@ export interface Character {
 
 export interface Token {
   id: number
-  character_id: number
-  token_id: number
-  position_x: number
-  position_y: number
-  size: number
+  name: string
+  url: string
+  x: number
+  y: number
+  image: string
+  width: number
+  height: number
   rotation: number
   enabled: boolean
+  character_id: number
 }
 
 export interface CharStatusProps {

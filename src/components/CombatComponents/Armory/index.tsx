@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
@@ -104,14 +106,11 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
 
     setLoadingCharacters(true)
     try {
-      console.log('🔍 Armory - Carregando personagens do usuário:', profile.id)
       const response = await api.get(`/combats/characters/${profile.id}`)
-      console.log('🔍 Armory - Resposta da API characters:', response.data)
 
       const characters: Character[] = Array.isArray(response.data)
         ? response.data
         : []
-      console.log('🔍 Armory - Characters processados:', characters)
 
       setUserCharacters(characters)
 
@@ -346,7 +345,6 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
 
   // Garantir que userCharacters é sempre um array antes de usar .map
   const safeUserCharacters = Array.isArray(userCharacters) ? userCharacters : []
-  console.log('🔍 Armory - safeUserCharacters:', safeUserCharacters)
 
   const characterOptions: CharacterOption[] = safeUserCharacters.map(char => ({
     value: char.id.toString(),

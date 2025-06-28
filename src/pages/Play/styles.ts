@@ -1,8 +1,5 @@
 import styled from 'styled-components'
-
-interface ContainerProps {
-  show?: 0 | 1
-}
+import { StyledProps } from './interfaces'
 
 export const Container = styled.div`
   display: flex;
@@ -14,25 +11,30 @@ export const Container = styled.div`
   height: 100%;
 `
 
-export const MapContainer = styled.div<ContainerProps>`
+export const MapContainer = styled.div<StyledProps>`
   position: relative;
-  width: ${({ show }) => (show ? '80%' : '100%')};
+
+  width: ${props => (props.show ? '80%' : '100%')};
   height: 100%;
   overflow: auto;
+
+  -webkit-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
+  -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
   box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
 `
 
-export const DiceRollerContainer = styled.div<ContainerProps>`
+export const DiceRollerContainer = styled.div<StyledProps>`
   position: absolute;
-  width: ${({ show }) => (show ? '80%' : '100%')} !important;
+  width: ${props => (props.show ? '80%' : '100%')} !important;
   height: 100% !important;
   z-index: 1;
-  top: 0;
-  left: 0;
+
+  top: 0px;
+  left: 0px;
 `
 
-export const ToolsContainer = styled.div<ContainerProps>`
-  display: ${({ show }) => (show ? 'flex' : 'none')};
+export const ToolsContainer = styled.div<StyledProps>`
+  display: ${props => (props.show ? 'flex' : 'none')};
   width: 20%;
   min-width: 350px;
   max-width: 400px;
@@ -46,6 +48,9 @@ export const IconContainer = styled.div`
   align-items: center;
   background: #fff;
   padding: 5px;
+
+  -webkit-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
+  -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
   box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
 
   div {
@@ -54,7 +59,7 @@ export const IconContainer = styled.div`
   }
 `
 
-export const SavesContainer = styled.div`
+export const SavesConteiner = styled.div`
   display: flex;
   flex: 1;
   width: 100%;
@@ -75,6 +80,7 @@ export const AttackContainer = styled.div`
   flex-direction: column;
   border: 0;
   overflow: auto;
+
   align-items: center;
   justify-content: center;
 
@@ -86,5 +92,8 @@ export const AttackContainer = styled.div`
 export const ButtonsContainer = styled.div`
   height: 280px;
   width: 100%;
+
+  -webkit-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
+  -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
   box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
 `

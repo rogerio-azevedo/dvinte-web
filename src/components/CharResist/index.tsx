@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import React from 'react'
 import {
   Container,
@@ -30,9 +32,9 @@ const CharResist: React.FC<CharResistProps> = ({ resist }) => {
   const reflex = resist.Reflex
   const will = resist.Will
 
-  const forMod = resist.ConModTemp ?? resist.ConMod
-  const refMod = resist.DexModTemp ?? resist.DexMod
-  const wisMod = resist.WisModTemp ?? resist.WisMod
+  const forMod = resist?.ConModTemp > 0 ? resist.ConModTemp : resist.ConMod
+  const refMod = resist?.DexModTemp > 0 ? resist.DexModTemp : resist.DexMod
+  const wisMod = resist?.WisModTemp > 0 ? resist.WisModTemp : resist.WisMod
 
   const forTotal = Number(fortitude) + Number(forMod)
   const refTotal = Number(reflex) + Number(refMod)

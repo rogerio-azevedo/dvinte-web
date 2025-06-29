@@ -9,9 +9,15 @@ interface CharArmorProps {
   armors: Armor[]
   size: string
   char: number
+  onArmorRemoved: () => void
 }
 
-const CharArmor: React.FC<CharArmorProps> = ({ armors, size, char }) => {
+const CharArmor: React.FC<CharArmorProps> = ({
+  armors,
+  size,
+  char,
+  onArmorRemoved,
+}) => {
   const handleRemove = async (item: Armor): Promise<void> => {
     try {
       await api.delete(`characterarmors/${item.id}`, {
@@ -19,6 +25,7 @@ const CharArmor: React.FC<CharArmorProps> = ({ armors, size, char }) => {
           char: char,
         },
       })
+      onArmorRemoved()
     } catch (error) {
       console.error('Erro ao remover armadura:', error)
     }

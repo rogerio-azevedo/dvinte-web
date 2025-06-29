@@ -139,41 +139,41 @@ export default function CharacterDetail() {
   const [strMod, setStrMod] = useState<number>()
   const [dexMod, setDexMod] = useState<number>()
 
-  useEffect(() => {
-    async function loadChar() {
-      try {
-        const response = await api.get<Character>(`characters/${id}`)
-        const { data } = response
+  async function loadChar() {
+    try {
+      const response = await api.get<Character>(`characters/${id}`)
+      const { data } = response
 
-        const str = data.StrModTemp || data.StrMod
-        const dex = data.DexModTemp || data.DexMod
+      const str = data.StrModTemp || data.StrMod
+      const dex = data.DexModTemp || data.DexMod
 
-        setStrMod(str)
-        setDexMod(dex)
-        setChar(data)
-        setClasses(data.Classes)
-        setArmors(data.Armor)
-        setWeapons(data.Weapon)
-        setEquipments(data.Equipment)
-        setResist({
-          Fortitude: data.Fortitude,
-          Reflex: data.Reflex,
-          Will: data.Will,
-          ConMod: data.ConMod,
-          DexMod: data.DexMod,
-          WisMod: data.WisMod,
-          ConModTemp: data.ConModTemp,
-          DexModTemp: data.DexModTemp,
-          WisModTemp: data.WisModTemp,
-        })
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Erro ao carregar personagem:', error)
-      } finally {
-        setLoading(false)
-      }
+      setStrMod(str)
+      setDexMod(dex)
+      setChar(data)
+      setClasses(data.Classes)
+      setArmors(data.Armor)
+      setWeapons(data.Weapon)
+      setEquipments(data.Equipment)
+      setResist({
+        Fortitude: data.Fortitude,
+        Reflex: data.Reflex,
+        Will: data.Will,
+        ConMod: data.ConMod,
+        DexMod: data.DexMod,
+        WisMod: data.WisMod,
+        ConModTemp: data.ConModTemp,
+        DexModTemp: data.DexModTemp,
+        WisModTemp: data.WisModTemp,
+      })
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Erro ao carregar personagem:', error)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     loadChar()
   }, [id])
 
@@ -417,7 +417,12 @@ export default function CharacterDetail() {
         <Styles.ArmorContainer>
           <legend>Armaduras e Escudos</legend>
           {!loading && armors && char && (
-            <CharArmor armors={armors} size={char.Size} char={char.Cod} />
+            <CharArmor
+              armors={armors}
+              size={char.Size}
+              char={char.Cod}
+              onArmorRemoved={loadChar}
+            />
           )}
         </Styles.ArmorContainer>
       </Styles.ArmoryContainer>
@@ -425,7 +430,12 @@ export default function CharacterDetail() {
         <Styles.WeaponContainer>
           <legend>Armas</legend>
           {!loading && weapons && char && (
-            <CharWeapon weapons={weapons} size={char.Size} char={char.Cod} />
+            <CharWeapon
+              weapons={weapons}
+              size={char.Size}
+              char={char.Cod}
+              onWeaponRemoved={loadChar}
+            />
           )}
         </Styles.WeaponContainer>
       </Styles.ArmoryContainer>

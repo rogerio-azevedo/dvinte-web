@@ -24,8 +24,6 @@ interface MapData {
   campaign_id: number
   battle: string
   world: string
-  portrait: string
-  orientation: boolean
   width: string
   height: string
   grid: boolean
@@ -42,14 +40,18 @@ interface MapResponse {
   grid?: boolean
   fog?: boolean
   gm_layer?: boolean
-  portrait?: string
-  orientation?: boolean
 }
 
 interface RootState {
   user: {
     profile: User
   }
+}
+
+interface Campaign {
+  id: number
+  name: string
+  description: string
 }
 
 const MapTool: React.FC = () => {
@@ -61,8 +63,8 @@ const MapTool: React.FC = () => {
   const [grid, setGrid] = useState<boolean>(true)
   const [fog, setFog] = useState<boolean>(false)
   const [gm_layer, setGm_layer] = useState<boolean>(false)
-  const [portrait, setPortrait] = useState<string>('')
-  const [orientation, setOrientation] = useState<boolean>(true)
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [selectedCampaign, setSelectedCampaign] = useState<number>(1)
 
   const [fogOpacity, setFogOpacity] = useState<number>(60)
   const [size, setSize] = useState<number>(60)
@@ -72,11 +74,9 @@ const MapTool: React.FC = () => {
   async function handleSave(): Promise<void> {
     try {
       const mapData: MapData = {
-        campaign_id: 1,
+        campaign_id: selectedCampaign,
         battle,
         world,
-        portrait,
-        orientation,
         width,
         height,
         grid,
@@ -93,9 +93,25 @@ const MapTool: React.FC = () => {
     }
   }
 
-  async function loadMapData(): Promise<void> {
+  async function loadCampaigns(): Promise<void> {
     try {
-      const response = await api.get<MapResponse>(`maps/${1}`)
+      const response = await api.get<Campaign[]>(`campaigns/user/${profile.id}`)
+      setCampaigns(response.data)
+
+      // Se tiver campanhas, seleciona a primeira
+      if (response.data.length > 0) {
+        setSelectedCampaign(response.data[0].id)
+        await loadMapData(response.data[0].id)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar campanhas:', error)
+      toast.error('Erro ao carregar campanhas.')
+    }
+  }
+
+  async function loadMapData(campaignId: number): Promise<void> {
+    try {
+      const response = await api.get<MapResponse>(`maps/${campaignId}`)
       const { data } = response
 
       if (data) {
@@ -106,18 +122,24 @@ const MapTool: React.FC = () => {
         setGrid(data.grid ?? true)
         setFog(data.fog ?? false)
         setGm_layer(data.gm_layer ?? false)
-        setPortrait(data.portrait || '')
-        setOrientation(data.orientation ?? true)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar dados do mapa:', error)
-      toast.error('Erro ao carregar configurações do mapa.')
+      // Não mostrar erro se for 404 (mapa não existe ainda)
+      if (error.response?.status !== 404) {
+        toast.error('Erro ao carregar configurações do mapa.')
+      }
     }
   }
 
   useEffect(() => {
-    loadMapData()
-  }, [])
+    loadCampaigns()
+  }, [profile.id])
+
+  function handleCampaignChange(campaignId: number): void {
+    setSelectedCampaign(campaignId)
+    loadMapData(campaignId)
+  }
 
   function handleGrid(checked: boolean): void {
     setGrid(checked)
@@ -129,10 +151,6 @@ const MapTool: React.FC = () => {
 
   function handleGmLayer(checked: boolean): void {
     setGm_layer(checked)
-  }
-
-  function handleOrientation(checked: boolean): void {
-    setOrientation(checked)
   }
 
   function handleFogLevel(level: string): void {
@@ -160,6 +178,30 @@ const MapTool: React.FC = () => {
     <Styles.Container>
       <h2>Cadastro de Mapas</h2>
       <form onSubmit={handleFormSubmit}>
+        <Styles.InputContainer>
+          <div>
+            <label htmlFor="campaign">Campanha</label>
+            <select
+              id="campaign"
+              value={selectedCampaign}
+              onChange={e => handleCampaignChange(parseInt(e.target.value))}
+              style={{
+                width: '100%',
+                padding: '8px',
+                marginTop: '5px',
+                borderRadius: '4px',
+                border: '1px solid #ccc',
+              }}
+            >
+              {campaigns.map(campaign => (
+                <option key={campaign.id} value={campaign.id}>
+                  {campaign.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </Styles.InputContainer>
+
         <Styles.InputContainer>
           <div>
             <label htmlFor="battle">Mapa Batalha</label>
@@ -241,29 +283,6 @@ const MapTool: React.FC = () => {
                 checked={gm_layer}
                 onChange={handleGmLayer}
                 aria-label="Habilitar camada do GM"
-              />
-            </div>
-          </div>
-        </Styles.InputContainer>
-
-        <Styles.InputContainer>
-          <div>
-            <label htmlFor="portrait">Retrato Endereço</label>
-            <Styles.InputMed
-              id="portrait"
-              value={portrait}
-              onChange={e => setPortrait(e.target.value)}
-              placeholder="URL da imagem"
-            />
-          </div>
-          <div>
-            <label htmlFor="orientation">Paisag/Retrat</label>
-            <div style={{ marginTop: '18px' }}>
-              <Switch
-                id="orientation"
-                checked={orientation}
-                onChange={handleOrientation}
-                aria-label="Orientação paisagem/retrato"
               />
             </div>
           </div>

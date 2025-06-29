@@ -15,8 +15,8 @@ const CharClass: React.FC<CharClassProps> = ({ classes }) => {
   return (
     <Container>
       <ul>
-        {classes?.map(item => (
-          <li key={item.id}>
+        {classes?.map((item, index) => (
+          <li key={item.id + index}>
             <ClassInput readOnly defaultValue={item.name} />
             <ClassValueInput readOnly defaultValue={item.level} />
           </li>

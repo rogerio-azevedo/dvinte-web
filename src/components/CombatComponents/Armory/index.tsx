@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
@@ -172,7 +172,10 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
     }
   }, [selectedCharacter, loadCharacterWeapons])
 
-  const weaponsToUse = characterWeapons.length > 0 ? characterWeapons : weapons
+  const weaponsToUse = useMemo(
+    () => (characterWeapons.length > 0 ? characterWeapons : weapons),
+    [characterWeapons, weapons]
+  )
 
   const getWeaponName = (weapon: Weapon): string => {
     return weapon?.nickname && weapon.nickname.trim() !== ''
@@ -322,34 +325,29 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
   const handleDamage = (): Promise<void> => calculateDamage(false)
   const handleCritDamage = (): Promise<void> => calculateDamage(true)
 
-  const handleCharacterChange = (characterId: string | null): void => {
-    if (characterId && Array.isArray(userCharacters)) {
-      console.log(
-        '🔍 Armory - Procurando personagem:',
-        characterId,
-        'em:',
-        userCharacters
+  const handleCharacterChange = useCallback(
+    (option: any) => {
+      const selectedChar = userCharacters.find(
+        char => char.id.toString() === option?.value
       )
-      const char = userCharacters.find(c => c.id.toString() === characterId)
-      setSelectedCharacter(char || null)
-    } else {
-      setSelectedCharacter(null)
-    }
-  }
+      setSelectedCharacter(selectedChar || null)
+    },
+    [userCharacters]
+  )
 
-  const handleWeaponChange = (
-    selectedOption: { value: number } | null
-  ): void => {
-    setWeapon(selectedOption?.value)
-  }
+  const handleWeaponChange = useCallback((option: any) => {
+    setWeapon(option?.value)
+  }, [])
 
-  // Garantir que userCharacters é sempre um array antes de usar .map
-  const safeUserCharacters = Array.isArray(userCharacters) ? userCharacters : []
-
-  const characterOptions: CharacterOption[] = safeUserCharacters.map(char => ({
-    value: char.id.toString(),
-    label: char.name,
-  }))
+  // Memoize as opções de personagem
+  const characterOptions = useMemo(
+    () =>
+      userCharacters.map(char => ({
+        value: char.id.toString(),
+        label: char.name,
+      })),
+    [userCharacters]
+  )
 
   return (
     <Styles.Container>
@@ -357,7 +355,7 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
         <h2>Arsenal</h2>
 
         {/* Seleção de personagem se houver múltiplos */}
-        {safeUserCharacters.length > 1 && (
+        {userCharacters.length > 1 && (
           <Styles.WeaponContainer>
             <label>Personagem:</label>
             {loadingCharacters ? (
@@ -379,7 +377,7 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
                 <p>Carregando armas...</p>
               ) : weaponsToUse && weaponsToUse.length > 0 ? (
                 <SelectWeapon
-                  weapons={weaponsToUse as never[]}
+                  weapons={weaponsToUse}
                   changeWeapon={handleWeaponChange}
                 />
               ) : (

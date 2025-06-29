@@ -320,10 +320,10 @@ const MyDices: React.FC = () => {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!DiceManager.throwRunning) {
+    if (diceRoll && !DiceManager.throwRunning) {
       randomDiceThrow()
     }
-  }, [roll]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [diceRoll]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return <Container ref={mount} />
 }

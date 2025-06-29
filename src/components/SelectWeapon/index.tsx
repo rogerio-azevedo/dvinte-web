@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import Select, { StylesConfig } from 'react-select'
 import PropTypes from 'prop-types'
 
@@ -22,24 +22,16 @@ export default function SelectWeapon({
   changeWeapon,
   weapons = [],
 }: SelectWeaponProps) {
-  const [weaponOptions, setWeaponOptions] = useState<Option[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function loadOptions() {
-      const options = weapons.map(weapon => ({
+  const weaponOptions = useMemo(
+    () =>
+      weapons.map(weapon => ({
         value: weapon.id,
         label: weapon.nickname?.trim()
           ? weapon.nickname.toUpperCase()
           : weapon.name.toUpperCase(),
-      }))
-
-      setWeaponOptions(options)
-      setLoading(false)
-    }
-
-    loadOptions()
-  }, [weapons])
+      })),
+    [weapons]
+  )
 
   const customStyles: StylesConfig<Option, false> = {
     input: styles => ({
@@ -74,7 +66,6 @@ export default function SelectWeapon({
         maxMenuHeight={220}
         placeholder="ESCOLHA A ARMA"
         onChange={changeWeapon}
-        isLoading={loading}
         options={weaponOptions}
         isClearable
       />

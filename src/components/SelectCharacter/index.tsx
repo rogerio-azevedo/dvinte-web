@@ -7,7 +7,7 @@ interface Option {
 }
 
 interface SelectCharacterProps {
-  changeCharacter: (_: string | null) => void
+  changeCharacter: (value: string | null) => void
   characters?: Option[]
 }
 
@@ -36,15 +36,24 @@ export default function SelectCharacter({
     }),
   }
 
+  const handleChange = (selectedOption: SingleValue<Option>) => {
+    // Se não houver seleção, passa null
+    if (!selectedOption) {
+      changeCharacter(null)
+      return
+    }
+
+    // Passa o value (que é o ID do personagem)
+    changeCharacter(selectedOption.value)
+  }
+
   return (
     <div style={{ width: '220px', marginRight: '15px' }}>
       <Select
         styles={customStyles}
         maxMenuHeight={220}
         placeholder="ESCOLHA O PERSONAGEM"
-        onChange={(newValue: SingleValue<Option>) =>
-          changeCharacter(newValue ? newValue.value : null)
-        }
+        onChange={handleChange}
         isLoading={loading}
         options={characterOptions}
         isClearable

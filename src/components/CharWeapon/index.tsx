@@ -8,21 +8,34 @@ interface CharWeaponProps {
   weapons: any[]
   size: string
   char: number
+  onWeaponRemoved: () => void
 }
 
-export default function CharWeapon({ weapons, size, char }: CharWeaponProps) {
+export default function CharWeapon({
+  weapons,
+  size,
+  char,
+  onWeaponRemoved,
+}: CharWeaponProps) {
   async function handleRemove(item: any) {
-    await api.delete(`characterweapons/${item.id}`, {
-      params: {
-        char: char,
-      },
-    })
+    try {
+      await api.delete(`characterweapons/${item.id}`, {
+        params: {
+          char: char,
+        },
+      })
+      onWeaponRemoved()
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Erro ao remover arma:', error)
+    }
   }
+
   return (
     <Container>
       <ul>
         {weapons?.map(item => (
-          <li key={Math.random()}>
+          <li key={item.id}>
             <div>
               <label htmlFor="inputResist">Nome</label>
               <InputLarge

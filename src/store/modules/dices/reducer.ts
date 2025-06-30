@@ -1,4 +1,6 @@
-const INITIAL_STATE = {
+import { DicesState, ReduxAction } from '../../types'
+
+const INITIAL_STATE: DicesState = {
   diceType: null,
   diceSides: null,
   diceMult: null,
@@ -7,7 +9,10 @@ const INITIAL_STATE = {
   diceRoll: false,
 }
 
-const dicesReducer = (state = INITIAL_STATE, action) => {
+const dicesReducer = (
+  state = INITIAL_STATE,
+  action: ReduxAction
+): DicesState => {
   switch (action.type) {
     case '@menu/DICE_DATA_SUCCESS':
       return {

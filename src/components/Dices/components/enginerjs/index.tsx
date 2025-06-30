@@ -1,8 +1,16 @@
 import { useEffect } from 'react'
 
+interface ScriptConfig {
+  type?: string
+  src: string
+  async: boolean
+  integrity?: string
+  crossorigin?: string
+}
+
 const EngineJS = () => {
   useEffect(() => {
-    const scripts = [
+    const scripts: ScriptConfig[] = [
       // {
       //   src: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js',
       //   integrity: 'sha512-yNJzAsg5JyP91u+sLHlUDULMBd3hmEiVkYeeN1cQBKaLZ7EyT6oH2u5THNIRM2Fu6VKcZJv+F/QAp1h/qzy9Ow==',

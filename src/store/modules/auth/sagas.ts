@@ -1,10 +1,27 @@
-import { takeLatest, call, put, all } from 'redux-saga/effects'
+import { takeLatest, call, put, all, Effect } from 'redux-saga/effects'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
 import { signInSuccess, signFailure } from './actions'
 import history from '../../../services/history'
+import { SignInRequestAction, SignUpRequestAction, AUTH_TYPES } from './types'
 
-export function* signIn({ payload }) {
+interface SignInResponse {
+  token: string
+  user: any // TODO: Definir tipo do usuário
+}
+
+interface RehydrateAction {
+  type: 'persist/REHYDRATE'
+  payload?: {
+    auth: {
+      token: string
+    }
+  }
+}
+
+export function* signIn({
+  payload,
+}: SignInRequestAction): Generator<Effect, void, SignInResponse> {
   try {
     const { email, password } = payload
 
@@ -13,7 +30,7 @@ export function* signIn({ payload }) {
       password,
     })
 
-    const { token, user } = response.data
+    const { token, user } = response
 
     api.defaults.headers.Authorization = `Bearer ${token}`
 
@@ -26,29 +43,27 @@ export function* signIn({ payload }) {
   }
 }
 
-export function* signUp({ payload }) {
+export function* signUp({
+  payload,
+}: SignUpRequestAction): Generator<Effect, void, any> {
   try {
-    const { name, email, password, phone, city, state } = payload
+    const { name, email, password } = payload
 
     yield call(api.post, 'users', {
       name,
       email,
       password,
-      phone,
-      city,
-      state,
       is_ativo: true,
     })
 
     history.push('/')
   } catch (err) {
     toast.error('Falha no cadastro, verifique seus dados!')
-
     yield put(signFailure())
   }
 }
 
-export function setToken({ payload }) {
+export function setToken({ payload }: RehydrateAction): void {
   if (!payload) return
 
   const { token } = payload.auth
@@ -58,13 +73,13 @@ export function setToken({ payload }) {
   }
 }
 
-export function signOut() {
+export function signOut(): void {
   history.push('/')
 }
 
 export default all([
   takeLatest('persist/REHYDRATE', setToken),
-  takeLatest('@auth/SIGN_IN_REQUEST', signIn),
-  takeLatest('@auth/SIGN_UP_REQUEST', signUp),
-  takeLatest('@auth/SIGN_OUT', signOut),
+  takeLatest(AUTH_TYPES.SIGN_IN_REQUEST, signIn),
+  takeLatest(AUTH_TYPES.SIGN_UP_REQUEST, signUp),
+  takeLatest(AUTH_TYPES.SIGN_OUT, signOut),
 ])

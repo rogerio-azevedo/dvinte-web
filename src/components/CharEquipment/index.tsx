@@ -89,16 +89,24 @@ const CharEquipment: React.FC<CharEquipmentProps> = ({
               <InputShort readOnly defaultValue={item.cha_temp} />
             </div>
             <div>
-              <label htmlFor="inputResist">Peso</label>
+              <label htmlFor="inputEquip">Peso</label>
               <InputShort readOnly defaultValue={`${item.weight} kg`} />
             </div>
             <div>
-              <label htmlFor="inputResist">Preço</label>
+              <label htmlFor="inputEquip">Preço</label>
               <InputMed readOnly defaultValue={`${item.price} PO`} />
             </div>
-            <LabelDel onClick={() => handleRemove(item)}>
-              <FaTimes />
-            </LabelDel>
+            <div>
+              <LabelDel htmlFor="inputEquip">Excluir</LabelDel>
+              <span>
+                <FaTimes
+                  size={20}
+                  color="#8e0e00"
+                  cursor="pointer"
+                  onClick={() => handleRemove(item)}
+                />
+              </span>
+            </div>
           </li>
         ))}
       </ul>

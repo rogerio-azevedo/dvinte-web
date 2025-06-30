@@ -1,6 +1,10 @@
 import styled from 'styled-components'
 import { darken } from 'polished'
 
+interface InputContainerProps {
+  $loading?: boolean
+}
+
 export const Container = styled.div`
   display: flex;
   align-items: center !important;
@@ -48,7 +52,8 @@ export const Button = styled.button`
   -moz-box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.6);
   box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.6);
 `
-export const InputContainer = styled.div`
+
+export const InputContainer = styled.div<InputContainerProps>`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -56,6 +61,8 @@ export const InputContainer = styled.div`
   justify-items: center;
   padding-bottom: 10px;
   padding-top: 10px;
+  opacity: ${props => (props.$loading ? 0.7 : 1)};
+  pointer-events: ${props => (props.$loading ? 'none' : 'auto')};
 
   > div {
     display: flex;

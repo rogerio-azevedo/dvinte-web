@@ -57,6 +57,20 @@ export const Container = styled.div`
 export const LabelDel = styled.label`
   margin-top: -4px;
   margin-bottom: 4px;
+  margin-left: 5px;
+  cursor: pointer;
+  color: #8e0e00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.1);
+  }
 `
 
 export const InputLarge = styled.input`

@@ -54,6 +54,10 @@ interface Equipment {
   cha_temp: number
   weight: number
   price: number
+  CharacterEquipment?: {
+    id: number
+    description: string
+  }
 }
 
 interface Character {
@@ -443,7 +447,11 @@ export default function CharacterDetail() {
         <Styles.EquipmentContainer>
           <legend>Equipamentos</legend>
           {!loading && equipments && char && (
-            <CharEquipment equipments={equipments} char={char.Cod} />
+            <CharEquipment
+              equipments={equipments}
+              char={char.Cod}
+              onEquipmentRemoved={loadChar}
+            />
           )}
         </Styles.EquipmentContainer>
       </Styles.ArmoryContainer>

@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import React, { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { Select, Table } from 'antd'
@@ -50,32 +52,42 @@ export default function Equipment() {
 
   useEffect(() => {
     async function loadData() {
-      setLoading(true)
-
-      const response = await api.get('equipments')
-
-      setList(response.data)
-      setLoading(false)
+      try {
+        setLoading(true)
+        const response = await api.get('equipments')
+        const equipments = (response.data || []).map((item: any) => ({
+          ...item,
+          id: String(item.id),
+        }))
+        setList(equipments)
+      } catch (error) {
+        console.error('Erro ao carregar equipamentos:', error)
+        setList([])
+      } finally {
+        setLoading(false)
+      }
     }
 
     loadData()
   }, [])
 
-  const onSubmit = (data: FormData) => {
-    async function saveData() {
+  const onSubmit = async (data: FormData) => {
+    try {
       setLoading(true)
-
-      const equipments = await api.post('equipments', data)
-
-      const newList = [equipments.data, ...list]
-
+      const response = await api.post('equipments', data)
+      const newEquipment = {
+        ...response.data,
+        id: String(response.data.id),
+      }
+      const newList = [newEquipment, ...list]
       setList(newList)
-      setLoading(false)
-
       reset()
       setShowform('hide')
+    } catch (error) {
+      console.error('Erro ao salvar equipamento:', error)
+    } finally {
+      setLoading(false)
     }
-    saveData()
   }
 
   const columns: ColumnsType<Equipment> = [
@@ -264,14 +276,13 @@ export default function Equipment() {
             </Styles.InputContainer>
           </form>
           <Styles.TableContainer>
-            <Table<Equipment>
+            <Styles.MyTable
               rowKey="id"
               dataSource={list}
-              columns={columns}
-              pagination={{ pageSize: 25 }}
-              components={{
-                table: props => <Styles.MyTable {...props} />,
-              }}
+              columns={columns as any}
+              loading={loading}
+              pagination={{ pageSize: 15 }}
+              size="small"
             />
           </Styles.TableContainer>
         </Styles.FormContainer>

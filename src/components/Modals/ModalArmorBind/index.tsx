@@ -35,8 +35,8 @@ interface FormData {
 
 const customStyles = {
   content: {
-    width: '550px',
-    height: '450px',
+    width: '750px',
+    height: '550px',
     top: '45%',
     left: '50%',
     right: 'auto',

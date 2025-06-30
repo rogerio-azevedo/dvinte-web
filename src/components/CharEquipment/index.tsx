@@ -17,21 +17,35 @@ interface Equipment {
   cha_temp: number
   weight: number
   price: number
+  CharacterEquipment?: {
+    id: number
+  }
 }
 
 interface CharEquipmentProps {
   equipments: Equipment[]
   char: number
+  onEquipmentRemoved: () => void
 }
 
-const CharEquipment: React.FC<CharEquipmentProps> = ({ equipments, char }) => {
+const CharEquipment: React.FC<CharEquipmentProps> = ({
+  equipments,
+  char,
+  onEquipmentRemoved,
+}) => {
   const handleRemove = async (item: Equipment): Promise<void> => {
     try {
-      await api.delete(`characterequipments/${item.id}`, {
+      if (!item.CharacterEquipment?.id) {
+        console.error('ID do vínculo não encontrado')
+        return
+      }
+
+      await api.delete(`characterequipments/${item.CharacterEquipment.id}`, {
         params: {
           char: char,
         },
       })
+      onEquipmentRemoved()
     } catch (error) {
       console.error('Erro ao remover equipamento:', error)
     }
@@ -82,17 +96,9 @@ const CharEquipment: React.FC<CharEquipmentProps> = ({ equipments, char }) => {
               <label htmlFor="inputResist">Preço</label>
               <InputMed readOnly defaultValue={`${item.price} PO`} />
             </div>
-            <div>
-              <LabelDel htmlFor="inputResist">Excluir</LabelDel>
-              <span>
-                <FaTimes
-                  size={20}
-                  color="#8e0e00"
-                  cursor="pointer"
-                  onClick={() => handleRemove(item)}
-                />
-              </span>
-            </div>
+            <LabelDel onClick={() => handleRemove(item)}>
+              <FaTimes />
+            </LabelDel>
           </li>
         ))}
       </ul>

@@ -1,19 +1,39 @@
+/* eslint-disable no-console */
+
 import React, { useState, useEffect } from 'react'
 import Modal from 'react-modal'
-import { FaTimes } from 'react-icons/fa/'
-import { FaRegMoneyBillAlt } from 'react-icons/fa/'
-import { useForm } from 'react-hook-form'
+import { FaTimes } from 'react-icons/fa'
+import { FaRegMoneyBillAlt } from 'react-icons/fa'
+import { useForm, SubmitHandler } from 'react-hook-form'
 import { toast } from 'react-toastify'
 
 import api from '../../../services/api'
 
-import SelectCharacter from '../../../components/SelectCharacter'
+import SelectCharacter from '../../SelectCharacter'
 
 import * as Styles from './styles'
 
+interface Character {
+  id: number
+  name: string
+}
+
+interface ModalEquipmentBindProps {
+  equipment: {
+    id: number
+    name: string
+  }
+}
+
+interface FormData {
+  character: string
+  equipment: number
+  description: string
+}
+
 const customStyles = {
   content: {
-    width: '550px',
+    width: '750px',
     height: '550px',
     top: '45%',
     left: '50%',
@@ -26,22 +46,29 @@ const customStyles = {
 
 Modal.setAppElement('#root')
 
-export default function ModalEquipmentBind({ equipment }) {
-  const { handleSubmit, register, setValue } = useForm()
+const ModalEquipmentBind: React.FC<ModalEquipmentBindProps> = ({
+  equipment,
+}) => {
+  const { handleSubmit, register, setValue } = useForm<FormData>()
   const [modalIsOpen, setIsOpen] = useState(false)
-  const [selectedEquipment, setSelectedEquipment] = useState()
-  const [characters, setCharacters] = useState([])
+  const [selectedEquipment, setSelectedEquipment] = useState(equipment)
+  const [characters, setCharacters] = useState<
+    { value: string; label: string }[]
+  >([])
+  const [loadingCharacters, setLoadingCharacters] = useState(false)
 
   useEffect(() => {
-    register({ name: 'character' })
-  }, [register])
+    register('character')
+    register('equipment', { value: selectedEquipment?.id })
+  }, [register, selectedEquipment])
 
   async function loadCharacters() {
     try {
+      setLoadingCharacters(true)
       const response = await api.get('/characters')
       const charactersData = response.data || []
 
-      const characterOptions = charactersData.map(char => ({
+      const characterOptions = charactersData.map((char: Character) => ({
         value: char.id.toString(),
         label: char.name,
       }))
@@ -49,18 +76,33 @@ export default function ModalEquipmentBind({ equipment }) {
       setCharacters(characterOptions)
     } catch (error) {
       toast.error('Erro ao carregar personagens')
+    } finally {
+      setLoadingCharacters(false)
     }
   }
 
-  const onSubmit = (data, e) => {
+  const onSubmit: SubmitHandler<FormData> = (data, e) => {
     async function saveData() {
-      await api.post('characterequipments', data)
-      e.target.reset()
-      toast.success('Equipamento vinculado com sucesso!')
+      try {
+        const equipmentData = {
+          equipment: data.equipment,
+          description: data.description || '',
+        }
+
+        console.log('Sending equipment data:', equipmentData)
+        await api.post(
+          `/characters/${data.character}/equipments`,
+          equipmentData
+        )
+        e?.target.reset()
+        toast.success('Equipamento vinculado com sucesso!')
+        setIsOpen(false)
+      } catch (error) {
+        console.error('Error saving equipment:', error)
+        toast.error('Erro ao vincular equipamento ao personagem')
+      }
     }
     saveData()
-
-    setIsOpen(false)
   }
 
   function openModal() {
@@ -93,7 +135,7 @@ export default function ModalEquipmentBind({ equipment }) {
         contentLabel="Example Modal"
       >
         <Styles.HeaderContainer>
-          <h2>Cadastro de Equipamento</h2>
+          <h2>Compra / Vinculação de Equipamento</h2>
           <FaTimes
             onClick={closeModal}
             color="red"
@@ -104,16 +146,11 @@ export default function ModalEquipmentBind({ equipment }) {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Styles.InputContainer>
             <div>
-              <label htmlFor="weapon">Cod</label>
-              <Styles.WeaponShort
-                name="equipment"
-                ref={register({ required: true })}
-                readOnly
-                value={selectedEquipment?.id}
-              />
+              <label htmlFor="equipment">Cod</label>
+              <Styles.WeaponShort readOnly value={selectedEquipment?.id} />
             </div>
             <div>
-              <label htmlFor="weapon">Nome</label>
+              <label htmlFor="equipment">Nome</label>
               <Styles.WeaponLarge
                 readOnly
                 value={selectedEquipment?.name.toUpperCase()}
@@ -123,23 +160,22 @@ export default function ModalEquipmentBind({ equipment }) {
 
           <Styles.InputContainer>
             <div>
-              <label style={{ color: '#fff' }} htmlFor="equipment">
+              <label style={{ color: '#fff' }} htmlFor="character">
                 .
               </label>
               <SelectCharacter
                 characters={characters}
-                changeCharacter={e => setValue('character', e?.value)}
+                changeCharacter={e => setValue('character', e)}
               />
             </div>
           </Styles.InputContainer>
 
           <Styles.ButtonsContainer>
             <div>
-              <label htmlFor="equipment">Observação</label>
+              <label htmlFor="description">Observação</label>
               <Styles.WeaponExtLarge
-                type="text"
-                name="description"
-                ref={register({ required: true })}
+                {...register('description')}
+                defaultValue=""
               />
             </div>
             <Styles.Button type="submit">Vincular</Styles.Button>
@@ -149,3 +185,5 @@ export default function ModalEquipmentBind({ equipment }) {
     </Styles.Container>
   )
 }
+
+export default ModalEquipmentBind

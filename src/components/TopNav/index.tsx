@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 // import api from '../../../services/api'
 
 import logoBlack from '../../assets/logo_black.svg'
@@ -8,11 +8,23 @@ import logoBlack from '../../assets/logo_black.svg'
 
 import { Navigation, Container, Dropmenu, Logo } from './styles'
 
+interface UserProfile {
+  is_gm?: boolean
+}
+
+interface UserState {
+  profile?: UserProfile
+}
+
+interface RootState {
+  user: UserState
+}
+
 export default function TopNav() {
   // const [link, setLink] = useState('')
-  const profile = useSelector(state => state.user.profile)
+  const profile = useSelector((state: RootState) => state.user.profile)
   const gm = profile?.is_gm
-  const container = React.createRef()
+  const container = React.createRef<HTMLDivElement>()
   const [cad, setCad] = useState(false)
   const [cha, setCha] = useState(false)
   const [mon, setMon] = useState(false)
@@ -41,9 +53,11 @@ export default function TopNav() {
     setCha(false)
   }
 
-  // eslint-disable-next-line
-  function handleClickOutside(event) {
-    if (container.current && !container.current.contains(event.target)) {
+  function handleClickOutside(event: MouseEvent) {
+    if (
+      container.current &&
+      !container.current.contains(event.target as Node)
+    ) {
       setMon(false)
       setCad(false)
       setCha(false)
@@ -52,7 +66,10 @@ export default function TopNav() {
 
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside)
-  }, [handleClickOutside])
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   return (
     <Navigation>
@@ -67,7 +84,7 @@ export default function TopNav() {
           <li>
             {/* eslint-disable-next-line */}
             <strong onClick={handleCadClick}>CADASTROS</strong>
-            <Dropmenu rel={cad ? 1 : 0}>
+            <Dropmenu show={cad ? 1 : 0}>
               <ul>
                 <li>
                   <Link onClick={handleRemoveClick} to="/alignments">
@@ -129,7 +146,7 @@ export default function TopNav() {
           <li>
             {/* eslint-disable-next-line */}
             <strong onClick={handleChaClick}>PERSONAGENS</strong>
-            <Dropmenu rel={cha ? 1 : 0}>
+            <Dropmenu show={cha ? 1 : 0}>
               <ul>
                 <li>
                   <Link
@@ -164,7 +181,7 @@ export default function TopNav() {
             <li>
               {/* eslint-disable-next-line */}
               <strong onClick={handleMonClick}>MONSTROS</strong>
-              <Dropmenu rel={mon ? 1 : 0}>
+              <Dropmenu show={mon ? 1 : 0}>
                 <ul>
                   <li>
                     <Link onClick={handleRemoveClick} to="/monstercreate">

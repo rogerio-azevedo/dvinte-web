@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { Table } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import api from '../../services/api'

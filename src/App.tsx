@@ -2,12 +2,12 @@ import React from 'react'
 import { ToastContainer } from 'react-toastify'
 import { PersistGate } from 'redux-persist/integration/react'
 import { Provider } from 'react-redux'
-import { Router } from 'react-router-dom'
+import { BrowserRouter } from 'react-router'
 
 import './config/ReactotronConfig'
 
 import Routes from './routes'
-import history from './services/history'
+// import history from './services/history' // TODO: Remover após migração completa
 
 import { store, persistor } from './store'
 import { CharacterCreationProvider } from './contexts/CharacterCreationContext'
@@ -21,11 +21,11 @@ const App: React.FC = () => {
       <PersistGate persistor={persistor}>
         <CombatProvider>
           <CharacterCreationProvider>
-            <Router history={history}>
+            <BrowserRouter>
               <Routes />
               <GlobalStyle />
               <ToastContainer autoClose={3000} />
-            </Router>
+            </BrowserRouter>
           </CharacterCreationProvider>
         </CombatProvider>
       </PersistGate>

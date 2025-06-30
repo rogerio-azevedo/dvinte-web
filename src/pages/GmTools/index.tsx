@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, ChangeEvent } from 'react'
 // import { useSelector } from 'react-redux'
 
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import Select from 'react-select'
 import { Table } from 'antd'
 import type { ColumnsType } from 'antd/es/table'

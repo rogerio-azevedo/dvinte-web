@@ -1,5 +1,7 @@
+/* eslint-disable no-console */
+
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import api from '../../services/api'
 
 import CharClass from '../../components/CharClass'
@@ -115,10 +117,6 @@ interface Character {
   Will: number
 }
 
-interface RouteParams {
-  id: string
-}
-
 interface Resistance {
   Fortitude: number
   Reflex: number
@@ -132,7 +130,7 @@ interface Resistance {
 }
 
 export default function CharacterDetail() {
-  const { id } = useParams<RouteParams>()
+  const { id } = useParams<{ id: string }>()
   const [loading, setLoading] = useState(true)
   const [char, setChar] = useState<Character>()
   const [classes, setClasses] = useState<CharacterClass[]>()

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import ReactTooltip from 'react-tooltip'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import api from '../../services/api'
 import { connect } from '../../services/socket'

@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router'
 
 import ButtonNext from '../../components/ButtonNext'
 import ButtonPrev from '../../components/ButtonPrev'

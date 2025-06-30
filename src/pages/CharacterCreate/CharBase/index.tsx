@@ -5,7 +5,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useForm, Controller } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { toast } from 'react-toastify'
 
 import { useCharacterCreation } from '../../../contexts/CharacterCreationContext'

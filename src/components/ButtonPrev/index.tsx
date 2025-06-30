@@ -1,6 +1,6 @@
 import React from 'react'
 import { MdChevronLeft } from 'react-icons/md'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import { ArrowLeft } from './styles'
 

@@ -1,6 +1,5 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import Select, { StylesConfig } from 'react-select'
-import PropTypes from 'prop-types'
 
 interface Weapon {
   id: number
@@ -71,9 +70,4 @@ export default function SelectWeapon({
       />
     </div>
   )
-}
-
-SelectWeapon.propTypes = {
-  changeWeapon: PropTypes.func.isRequired,
-  weapons: PropTypes.arrayOf(PropTypes.object),
 }

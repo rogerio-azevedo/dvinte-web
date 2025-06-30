@@ -1,20 +1,10 @@
 import React from 'react'
-import {
-  Route as ReactRoute,
-  Redirect,
-  RouteProps,
-  RouteComponentProps,
-} from 'react-router-dom'
+import { Navigate } from 'react-router'
 
 import AuthLayout from '../pages/_Layouts/auth'
 import DefaultLayout from '../pages/_Layouts/default'
 
 import { store } from '../store'
-
-interface RouteWrapperProps extends Omit<RouteProps, 'component'> {
-  component: React.ComponentType<RouteComponentProps>
-  isPrivate?: boolean
-}
 
 interface AuthState {
   auth: {
@@ -22,33 +12,40 @@ interface AuthState {
   }
 }
 
-const RouteWrapper: React.FC<RouteWrapperProps> = ({
-  component: Component,
-  isPrivate = false,
-  ...rest
-}) => {
-  const { signed } = (store.getState() as AuthState).auth
-
-  if (!signed && isPrivate) {
-    return <Redirect to="/" />
-  }
-
-  if (signed && !isPrivate) {
-    return <Redirect to="/dashboard" />
-  }
-
-  const Layout = signed ? DefaultLayout : AuthLayout
-
-  return (
-    <ReactRoute
-      {...rest}
-      render={(props: RouteComponentProps) => (
-        <Layout>
-          <Component {...props} />
-        </Layout>
-      )}
-    />
-  )
+interface WithAuthProps {
+  isPrivate?: boolean
 }
 
-export default RouteWrapper
+// HOC para autenticação
+export function withAuth<P extends object>(
+  Component: React.ComponentType<P>,
+  isPrivate = false
+) {
+  return function WrappedComponent(props: P & WithAuthProps) {
+    const { signed } = (store.getState() as AuthState).auth
+
+    if (!signed && isPrivate) {
+      return <Navigate to="/" replace />
+    }
+
+    if (signed && !isPrivate) {
+      return <Navigate to="/dashboard" replace />
+    }
+
+    const Layout = signed ? DefaultLayout : AuthLayout
+
+    return (
+      <Layout>
+        <Component {...props} />
+      </Layout>
+    )
+  }
+}
+
+// Função helper para criar componentes protegidos
+export function createProtectedComponent<P extends object>(
+  Component: React.ComponentType<P>,
+  isPrivate = false
+) {
+  return withAuth(Component, isPrivate)
+}

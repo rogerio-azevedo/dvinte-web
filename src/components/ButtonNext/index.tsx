@@ -3,7 +3,7 @@
 
 import React from 'react'
 import { MdChevronRight } from 'react-icons/md'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { ArrowRigth } from './styles'
 
@@ -18,7 +18,7 @@ const ButtonNext: React.FC<ButtonNextProps> = ({
   display,
   handleSave,
 }) => {
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -35,7 +35,7 @@ const ButtonNext: React.FC<ButtonNextProps> = ({
         // Aguardar um pouco para garantir que o save foi processado
         setTimeout(() => {
           console.log('🔍 Navegando para:', linkto)
-          history.push(linkto)
+          navigate(linkto)
         }, 500) // Aumentei para 500ms para dar tempo do toast aparecer
       } catch (error) {
         console.error('Erro ao salvar:', error)
@@ -43,7 +43,7 @@ const ButtonNext: React.FC<ButtonNextProps> = ({
     } else {
       // Se não tem handleSave, navegar imediatamente
       console.log('🔍 Navegando imediatamente para:', linkto)
-      history.push(linkto)
+      navigate(linkto)
     }
   }
 

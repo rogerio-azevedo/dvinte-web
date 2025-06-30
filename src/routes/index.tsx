@@ -1,6 +1,6 @@
 import React from 'react'
-import { Switch } from 'react-router-dom'
-import Route from './Route'
+import { Routes, Route } from 'react-router'
+import { createProtectedComponent } from './Route'
 
 import SignIn from '../pages/SignIn'
 import SignUp from '../pages/SignUp'
@@ -43,54 +43,77 @@ import Dices from '../components/Dices'
 import Play from '../pages/Play'
 import MyDices from '../components/CombatComponents/MyDices'
 
-const Routes: React.FC = () => {
+// Criando componentes protegidos
+const ProtectedSignIn = createProtectedComponent(SignIn, false)
+const ProtectedSignUp = createProtectedComponent(SignUp, false)
+const ProtectedProfile = createProtectedComponent(Profile, true)
+const ProtectedDashboard = createProtectedComponent(Dashboard, true)
+const ProtectedDices = createProtectedComponent(Dices, true)
+const ProtectedAlignment = createProtectedComponent(Alignment, true)
+const ProtectedClasse = createProtectedComponent(Classe, true)
+const ProtectedDivinity = createProtectedComponent(Divinity, true)
+const ProtectedRace = createProtectedComponent(Race, true)
+const ProtectedWeapon = createProtectedComponent(Weapon, true)
+const ProtectedArmor = createProtectedComponent(Armor, true)
+const ProtectedEquipment = createProtectedComponent(Equipment, true)
+const ProtectedPortrait = createProtectedComponent(Portrait, true)
+const ProtectedToken = createProtectedComponent(Token, true)
+const ProtectedCharacter = createProtectedComponent(Character, true)
+const ProtectedCharacterDetail = createProtectedComponent(CharacterDetail, true)
+const ProtectedCharacterCreate = createProtectedComponent(CharacterCreate, true)
+const ProtectedCharacterToken = createProtectedComponent(CharacterToken, true)
+const ProtectedMonster = createProtectedComponent(Monster, true)
+const ProtectedMonsterDetail = createProtectedComponent(MonsterDetail, true)
+const ProtectedMonsterCreate = createProtectedComponent(MonsterCreate, true)
+const ProtectedCampaign = createProtectedComponent(Campaign, true)
+const ProtectedNotes = createProtectedComponent(Notes, true)
+const ProtectedGmTools = createProtectedComponent(GmTools, true)
+const ProtectedWorldMap = createProtectedComponent(WorldMap, true)
+const ProtectedCombat = createProtectedComponent(Combat, true)
+const ProtectedPlay = createProtectedComponent(Play, true)
+const ProtectedCharBase = createProtectedComponent(CharBase, true)
+const ProtectedCharClass = createProtectedComponent(CharClass, true)
+const ProtectedCharAttributes = createProtectedComponent(CharAttributes, true)
+const ProtectedCharPreview = createProtectedComponent(CharPreview, true)
+const ProtectedMyDices = createProtectedComponent(MyDices, true)
+
+const RoutesComponent: React.FC = () => {
   return (
-    <Switch>
-      <Route path="/" exact component={SignIn} />
-
-      <Route path="/register" component={SignUp} />
-      <Route path="/profile" component={Profile} isPrivate />
-
-      <Route path="/dashboard" component={Dashboard} isPrivate />
-
-      <Route path="/dices" component={Dices} isPrivate />
-
-      <Route path="/alignments" component={Alignment} isPrivate />
-      <Route path="/classes" component={Classe} isPrivate />
-      <Route path="/divinities" component={Divinity} isPrivate />
-      <Route path="/races" component={Race} isPrivate />
-      <Route path="/weapons" component={Weapon} isPrivate />
-      <Route path="/armors" component={Armor} isPrivate />
-      <Route path="/equipments" component={Equipment} isPrivate />
-
-      <Route path="/portraits" component={Portrait} isPrivate />
-      <Route path="/tokens" component={Token} isPrivate />
-
-      <Route path="/characters" component={Character} isPrivate />
-      <Route path="/characterview/:id" component={CharacterDetail} isPrivate />
-      <Route path="/charactercreate" component={CharacterCreate} isPrivate />
-      <Route path="/charactertoken" component={CharacterToken} isPrivate />
-
-      <Route path="/monsters" component={Monster} isPrivate />
-      <Route path="/monsterview/:id" component={MonsterDetail} isPrivate />
-      <Route path="/monstercreate" component={MonsterCreate} isPrivate />
-
-      <Route path="/campaigns" component={Campaign} isPrivate />
-
-      <Route path="/notes" component={Notes} isPrivate />
-      <Route path="/gmtools" component={GmTools} isPrivate />
-      <Route path="/map" component={WorldMap} isPrivate />
-      <Route path="/combat" component={Combat} isPrivate />
-      <Route path="/play" component={Play} isPrivate />
-
-      <Route path="/charbase" component={CharBase} isPrivate />
-      <Route path="/charclass" component={CharClass} isPrivate />
-      <Route path="/charattributes" component={CharAttributes} isPrivate />
-      <Route path="/charpreview" component={CharPreview} isPrivate />
-
-      <Route path="/mydices" component={MyDices} isPrivate />
-    </Switch>
+    <Routes>
+      <Route path="/" element={<ProtectedSignIn />} />
+      <Route path="/register" element={<ProtectedSignUp />} />
+      <Route path="/profile" element={<ProtectedProfile />} />
+      <Route path="/dashboard" element={<ProtectedDashboard />} />
+      <Route path="/dices" element={<ProtectedDices />} />
+      <Route path="/alignments" element={<ProtectedAlignment />} />
+      <Route path="/classes" element={<ProtectedClasse />} />
+      <Route path="/divinities" element={<ProtectedDivinity />} />
+      <Route path="/races" element={<ProtectedRace />} />
+      <Route path="/weapons" element={<ProtectedWeapon />} />
+      <Route path="/armors" element={<ProtectedArmor />} />
+      <Route path="/equipments" element={<ProtectedEquipment />} />
+      <Route path="/portraits" element={<ProtectedPortrait />} />
+      <Route path="/tokens" element={<ProtectedToken />} />
+      <Route path="/characters" element={<ProtectedCharacter />} />
+      <Route path="/characterview/:id" element={<ProtectedCharacterDetail />} />
+      <Route path="/charactercreate" element={<ProtectedCharacterCreate />} />
+      <Route path="/charactertoken" element={<ProtectedCharacterToken />} />
+      <Route path="/monsters" element={<ProtectedMonster />} />
+      <Route path="/monsterview/:id" element={<ProtectedMonsterDetail />} />
+      <Route path="/monstercreate" element={<ProtectedMonsterCreate />} />
+      <Route path="/campaigns" element={<ProtectedCampaign />} />
+      <Route path="/notes" element={<ProtectedNotes />} />
+      <Route path="/gmtools" element={<ProtectedGmTools />} />
+      <Route path="/map" element={<ProtectedWorldMap />} />
+      <Route path="/combat" element={<ProtectedCombat />} />
+      <Route path="/play" element={<ProtectedPlay />} />
+      <Route path="/charbase" element={<ProtectedCharBase />} />
+      <Route path="/charclass" element={<ProtectedCharClass />} />
+      <Route path="/charattributes" element={<ProtectedCharAttributes />} />
+      <Route path="/charpreview" element={<ProtectedCharPreview />} />
+      <Route path="/mydices" element={<ProtectedMyDices />} />
+    </Routes>
   )
 }
 
-export default Routes
+export default RoutesComponent

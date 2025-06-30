@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import api from '../../services/api'
 
 import * as Styles from './styles'
@@ -48,12 +48,8 @@ interface Monster {
   attacks: Attack[]
 }
 
-interface RouteParams {
-  id: string
-}
-
 export default function MonsterDetail() {
-  const { id } = useParams<RouteParams>()
+  const { id } = useParams<{ id: string }>()
   const [loading, setLoading] = useState(true)
   const [monster, setMonster] = useState<Monster | null>(null)
 

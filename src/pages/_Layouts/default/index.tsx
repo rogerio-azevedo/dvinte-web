@@ -1,19 +1,17 @@
 import React from 'react'
-import PropTypes from 'prop-types'
-
 import Header from '../../../components/Header'
 
 import { Wrapper, PageContainer } from './styles'
 
-export default function DefaultLayout({ children }) {
+interface DefaultLayoutProps {
+  children: React.ReactNode
+}
+
+export default function DefaultLayout({ children }: DefaultLayoutProps) {
   return (
     <Wrapper>
       <Header />
       <PageContainer>{children}</PageContainer>
     </Wrapper>
   )
-}
-
-DefaultLayout.propTypes = {
-  children: PropTypes.element.isRequired,
 }

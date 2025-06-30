@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { FaTimes } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'

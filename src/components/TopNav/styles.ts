@@ -1,5 +1,11 @@
 import styled from 'styled-components'
 
+interface DropmenuProps {
+  dig?: number | boolean
+  show?: number | boolean
+  perfil?: boolean
+}
+
 export const Navigation = styled.nav`
   display: flex;
   align-items: center;
@@ -48,7 +54,7 @@ export const Container = styled.div`
   }
 `
 
-export const Dropmenu = styled.div`
+export const Dropmenu = styled.div<DropmenuProps>`
   position: absolute;
   top: 100%;
   left: 0;
@@ -67,7 +73,7 @@ export const Dropmenu = styled.div`
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid rgba(0, 0, 0, 0.15);
-  display: ${props => (props.dig || props.rel ? 'block' : 'none')};
+  display: ${props => (props.dig || props.show ? 'block' : 'none')};
 
   &::before {
     content: '';

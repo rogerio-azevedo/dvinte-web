@@ -1,6 +1,8 @@
-import React, { useRef, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+/* eslint-disable no-console */
 
+import React, { useRef, useEffect, useState } from 'react'
+
+import { useDices } from '../../../contexts/DicesContext'
 import * as THREE from 'three'
 import * as CANNON from 'cannon'
 import Stats from 'three/examples/js/libs/stats.min.js'
@@ -17,14 +19,10 @@ import {
   DiceD20,
 } from './dice'
 
-interface RootState {
-  dices: any
-}
-
 export default function MyDices() {
-  const { diceType, diceSides, diceMult, diceResult, diceRoll } = useSelector(
-    (state: RootState) => state.dices
-  )
+  const {
+    state: { diceMult, diceResult, diceRoll, diceSides, diceType },
+  } = useDices()
 
   const [roll, setRoll] = useState(diceRoll)
   const mount = useRef<any>(null)

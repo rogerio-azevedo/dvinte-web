@@ -2,50 +2,27 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import { useState, useEffect, useCallback } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+// import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
 
 import SelectWeapon from '../../SelectWeapon'
 import SelectCharacter from '../../SelectCharacter'
-import { diceDataRequest } from '../../../store/modules/dices/actions'
+// import { diceDataRequest } from '../../../store/modules/dices/actions'
+import { useDices } from '../../../contexts/DicesContext'
+import { useAuth } from '../../../contexts/AuthContext'
+
+import { APICharacter, ArmoryProps, Character } from './interfaces'
 
 import * as Styles from './styles'
 
-interface Character {
-  id: number
-  name: string
-  Size?: string
-  BaseAttack?: number
-  StrMod?: number
-  StrModTemp?: number
-  DexMod?: number
-  DexModTemp?: number
-  Weapon?: any[]
-}
-
-interface APICharacter {
-  Cod: number
-  Name: string
-  Size?: string
-  BaseAttack?: number
-  StrMod?: number
-  StrModTemp?: number
-  DexMod?: number
-  DexModTemp?: number
-  Weapon?: any[]
-}
-
-interface ArmoryProps {
-  character: any
-  weapons: any[]
-  loadChar: () => Promise<void>
-}
-
 export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
-  const { profile } = useSelector((state: any) => state.user)
-  const dispatch = useDispatch()
-  const from = profile.id
+  // const { profile } = useSelector((state: any) => state.user)
+  // const dispatch = useDispatch()
+  const { setDiceData } = useDices()
+
+  const { user } = useAuth()
+  const from = user?.id
 
   const [weapon, setWeapon] = useState<number | undefined>()
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
@@ -62,7 +39,7 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
 
     setLoadingCharacters(true)
     try {
-      const response = await api.get(`/characters/user/${profile.id}`)
+      const response = await api.get(`/characters/user/${user?.id}`)
 
       const characters = Array.isArray(response.data) ? response.data : []
 
@@ -97,7 +74,7 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
     } finally {
       setLoadingCharacters(false)
     }
-  }, [profile.id])
+  }, [user?.id])
 
   // Carregar armas do personagem selecionado
   const loadCharacterWeapons = useCallback(async (charId: number) => {
@@ -169,16 +146,25 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
 
   async function handleAttack() {
     // Limpa o estado dos dados primeiro
-    dispatch(
-      diceDataRequest({
-        diceType: null,
-        diceSides: null,
-        diceMult: null,
-        diceResult: null,
-        diceShow: false,
-        diceRoll: false,
-      })
-    )
+    // dispatch(
+    //   diceDataRequest({
+    //     diceType: null,
+    //     diceSides: null,
+    //     diceMult: null,
+    //     diceResult: null,
+    //     diceShow: false,
+    //     diceRoll: false,
+    //   })
+    // )
+
+    setDiceData({
+      diceType: null,
+      diceSides: null,
+      diceMult: null,
+      diceResult: null,
+      diceShow: false,
+      diceRoll: false,
+    })
 
     if (!weapon || !selectedCharacter) {
       toast.error(
@@ -200,16 +186,25 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
     // Pequeno delay para garantir que o estado anterior foi limpo
     await new Promise(resolve => setTimeout(resolve, 100))
 
-    dispatch(
-      diceDataRequest({
-        diceType: `d${20}`,
-        diceSides: 20,
-        diceMult: 1,
-        diceResult: [dice],
-        diceShow: true,
-        diceRoll: true,
-      })
-    )
+    // dispatch(
+    //   diceDataRequest({
+    //     diceType: `d${20}`,
+    //     diceSides: 20,
+    //     diceMult: 1,
+    //     diceResult: [dice],
+    //     diceShow: true,
+    //     diceRoll: true,
+    //   })
+    // )
+
+    setDiceData({
+      diceType: `d${20}`,
+      diceSides: 20,
+      diceMult: 1,
+      diceResult: [dice],
+      diceShow: true,
+      diceRoll: true,
+    })
 
     let isCrit = ''
 
@@ -239,8 +234,8 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
     try {
       await api.post('combats', {
         id: from,
-        user_id: profile.id,
-        user: profile.name,
+        user_id: user?.id,
+        user: user?.name,
         message: rolled,
         result: attack,
         type: 3,
@@ -253,12 +248,17 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
   }
 
   async function handleDamage() {
-    dispatch(
-      diceDataRequest({
-        diceShow: false,
-        diceRoll: false,
-      })
-    )
+    // dispatch(
+    //   diceDataRequest({
+    //     diceShow: false,
+    //     diceRoll: false,
+    //   })
+    // )
+
+    setDiceData({
+      diceShow: false,
+      diceRoll: false,
+    })
 
     if (!weapon || !selectedCharacter) {
       toast.error('Escolha um personagem e uma arma antes de realizar o dano.')
@@ -298,16 +298,25 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
 
     const result = dices.reduce((a, b) => a + b, 0)
 
-    dispatch(
-      diceDataRequest({
-        diceType: `d${dice}`,
-        diceSides: dice,
-        diceMult: multi,
-        diceResult: dices,
-        diceShow: true,
-        diceRoll: true,
-      })
-    )
+    // dispatch(
+    //   diceDataRequest({
+    //     diceType: `d${dice}`,
+    //     diceSides: dice,
+    //     diceMult: multi,
+    //     diceResult: dices,
+    //     diceShow: true,
+    //     diceRoll: true,
+    //   })
+    // )
+
+    setDiceData({
+      diceType: `d${dice}`,
+      diceSides: dice,
+      diceMult: multi,
+      diceResult: dices,
+      diceShow: true,
+      diceRoll: true,
+    })
 
     const totalDamage = result + extraDamage + exMod + element
 
@@ -316,8 +325,8 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
     try {
       await api.post('combats', {
         id: from,
-        user_id: profile.id,
-        user: profile.name,
+        user_id: user?.id,
+        user: user?.name,
         message: rolled,
         result: totalDamage,
         type: 4,
@@ -329,12 +338,17 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
   }
 
   async function handleCritDamage() {
-    dispatch(
-      diceDataRequest({
-        diceShow: false,
-        diceRoll: false,
-      })
-    )
+    // dispatch(
+    //   diceDataRequest({
+    //     diceShow: false,
+    //     diceRoll: false,
+    //   })
+    // )
+
+    setDiceData({
+      diceShow: false,
+      diceRoll: false,
+    })
 
     if (!weapon || !selectedCharacter) {
       toast.error(
@@ -377,16 +391,25 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
 
     const result = dices.reduce((a, b) => a + b, 0)
 
-    dispatch(
-      diceDataRequest({
-        diceType: `d${dice}`,
-        diceSides: dice,
-        diceMult: multi * critMult,
-        diceResult: dices,
-        diceShow: true,
-        diceRoll: true,
-      })
-    )
+    // dispatch(
+    //   diceDataRequest({
+    //     diceType: `d${dice}`,
+    //     diceSides: dice,
+    //     diceMult: multi * critMult,
+    //     diceResult: dices,
+    //     diceShow: true,
+    //     diceRoll: true,
+    //   })
+    // )
+
+    setDiceData({
+      diceType: `d${dice}`,
+      diceSides: dice,
+      diceMult: multi * critMult,
+      diceResult: dices,
+      diceShow: true,
+      diceRoll: true,
+    })
 
     const totalDamage =
       result + extraDamage * critMult + exMod * critMult + element
@@ -400,8 +423,8 @@ export default function Armory({ character, weapons, loadChar }: ArmoryProps) {
     try {
       await api.post('combats', {
         id: from,
-        user_id: profile.id,
-        user: profile.name,
+        user_id: user?.id,
+        user: user?.name,
         message: rolled,
         result: totalDamage,
         type: 4,

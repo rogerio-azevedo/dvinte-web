@@ -1,22 +1,10 @@
 /* eslint-disable no-console */
 
 import React from 'react'
-import { useSelector } from 'react-redux'
+import { useAuth } from '../../../contexts/AuthContext'
 import api from '../../../services/api'
 
 import * as Styles from './styles'
-
-// Interfaces
-interface Profile {
-  id: number
-  name: string
-}
-
-interface RootState {
-  user: {
-    profile: Profile
-  }
-}
 
 interface SavingsProps {
   fortitude?: number
@@ -31,8 +19,8 @@ const Savings: React.FC<SavingsProps> = ({
   will = 0,
   strength = 0,
 }) => {
-  const { profile } = useSelector((state: RootState) => state.user)
-  const from = profile.id
+  const { user } = useAuth()
+  const from = user?.id
 
   const handleFortitude = async (): Promise<void> => {
     try {
@@ -42,8 +30,8 @@ const Savings: React.FC<SavingsProps> = ({
 
       await api.post('combats', {
         id: from,
-        user_id: profile.id,
-        user: profile.name,
+        user_id: user?.id,
+        user: user?.name,
         message: rolled,
         result: fortitudeTest,
         type: 5,
@@ -61,8 +49,8 @@ const Savings: React.FC<SavingsProps> = ({
 
       await api.post('combats', {
         id: from,
-        user_id: profile.id,
-        user: profile.name,
+        user_id: user?.id,
+        user: user?.name,
         message: rolled,
         result: reflexTest,
         type: 6,
@@ -80,8 +68,8 @@ const Savings: React.FC<SavingsProps> = ({
 
       await api.post('combats', {
         id: from,
-        user_id: profile.id,
-        user: profile.name,
+        user_id: user?.id,
+        user: user?.name,
         message: rolled,
         result: willTest,
         type: 7,
@@ -99,8 +87,8 @@ const Savings: React.FC<SavingsProps> = ({
 
       await api.post('combats', {
         id: from,
-        user_id: profile.id,
-        user: profile.name,
+        user_id: user?.id,
+        user: user?.name,
         message: rolled,
         result: strTest,
         type: 10,

@@ -39,7 +39,7 @@ import CharAttributes from '../pages/CharacterCreate/CharAttributes'
 import CharPreview from '../pages/CharacterCreate/CharPreview'
 import Equipment from '../pages/Equipment'
 
-import Dices from '../components/Dices'
+// import Dices from '../components/Legacy/Dices'
 import Play from '../pages/Play'
 import MyDices from '../components/CombatComponents/MyDices'
 
@@ -48,7 +48,7 @@ const ProtectedSignIn = createProtectedComponent(SignIn, false)
 const ProtectedSignUp = createProtectedComponent(SignUp, false)
 const ProtectedProfile = createProtectedComponent(Profile, true)
 const ProtectedDashboard = createProtectedComponent(Dashboard, true)
-const ProtectedDices = createProtectedComponent(Dices, true)
+// const ProtectedDices = createProtectedComponent(Dices, true)
 const ProtectedAlignment = createProtectedComponent(Alignment, true)
 const ProtectedClasse = createProtectedComponent(Classe, true)
 const ProtectedDivinity = createProtectedComponent(Divinity, true)
@@ -84,7 +84,7 @@ const RoutesComponent: React.FC = () => {
       <Route path="/register" element={<ProtectedSignUp />} />
       <Route path="/profile" element={<ProtectedProfile />} />
       <Route path="/dashboard" element={<ProtectedDashboard />} />
-      <Route path="/dices" element={<ProtectedDices />} />
+      {/* <Route path="/dices" element={<ProtectedDices />} /> */}
       <Route path="/alignments" element={<ProtectedAlignment />} />
       <Route path="/classes" element={<ProtectedClasse />} />
       <Route path="/divinities" element={<ProtectedDivinity />} />

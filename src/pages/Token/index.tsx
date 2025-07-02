@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
 import { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { useAuth } from '../../contexts/AuthContext'
 import { Table } from 'antd'
 import { toast } from 'react-toastify'
 
@@ -10,16 +10,7 @@ import api from '../../services/api'
 import TokenInput from '../../components/TokenInput'
 import * as Styles from './styles'
 
-interface RootState {
-  user: {
-    profile: {
-      id: number
-      name: string
-    }
-  }
-}
-
-interface Token {
+interface TokenProps {
   id: number
   url: string
   name: string
@@ -45,9 +36,10 @@ interface CharacterToken {
 }
 
 const Token: React.FC = () => {
-  const { id } = useSelector((state: RootState) => state.user.profile)
+  const { user } = useAuth()
+  const id = user?.id
 
-  const [tokens, setTokens] = useState<Token[]>([])
+  const [tokens, setTokens] = useState<TokenProps[]>([])
   const [loading, setLoading] = useState(false)
   const [enabledTokens, setEnabledTokens] = useState<EnabledTokens>({})
 
@@ -56,7 +48,7 @@ const Token: React.FC = () => {
       try {
         setLoading(true)
         console.log('Fazendo requisição para tokens...')
-        const response = await api.get<Token[]>('/tokens')
+        const response = await api.get<TokenProps[]>('/tokens')
         console.log('Resposta recebida:', response.data)
 
         setTokens(response.data)
@@ -104,7 +96,7 @@ const Token: React.FC = () => {
       <TokenInput />
 
       <Styles.TableContainer $loading={loading}>
-        <Table<Token>
+        <Table<TokenProps>
           rowKey="id"
           dataSource={tokens}
           columns={[
@@ -132,7 +124,7 @@ const Token: React.FC = () => {
               title: 'Habilitado',
               dataIndex: 'enabled',
               key: 'enabled',
-              render: (_: any, record: Token) => (
+              render: (_: any, record: TokenProps) => (
                 <input
                   type="checkbox"
                   checked={enabledTokens[record.id] || false}
@@ -148,7 +140,7 @@ const Token: React.FC = () => {
             {
               title: 'Adicionar',
               key: 'action',
-              render: (_: any, record: Token) => (
+              render: (_: any, record: TokenProps) => (
                 <button
                   type="button"
                   onClick={() => handleCreateToken(record.id)}

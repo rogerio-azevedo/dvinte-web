@@ -3,7 +3,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { useSelector } from 'react-redux'
+// import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
 
@@ -11,6 +11,7 @@ import SelectWeapon from '../../SelectWeapon'
 import SelectCharacter from '../../../components/SelectCharacter'
 
 import * as Styles from './styles'
+import { useAuth } from '../../../contexts/AuthContext'
 
 interface Character {
   id: number
@@ -64,10 +65,6 @@ interface UserState {
   }
 }
 
-interface RootState {
-  user: UserState
-}
-
 interface ArmoryProps {
   character: Character
   weapons: Weapon[]
@@ -88,8 +85,8 @@ interface CritType {
 type CritResult = keyof CritType
 
 const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
-  const { profile } = useSelector((state: RootState) => state.user)
-  const from = profile.id
+  // const { profile } = useSelector((state: RootState) => state.user)
+  const { user } = useAuth()
 
   const [weapon, setWeapon] = useState<number | undefined>()
   const [userCharacters, setUserCharacters] = useState<Character[]>([])
@@ -106,7 +103,9 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
 
     setLoadingCharacters(true)
     try {
-      const response = await api.get(`/combats/characters/${profile.id}`)
+      if (!user) return
+
+      const response = await api.get(`/combats/characters/${user.id}`)
 
       const characters: Character[] = Array.isArray(response.data)
         ? response.data
@@ -129,7 +128,7 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
     } finally {
       setLoadingCharacters(false)
     }
-  }, [profile.id])
+  }, [user])
 
   // Carregar armas do personagem selecionado
   const loadCharacterWeapons = useCallback(
@@ -138,7 +137,9 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
 
       setLoadingWeapons(true)
       try {
-        const response = await api.get(`/combats/${profile.id}/${characterId}`)
+        if (!user) return
+
+        const response = await api.get(`/combats/${user.id}/${characterId}`)
         const characterData = response.data
         setCharacterWeapons(characterData?.Weapon || [])
       } catch (error) {
@@ -148,13 +149,13 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
         setLoadingWeapons(false)
       }
     },
-    [profile.id]
+    [user.id]
   )
 
   // Função para carregar dados completos do personagem
   const loadCharacterData = async (characterId: number): Promise<Character> => {
     try {
-      const response = await api.get(`/combats/${profile.id}/${characterId}`)
+      const response = await api.get(`/combats/${user.id}/${characterId}`)
       return response.data
     } catch (error) {
       return character // fallback para o character passado por props
@@ -234,9 +235,9 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
 
     try {
       await api.post('combats', {
-        id: from,
-        user_id: profile.id,
-        user: profile.name,
+        id: user.id,
+        user_id: user.id,
+        user: user.name,
         message: rolled,
         result: attack,
         type: 3,
@@ -309,9 +310,9 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
 
     try {
       await api.post('combats', {
-        id: from,
-        user_id: profile.id,
-        user: profile.name,
+        id: user.id,
+        user_id: user.id,
+        user: user.name,
         message: rolled,
         result: totalDamage,
         type: 4,

@@ -1,19 +1,12 @@
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router'
 import { Form, Input } from '@rocketseat/unform'
 import * as Yup from 'yup'
-import { signInRequest } from '../../store/modules/auth/actions'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface FormData {
   email: string
   password: string
-}
-
-interface RootState {
-  auth: {
-    loading: boolean
-  }
 }
 
 const schema = Yup.object().shape({
@@ -25,11 +18,10 @@ const schema = Yup.object().shape({
 })
 
 const SignIn: React.FC = () => {
-  const dispatch = useDispatch()
-  const loading = useSelector((state: RootState) => state.auth.loading)
+  const { signIn, loading } = useAuth()
 
   const handleSubimit = ({ email, password }: FormData): void => {
-    dispatch(signInRequest(email, password))
+    signIn({ email, password })
   }
 
   return (

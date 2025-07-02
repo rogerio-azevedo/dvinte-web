@@ -67,7 +67,7 @@ export interface Token {
 }
 
 export interface StyledProps {
-  show?: number
+  show?: boolean | number
   children?: ReactNode
 }
 

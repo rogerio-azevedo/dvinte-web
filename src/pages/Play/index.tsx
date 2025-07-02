@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import ReactTooltip from 'react-tooltip'
 import { Link } from 'react-router'
@@ -7,13 +6,7 @@ import { Link } from 'react-router'
 import api from '../../services/api'
 import { connect } from '../../services/socket'
 import * as Styles from './styles'
-import {
-  RootState,
-  Character,
-  Token,
-  CharStatusData,
-  WeaponItem,
-} from './interfaces'
+import { Character, Token, CharStatusData, WeaponItem } from './interfaces'
 
 import {
   FaComments,
@@ -42,12 +35,16 @@ import MapTool from '../../components/CombatComponents/MapTool'
 import RenderMap from '../../components/CombatComponents/RenderMap'
 import ScrollContainer from 'react-indiana-drag-scroll'
 import MyDices from '../../components/CombatComponents/MyDices'
-import { diceDataRequest } from '../../store/modules/dices/actions'
+import { useDices } from '../../contexts/DicesContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function Play() {
-  const { profile } = useSelector((state: RootState) => state.user)
-  const showMenu = useSelector((state: RootState) => state.menu.chatMenu)
-  const { diceShow } = useSelector((state: RootState) => state.dices)
+  const {
+    state: { diceShow },
+  } = useDices()
+
+  const { user } = useAuth()
+
   const [allowDrag, setAllowDrag] = useState(false)
   const [menu, setMenu] = useState('attack')
 
@@ -61,18 +58,18 @@ export default function Play() {
   const [maxDex, setMaxDex] = useState<number>()
   const [weapons, setWeapons] = useState<WeaponItem[]>()
   const [charStatus, setCharStatus] = useState<CharStatusData>()
-  const dispatch = useDispatch()
+  // const dispatch = useDispatch()
 
   const clickListener = (event: MouseEvent) => {
     if (
       event.target instanceof HTMLElement &&
       event.target.tagName === 'CANVAS'
     ) {
-      dispatch(
-        diceDataRequest({
-          diceShow: false,
-        })
-      )
+      // dispatch(
+      //   diceDataRequest({
+      //     diceShow: false,
+      //   })
+      // )
     }
   }
 
@@ -108,7 +105,7 @@ export default function Play() {
 
   async function getCharacter() {
     try {
-      const response = await api.get<Character>(`combats/${profile.id}`)
+      const response = await api.get<Character>(`combats/${user?.id}`)
       const char = response.data
       setCharacter(char)
 
@@ -176,12 +173,12 @@ export default function Play() {
   }
 
   useEffect(() => {
-    dispatch(
-      diceDataRequest({
-        diceShow: false,
-        diceRoll: false,
-      })
-    )
+    // dispatch(
+    //   diceDataRequest({
+    //     diceShow: false,
+    //     diceRoll: false,
+    //   })
+    // )
 
     connect()
     getCharacter()
@@ -198,7 +195,7 @@ export default function Play() {
 
   return (
     <Styles.Container>
-      <Styles.MapContainer show={showMenu ? 1 : 0}>
+      <Styles.MapContainer show={1}>
         <ScrollContainer vertical={allowDrag} horizontal={allowDrag}>
           {diceShow && <MyDices />}
           <RenderMap
@@ -209,7 +206,7 @@ export default function Play() {
         </ScrollContainer>
       </Styles.MapContainer>
 
-      <Styles.ToolsContainer show={showMenu ? 1 : 0}>
+      <Styles.ToolsContainer show={1}>
         <Styles.IconContainer>
           <ReactTooltip />
 
@@ -287,7 +284,7 @@ export default function Play() {
             />
           </div>
 
-          {profile.is_gm && (
+          {user?.is_gm && (
             <div data-tip="Mapas">
               <GiTreasureMap
                 size={28}
@@ -297,7 +294,7 @@ export default function Play() {
               />
             </div>
           )}
-          {profile.is_gm && (
+          {user?.is_gm && (
             <div data-tip="GM Tools">
               <Link to="/gmtools">
                 <GiBrain size={28} color="#8e0e00" cursor="pointer" />
@@ -309,11 +306,7 @@ export default function Play() {
         {menu === 'chat' ? (
           <Chat />
         ) : menu === 'init' ? (
-          <Initiatives
-            profile={profile}
-            from={profile.id}
-            charInit={charInit}
-          />
+          <Initiatives profile={user} from={user?.id} charInit={charInit} />
         ) : menu === 'attack' ? (
           <Styles.AttackContainer>
             <ArmoryDelay

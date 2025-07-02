@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import React, { useState, useEffect, useRef } from 'react'
-import { useSelector } from 'react-redux'
+import { useAuth } from '../../../contexts/AuthContext'
 import { format, parseISO } from 'date-fns'
 import { utcToZonedTime } from 'date-fns-tz'
 import { toast } from 'react-toastify'
@@ -10,11 +10,6 @@ import { connect, socket } from '../../../services/socket'
 
 import * as Styles from './styles'
 
-interface User {
-  id: number
-  name: string
-}
-
 interface LogMessage {
   id: number
   user: string
@@ -23,18 +18,12 @@ interface LogMessage {
   isCrit?: 'HIT' | 'FAIL' | null
 }
 
-interface RootState {
-  user: {
-    profile: User
-  }
-}
-
 const LogBoard: React.FC = () => {
-  const { profile } = useSelector((state: RootState) => state.user)
+  const { user } = useAuth()
 
   const [messages, setMessages] = useState<LogMessage[]>([])
 
-  const from = profile.id
+  const from = user?.id
   const messagesEndRef = useRef<HTMLLIElement>(null)
 
   function scrollToBottom(): void {

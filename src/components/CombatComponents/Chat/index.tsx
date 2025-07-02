@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
 import React, { useState, useEffect, useRef } from 'react'
-import { useSelector } from 'react-redux'
+import { useAuth } from '../../../contexts/AuthContext'
 import { format, parseISO } from 'date-fns'
 import { utcToZonedTime } from 'date-fns-tz'
 import { toast } from 'react-toastify'
@@ -22,24 +22,13 @@ interface Message {
   isCrit?: 'HIT' | 'FAIL' | 'NORMAL'
 }
 
-interface UserState {
-  profile: {
-    id: number
-    name: string
-  }
-}
-
-interface RootState {
-  user: UserState
-}
-
 export default function Chat() {
-  const { profile } = useSelector((state: RootState) => state.user)
+  const { user } = useAuth()
 
   const [message, setMessage] = useState<string>('')
   const [messages, setMessages] = useState<Message[]>([])
 
-  const from = profile.id
+  const from = user?.id
   const messagesEndRef = useRef<HTMLLIElement>(null)
 
   function scrollToBottom(): void {
@@ -81,8 +70,8 @@ export default function Chat() {
       try {
         await api.post('combats', {
           id: from,
-          user_id: profile.id,
-          user: profile.name,
+          user_id: user?.id,
+          user: user?.name,
           message,
           result: 0,
           type: 1,

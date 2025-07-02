@@ -1,40 +1,29 @@
 import React, { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router'
 import { FaAlignJustify } from 'react-icons/fa'
 
 import TopNav from '../TopNav'
-import { showMenuRequest } from '../../store/modules/menu/actions'
+import { useAuth } from '../../contexts/AuthContext'
+import { useMenu } from '../../contexts/MenuContext'
 import * as Styles from './styles'
 
 // import Notifications from '~/components/Notifications';
 
-interface RootState {
-  user: {
-    profile: {
-      name: string
-      avatar?: string
-    } | null
-  }
-  menu: {
-    chatMenu: boolean
-  }
-}
-
 export default function Header() {
-  const dispatch = useDispatch()
-  const profile = useSelector((state: RootState) => state.user.profile)
-  const showMenu = useSelector((state: RootState) => state.menu.chatMenu)
-  const [chatMenu, setChatMenu] = useState(showMenu)
+  const { user } = useAuth()
+  const { state: menuState, actions: menuActions } = useMenu()
+  const showMenu = menuState.chatMenu
+  const [chatMenu, setChatMenu] = useState(showMenu || false)
 
   function handleShowMenu() {
-    dispatch(showMenuRequest(!chatMenu))
-    setChatMenu(!chatMenu)
+    const newMenuState = !chatMenu
+    menuActions.showMenu(newMenuState)
+    setChatMenu(newMenuState)
   }
 
   const defaultAvatar = '/favicon.ico'
 
-  if (!profile) {
+  if (!user) {
     return null
   }
 
@@ -50,12 +39,12 @@ export default function Header() {
           </Styles.MenuButton>
           <Styles.Profile>
             <div>
-              <strong>{profile.name}</strong>
+              <strong>{user.name}</strong>
               <Link to="/profile">Meu Perfil</Link>
             </div>
             <img
-              src={profile.avatar || defaultAvatar}
-              alt={`Avatar de ${profile.name}`}
+              src={user.avatar || defaultAvatar}
+              alt={`Avatar de ${user.name}`}
             />
           </Styles.Profile>
         </aside>

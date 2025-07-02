@@ -1,29 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router'
 // import api from '../../../services/api'
 
 import logoBlack from '../../assets/logo_black.svg'
 //import logoRed from '~/assets/logo_red.svg'
+import { useAuth } from '../../contexts/AuthContext'
 
 import { Navigation, Container, Dropmenu, Logo } from './styles'
 
-interface UserProfile {
-  is_gm?: boolean
-}
-
-interface UserState {
-  profile?: UserProfile
-}
-
-interface RootState {
-  user: UserState
-}
-
 export default function TopNav() {
   // const [link, setLink] = useState('')
-  const profile = useSelector((state: RootState) => state.user.profile)
-  const gm = profile?.is_gm
+  const { user } = useAuth()
+  const gm = user?.is_gm
   const container = React.createRef<HTMLDivElement>()
   const [cad, setCad] = useState(false)
   const [cha, setCha] = useState(false)
@@ -205,6 +193,10 @@ export default function TopNav() {
 
           <Link onClick={handleRemoveClick} to="/combat">
             COMBATE
+          </Link>
+
+          <Link onClick={handleRemoveClick} to="/play">
+            JOGAR
           </Link>
 
           <Link onClick={handleRemoveClick} to="/notes">

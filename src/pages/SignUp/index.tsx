@@ -1,10 +1,9 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
 import { Link } from 'react-router'
 import { Form, Input } from '@rocketseat/unform'
 import * as Yup from 'yup'
 
-import { signUpRequest } from '../../store/modules/auth/actions'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface FormData {
   name: string
@@ -34,7 +33,7 @@ const schema = Yup.object().shape({
 })
 
 const SignUp: React.FC = () => {
-  const dispatch = useDispatch()
+  const { signUp } = useAuth()
 
   const handleSubimit = ({
     name,
@@ -44,7 +43,7 @@ const SignUp: React.FC = () => {
     city,
     state,
   }: FormData): void => {
-    dispatch(signUpRequest(name, email, password, phone, city, state))
+    signUp({ name, email, password, phone, city, state })
   }
 
   return (

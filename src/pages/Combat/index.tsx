@@ -1,12 +1,13 @@
 /* eslint-disable no-console */
 
 import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import ReactTooltip from 'react-tooltip'
 import { Link } from 'react-router'
 
 import api from '../../services/api'
+import { useAuth } from '../../contexts/AuthContext'
+import { useMenu } from '../../contexts/MenuContext'
 
 import { connect, socket } from '../../services/socket'
 import {
@@ -35,12 +36,11 @@ import Initiatives from '../../components/CombatComponents/Initiatives'
 import DamagesCounter from '../../components/CombatComponents/DamagesCounter'
 import CharStatus from '../../components/CombatComponents/CharStatus'
 import LogBoard from '../../components/CombatComponents/LogBoard'
-import Dices from '../../components/CombatComponents/Dices'
 import MapTool from '../../components/CombatComponents/MapTool'
+import Dices from '../../components/CombatComponents/Dices'
 
 import ScrollContainer from 'react-indiana-drag-scroll'
 import {
-  RootState,
   MenuType,
   Character,
   Token,
@@ -49,16 +49,14 @@ import {
 } from './interfaces'
 
 export default function Combat(): React.JSX.Element {
-  const { profile } = useSelector((state: RootState) => state.user)
-  const showMenu = useSelector((state: RootState) => state.menu.chatMenu)
-
+  const { user } = useAuth()
+  const { state: menuState } = useMenu()
+  const showMenu = menuState.chatMenu
   const [menu, setMenu] = useState<MenuType>('attack')
-
   const [charInit, setCharInit] = useState<number | undefined>()
   const [character, setCharacter] = useState<Character | undefined>()
   const [tokens, setTokens] = useState<Token[]>([])
 
-  // Debug: log quando tokens mudam
   useEffect(() => {}, [tokens])
   const [fortitude, setFortitude] = useState<number | undefined>()
   const [reflex, setReflex] = useState<number | undefined>()
@@ -99,7 +97,7 @@ export default function Combat(): React.JSX.Element {
 
   async function getCharacter(): Promise<void> {
     try {
-      const response = await api.get<Character>(`combats/${profile.id}`)
+      const response = await api.get<Character>(`combats/${user?.id}`)
       const char = response.data
       setCharacter(char)
 
@@ -288,7 +286,7 @@ export default function Combat(): React.JSX.Element {
               onClick={() => handleMenu('status')}
             />
           </div>
-          {profile.is_gm && (
+          {user?.is_gm && (
             <div data-tip="Mapas">
               <GiTreasureMap
                 size={28}
@@ -298,7 +296,7 @@ export default function Combat(): React.JSX.Element {
               />
             </div>
           )}
-          {profile.is_gm && (
+          {user?.is_gm && (
             <div data-tip="GM Tools">
               <Link to="/gmtools">
                 <GiBrain size={28} color="#8e0e00" cursor="pointer" />
@@ -310,11 +308,7 @@ export default function Combat(): React.JSX.Element {
         {menu === 'chat' ? (
           <Chat />
         ) : menu === 'init' ? (
-          <Initiatives
-            profile={profile}
-            from={profile.id}
-            charInit={charInit}
-          />
+          <Initiatives profile={user} from={user?.id} charInit={charInit} />
         ) : menu === 'saves' ? (
           <Styles.SavesConteiner>
             <Styles.ButtonsContainer>

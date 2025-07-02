@@ -9,34 +9,7 @@ interface ScriptConfig {
 }
 
 const ScriptLoader: React.FC = () => {
-  const scripts: ScriptConfig[] = [
-    // {
-    //   src: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js',
-    //   integrity: 'sha512-yNJzAsg5JyP91u+sLHlUDULMBd3hmEiVkYeeN1cQBKaLZ7EyT6oH2u5THNIRM2Fu6VKcZJv+F/QAp1h/qzy9Ow==',
-    //   crossorigin: 'anonymous',
-    //   async: false
-    // },
-    // {
-    //   type: 'text/javascript',
-    //   src: 'libs/cannon.min.js',
-    //   async: false
-    // },
-    // {
-    //   type: 'text/javascript',
-    //   src: 'libs/teal.js',
-    //   async: false
-    // },
-    // {
-    //   type: 'text/javascript',
-    //   src: 'libs/dice.js',
-    //   async: false
-    // },
-    {
-      type: 'text/javascript',
-      src: 'libs/main.min.js',
-      async: true,
-    },
-  ]
+  const scripts: ScriptConfig[] = []
 
   useEffect(() => {
     const loadedScripts: HTMLScriptElement[] = []

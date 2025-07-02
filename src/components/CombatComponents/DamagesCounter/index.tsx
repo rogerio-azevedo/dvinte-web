@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import React, { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { useAuth } from '../../../contexts/AuthContext'
 import api from '../../../services/api'
 import { socket, connect, emit } from '../../../services/socket'
 
@@ -21,23 +21,10 @@ interface Message {
   isCrit: string
 }
 
-interface UserProfile {
-  id: number
-  name: string
-}
-
-interface UserState {
-  profile: UserProfile
-}
-
-interface RootState {
-  user: UserState
-}
-
 type DamageType = 'session' | 'combat' | 'reload' | undefined
 
 export default function DamagesCounter() {
-  const profile = useSelector((state: RootState) => state.user.profile)
+  const { user } = useAuth()
   const [damages, setDamages] = useState<DamageItem[]>([])
 
   async function loadDamage(type?: DamageType): Promise<void> {
@@ -61,9 +48,9 @@ export default function DamagesCounter() {
   async function handleStartSession(): Promise<void> {
     try {
       const message: Message = {
-        id: profile.id,
-        user_id: profile.id,
-        user: profile.name,
+        id: user?.id,
+        user_id: user?.id,
+        user: user?.name,
         message: 'Iniciou uma nova aventura',
         result: 0,
         type: 0,
@@ -80,9 +67,9 @@ export default function DamagesCounter() {
   async function handleStartCombat(): Promise<void> {
     try {
       const message: Message = {
-        id: profile.id,
-        user_id: profile.id,
-        user: profile.name,
+        id: user?.id,
+        user_id: user?.id,
+        user: user?.name,
         message: 'Iniciou um novo combate',
         result: 0,
         type: 8,

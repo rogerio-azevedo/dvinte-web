@@ -15,6 +15,7 @@ export const Container = styled.div`
 `
 
 export const MapContainer = styled.div<StyledProps>`
+  display: ${props => (props.show ? 'flex' : 'none')};
   position: relative;
   flex: 1;
   min-width: 0;

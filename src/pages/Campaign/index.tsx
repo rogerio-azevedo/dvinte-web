@@ -1,25 +1,14 @@
 /* eslint-disable no-console */
 
 import { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
 import { useForm, SubmitHandler } from 'react-hook-form'
 import api from '../../services/api'
+import { useAuth } from '../../contexts/AuthContext'
 
 import Button from '../../components/Button'
 import * as Styles from './styles'
 
-interface UserProfile {
-  id: number
-  name: string
-}
-
-interface RootState {
-  user: {
-    profile: UserProfile
-  }
-}
-
-interface Campaign {
+interface CampaignProps {
   id: number
   name: string
   description: string
@@ -32,7 +21,7 @@ interface CampaignFormData {
 }
 
 export default function Campaign() {
-  const profile = useSelector((state: RootState) => state.user.profile)
+  const { user } = useAuth()
   const {
     register,
     handleSubmit,
@@ -40,14 +29,14 @@ export default function Campaign() {
     reset,
   } = useForm<CampaignFormData>()
 
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [campaigns, setCampaigns] = useState<CampaignProps[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     async function loadCampaigns() {
       try {
         setLoading(true)
-        const response = await api.get<Campaign[]>('campaigns')
+        const response = await api.get<CampaignProps[]>('campaigns')
         setCampaigns(response.data)
       } catch (error) {
         console.error('Erro ao carregar campanhas:', error)
@@ -62,10 +51,10 @@ export default function Campaign() {
   const onSubmit: SubmitHandler<CampaignFormData> = async data => {
     try {
       setLoading(true)
-      const response = await api.post<Campaign>('campaigns', {
+      const response = await api.post<CampaignProps>('campaigns', {
         name: data.name,
         description: data.description,
-        user_id: profile.id,
+        user_id: user?.id,
       })
 
       setCampaigns(prevCampaigns => [response.data, ...prevCampaigns])

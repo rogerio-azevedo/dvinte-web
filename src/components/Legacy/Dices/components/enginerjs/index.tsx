@@ -32,11 +32,11 @@ const EngineJS = () => {
       //   src: 'libs/dice.js',
       //   async: false
       // },
-      {
-        type: 'text/javascript',
-        src: 'libs/main.min.js',
-        async: true,
-      },
+      // {
+      //   type: 'text/javascript',
+      //   src: 'libs/main.min.js',
+      //   async: true,
+      // },
     ]
 
     scripts.forEach(o => {

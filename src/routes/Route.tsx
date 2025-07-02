@@ -3,14 +3,7 @@ import { Navigate } from 'react-router'
 
 import AuthLayout from '../pages/_Layouts/auth'
 import DefaultLayout from '../pages/_Layouts/default'
-
-import { store } from '../store'
-
-interface AuthState {
-  auth: {
-    signed: boolean
-  }
-}
+import { useAuth } from '../contexts/AuthContext'
 
 interface WithAuthProps {
   isPrivate?: boolean
@@ -22,12 +15,15 @@ export function withAuth<P extends object>(
   isPrivate = false
 ) {
   return function WrappedComponent(props: P & WithAuthProps) {
-    const { signed } = (store.getState() as AuthState).auth
+    const { user } = useAuth()
+    const signed = user !== null
 
+    // Se a rota é privada e o usuário não está autenticado
     if (!signed && isPrivate) {
       return <Navigate to="/" replace />
     }
 
+    // Se a rota é pública e o usuário está autenticado
     if (signed && !isPrivate) {
       return <Navigate to="/dashboard" replace />
     }

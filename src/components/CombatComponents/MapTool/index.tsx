@@ -1,24 +1,14 @@
 /* eslint-disable no-console */
 import React, { useState, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useAuth } from '../../../contexts/AuthContext'
+import { useMenu } from '../../../contexts/MenuContext'
 import { toast } from 'react-toastify'
 import { Switch } from 'antd'
 
 import api from '../../../services/api'
 import { socket } from '../../../services/socket'
 
-import {
-  fogLevelRequest,
-  eraserSizeRequest,
-  fogReset,
-} from '../../../store/modules/menu/actions'
-
 import * as Styles from './styles'
-
-interface User {
-  id: number
-  name: string
-}
 
 interface MapData {
   campaign_id: number
@@ -42,12 +32,6 @@ interface MapResponse {
   gm_layer?: boolean
 }
 
-interface RootState {
-  user: {
-    profile: User
-  }
-}
-
 interface Campaign {
   id: number
   name: string
@@ -55,7 +39,8 @@ interface Campaign {
 }
 
 const MapTool: React.FC = () => {
-  const profile = useSelector((state: RootState) => state.user.profile)
+  const { user } = useAuth()
+  const { actions: menuActions } = useMenu()
   const [battle, setBattle] = useState<string>('')
   const [world, setWorld] = useState<string>('')
   const [width, setWidth] = useState<string>('')
@@ -69,7 +54,7 @@ const MapTool: React.FC = () => {
   const [fogOpacity, setFogOpacity] = useState<number>(60)
   const [size, setSize] = useState<number>(60)
 
-  const dispatch = useDispatch()
+  // dispatch migrado para menuActions
 
   async function handleSave(): Promise<void> {
     try {
@@ -82,7 +67,7 @@ const MapTool: React.FC = () => {
         grid,
         fog,
         gm_layer,
-        owner: profile.id,
+        owner: user?.id,
       }
 
       await api.post('maps', mapData)
@@ -95,7 +80,7 @@ const MapTool: React.FC = () => {
 
   async function loadCampaigns(): Promise<void> {
     try {
-      const response = await api.get<Campaign[]>(`campaigns/user/${profile.id}`)
+      const response = await api.get<Campaign[]>(`campaigns/user/${user?.id}`)
       setCampaigns(response.data)
 
       // Se tiver campanhas, seleciona a primeira
@@ -157,16 +142,16 @@ const MapTool: React.FC = () => {
   function handleFogLevel(level: string): void {
     const numLevel = parseInt(level, 10)
     setFogOpacity(numLevel)
-    dispatch(fogLevelRequest(numLevel))
+    menuActions.setFogLevel(numLevel)
   }
 
   function handleEraserSize(newSize: number): void {
     setSize(newSize)
-    dispatch(eraserSizeRequest(newSize))
+    menuActions.setEraserSize(newSize)
   }
 
   function handleResetFog(): void {
-    dispatch(fogReset())
+    menuActions.resetFog()
     socket.emit('line.message', [])
   }
 

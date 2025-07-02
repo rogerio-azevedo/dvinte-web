@@ -3,7 +3,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import { useEffect, useRef, useCallback, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useAuth } from '../../../contexts/AuthContext'
 import { useForm, Controller } from 'react-hook-form'
 import { Link } from 'react-router'
 import { toast } from 'react-toastify'
@@ -50,8 +50,8 @@ export default function CharBase() {
   const { state, actions } = useCharacterCreation()
 
   // Dados do usuário ainda vêm do Redux
-  const profile = useSelector((state: any) => state.user?.profile) || { id: 1 }
-  const userId = profile.id
+  const { user } = useAuth()
+  const userId = user?.id
 
   const formRef = useRef<HTMLFormElement | null>(null)
 

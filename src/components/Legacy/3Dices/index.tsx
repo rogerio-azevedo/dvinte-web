@@ -1,4 +1,7 @@
+/* eslint-disable no-console */
+
 import React, { useState, useRef, ChangeEvent } from 'react'
+import { useDices } from '../../../contexts/DicesContext'
 //import { useSelector } from 'react-redux'
 
 //import api from '../../../services/api'
@@ -8,6 +11,8 @@ import * as Styles from './styles'
 type DiceType = 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20'
 
 const Dices: React.FC = () => {
+  const { state } = useDices()
+  console.log('3Dices state:', state)
   //const profile = useSelector(state => state.user.profile)
   const [multiplier, setMultiplier] = useState<number>(1)
   const [input, setInput] = useState<DiceType>('d20')

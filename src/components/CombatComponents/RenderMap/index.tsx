@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 
-import React, { useState, useEffect, useMemo, ReactElement } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import React, { useState, useEffect, ReactElement } from 'react'
+import { useAuth } from '../../../contexts/AuthContext'
+import { useMenu } from '../../../contexts/MenuContext'
 import { Stage, Layer, Line, Image, Rect } from 'react-konva'
 import useImage from 'use-image'
 
-import { fogPersistRequest } from '../../../store/modules/menu/actions'
 import { connect, socket } from '../../../services/socket'
 import CharToken from '../CharToken'
 import { Container } from './styles'
@@ -16,7 +16,6 @@ import {
   MapData,
   Line as LineType,
   StagePos,
-  RootState,
 } from './interfaces'
 
 export default function RenderMap({
@@ -24,10 +23,9 @@ export default function RenderMap({
   allowDrag,
   setTokens,
 }: RenderMapProps) {
-  const profile = useSelector((state: RootState) => state.user.profile)
-  const { fogLevel, eraserSize, fogPersist } = useSelector(
-    (state: RootState) => state.menu
-  )
+  const { user } = useAuth()
+  const { state: menuState, actions: menuActions } = useMenu()
+  const { fogLevel, eraserSize, fogPersist } = menuState
 
   const [stagePos, setStagePos] = useState<StagePos>({ x: 0, y: 0 })
   const [stageScale, setStageScale] = useState<number>(1)
@@ -39,8 +37,8 @@ export default function RenderMap({
   const [mapData, setMapData] = useState<MapData>({} as MapData)
   const [myToken, setMyToken] = useState<number>(0)
 
-  const dispatch = useDispatch()
-  const { is_gm } = profile
+  // dispatch migrado para menuActions
+  const is_gm = user?.is_gm
   const grid = 68
   const gridWidth =
     mapData?.width > mapData?.height ? mapData?.width : mapData?.height
@@ -112,12 +110,12 @@ export default function RenderMap({
     connect()
 
     async function getcharToken() {
-      const response = await api.get(`combats/${profile.id}`)
+      const response = await api.get(`combats/${user?.id}`)
       setMyToken(response.data.Cod)
     }
 
     getcharToken()
-  }, [profile.id]) // eslint-disable-line
+  }, [user?.id]) // eslint-disable-line
 
   function handleMouseDown(e: any) {
     if (e.evt.button === 2 && !allowDrag) {
@@ -172,9 +170,9 @@ export default function RenderMap({
     })
   }, [lines])
 
-  useMemo(() => {
-    dispatch(fogPersistRequest(lines))
-  }, [lines, dispatch])
+  useEffect(() => {
+    menuActions.setFogPersist(lines)
+  }, [lines, menuActions])
 
   const [map] = useImage(mapData?.battle || '')
   const [portrait] = useImage(mapData?.portrait || '')

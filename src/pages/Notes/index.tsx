@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { useSelector } from 'react-redux'
+import { useAuth } from '../../contexts/AuthContext'
 import { toast } from 'react-toastify'
 import { format, parseISO } from 'date-fns'
 import { utcToZonedTime } from 'date-fns-tz'
@@ -15,17 +15,8 @@ interface Note {
   note: string
 }
 
-interface RootState {
-  user: {
-    profile: {
-      id: number
-      name: string
-    }
-  }
-}
-
 export default function Notes() {
-  const profile = useSelector((state: RootState) => state.user.profile)
+  const { user } = useAuth()
 
   const [note, setNote] = useState('')
   const [notes, setNotes] = useState<Note[]>([])
@@ -49,7 +40,7 @@ export default function Notes() {
     try {
       const response = await api.get('/notes', {
         params: {
-          user_id: profile.id,
+          user_id: user?.id,
         },
       })
 
@@ -82,8 +73,8 @@ export default function Notes() {
 
     if (note.trim()) {
       api.post('notes', {
-        user_id: profile.id,
-        user: profile.name,
+        user_id: user?.id,
+        user: user?.name,
         note,
       })
 

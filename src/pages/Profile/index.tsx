@@ -1,9 +1,7 @@
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import { Form, Input } from '@rocketseat/unform'
 
-import { signOut } from '../../store/modules/auth/actions'
-import { updateProfileRequest } from '../../store/modules/user/actions'
+import { useAuth } from '../../contexts/AuthContext'
 // import AvatarInput from './AvatarInput'
 
 import { Container } from './styles'
@@ -17,28 +15,20 @@ interface ProfileData {
   avatar_id?: number
 }
 
-interface RootState {
-  user: {
-    profile: ProfileData
-  }
-}
-
 const Profile: React.FC = () => {
-  const dispatch = useDispatch()
-
-  const profile = useSelector((state: RootState) => state.user.profile)
+  const { user, updateProfile, signOut } = useAuth()
 
   const handleSubmit = (data: ProfileData): void => {
-    dispatch(updateProfileRequest(data))
+    updateProfile(data)
   }
 
   const handleSignOut = (): void => {
-    dispatch(signOut())
+    signOut()
   }
 
   return (
     <Container>
-      <Form initialData={profile} onSubmit={handleSubmit}>
+      <Form initialData={user} onSubmit={handleSubmit}>
         {/* <AvatarInput name="avatar_id" /> */}
         <Input name="name" placeholder="Nome completo" />
         <Input type="email" name="email" placeholder="Seu e-mail" />

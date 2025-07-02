@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
-import history from '../../../services/history'
 
 import { useCharacterCreation } from '../../../contexts/CharacterCreationContext'
 
@@ -12,6 +11,7 @@ import ButtonPrev from '../../../components/ButtonPrev'
 import ButtonNext from '../../../components/ButtonNext'
 
 import * as Styles from './styles'
+import { navigate } from '../../../services/navigate'
 
 interface CharacterClass {
   id: number
@@ -294,7 +294,7 @@ export default function CharPreview() {
       toast.success('Personagem criado com sucesso!')
       actions.resetCharacter()
       localStorage.removeItem('character_creation_in_progress')
-      history.push('/characters')
+      navigate('/characters')
     } catch (error: any) {
       console.error('Erro ao criar personagem:', error)
       console.error('📋 Response data:', error.response?.data)

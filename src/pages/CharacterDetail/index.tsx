@@ -177,7 +177,8 @@ export default function CharacterDetail() {
 
   useEffect(() => {
     loadChar()
-  }, [id])
+    // loadChar é uma função que não muda entre renderizações
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Styles.Container $loading={loading}>

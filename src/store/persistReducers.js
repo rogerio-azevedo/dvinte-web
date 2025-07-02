@@ -1,9 +1,7 @@
 import storage from 'redux-persist/lib/storage'
 import { persistReducer } from 'redux-persist'
-import { Reducer } from 'redux'
-import { RootState } from './types'
 
-const persistReducers = (reducers: Reducer<RootState>) => {
+const persistConfig = reducers => {
   const persistedReducer = persistReducer(
     {
       key: 'dvinte',
@@ -15,4 +13,4 @@ const persistReducers = (reducers: Reducer<RootState>) => {
   return persistedReducer
 }
 
-export default persistReducers
+export default persistConfig

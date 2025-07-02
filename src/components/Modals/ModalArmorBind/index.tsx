@@ -55,7 +55,7 @@ const ModalArmorBind: React.FC<ModalArmorBindProps> = ({ armor }) => {
   const [characters, setCharacters] = useState<
     { value: string; label: string }[]
   >([])
-  const [loadingCharacters, setLoadingCharacters] = useState(false)
+  // const [loadingCharacters, setLoadingCharacters] = useState(false)
 
   // Monitorar o valor do personagem selecionado
   const selectedCharacter = watch('character')
@@ -68,7 +68,6 @@ const ModalArmorBind: React.FC<ModalArmorBindProps> = ({ armor }) => {
 
   async function loadCharacters() {
     try {
-      setLoadingCharacters(true)
       const response = await api.get('/characters')
       const charactersData = response.data || []
 
@@ -80,8 +79,6 @@ const ModalArmorBind: React.FC<ModalArmorBindProps> = ({ armor }) => {
       setCharacters(characterOptions)
     } catch (error) {
       toast.error('Erro ao carregar personagens')
-    } finally {
-      setLoadingCharacters(false)
     }
   }
 

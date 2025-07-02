@@ -1,17 +1,13 @@
 import produce from 'immer'
-import { CharacterState, ReduxAction } from '../../types'
 
-const INITIAL_STATE: CharacterState = {
+const INITIAL_STATE = {
   portrait: null,
   base: null,
   classe: null,
   attributes: null,
 }
 
-export default function character(
-  state = INITIAL_STATE,
-  action: ReduxAction
-): CharacterState {
+export default function character(state = INITIAL_STATE, action) {
   return produce(state, draft => {
     switch (action.type) {
       case '@character/CHAR_PORTRAIT_SUCCESS': {

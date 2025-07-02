@@ -134,7 +134,8 @@ const MapTool: React.FC = () => {
 
   useEffect(() => {
     loadCampaigns()
-  }, [profile.id])
+    // loadCampaigns é uma função que não muda entre renderizações
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleCampaignChange(campaignId: number): void {
     setSelectedCampaign(campaignId)

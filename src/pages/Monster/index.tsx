@@ -6,7 +6,7 @@ import api from '../../services/api'
 
 import { Container, TableContainer, Portrait } from './styles'
 
-interface Monster {
+interface MonsterProps {
   id: number
   name: string
   challenge: number
@@ -19,7 +19,7 @@ interface Monster {
 }
 
 export default function Monster() {
-  const [list, setList] = useState<Monster[]>([])
+  const [list, setList] = useState<MonsterProps[]>([])
   const [loading, setLoading] = useState(false)
 
   async function loadChar() {
@@ -34,7 +34,7 @@ export default function Monster() {
     loadChar()
   }, []) // eslint-disable-line
 
-  const columns: ColumnsType<Monster> = [
+  const columns: ColumnsType<MonsterProps> = [
     {
       title: 'Portrait',
       dataIndex: 'monster_url',
@@ -72,7 +72,8 @@ export default function Monster() {
     {
       title: 'Sub Tipo',
       dataIndex: 'sub_type',
-      render: (text: string | null, item: Monster) => item.sub_type || 'NENHUM',
+      render: (text: string | null, item: MonsterProps) =>
+        item.sub_type || 'NENHUM',
     },
     {
       title: 'Tamanho',
@@ -87,7 +88,7 @@ export default function Monster() {
     {
       title: 'Ação',
       dataIndex: 'ver',
-      render: (text: string, item: Monster) => (
+      render: (text: string, item: MonsterProps) => (
         <Link to={`/monsterview/${item.id}`}>Ver</Link>
       ),
     },

@@ -1,23 +1,14 @@
 import produce from 'immer'
-import { UserState, UserActions } from './types'
 
-const INITIAL_STATE: UserState = {
+const INITIAL_STATE = {
   profile: null,
 }
 
-export default function user(
-  state = INITIAL_STATE,
-  action:
-    | UserActions
-    | {
-        type: '@auth/SIGN_IN_SUCCESS' | '@auth/SIGN_OUT'
-        payload?: { user: any }
-      }
-): UserState {
+export default function user(state = INITIAL_STATE, action) {
   return produce(state, draft => {
     switch (action.type) {
       case '@auth/SIGN_IN_SUCCESS': {
-        draft.profile = action.payload?.user || null
+        draft.profile = action.payload.user
         break
       }
 

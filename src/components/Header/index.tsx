@@ -14,7 +14,7 @@ interface RootState {
     profile: {
       name: string
       avatar?: string
-    }
+    } | null
   }
   menu: {
     chatMenu: boolean
@@ -32,7 +32,11 @@ export default function Header() {
     setChatMenu(!chatMenu)
   }
 
-  const defaultAvatar = 'https://api.adorable.io/avatars/50/abott@adorable.png'
+  const defaultAvatar = '/favicon.ico'
+
+  if (!profile) {
+    return null
+  }
 
   return (
     <Styles.Container>

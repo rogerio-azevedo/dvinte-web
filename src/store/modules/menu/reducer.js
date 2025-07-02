@@ -1,13 +1,11 @@
-import { MenuState, ReduxAction } from '../../types'
-
-const INITIAL_STATE: MenuState = {
+const INITIAL_STATE = {
   chatMenu: null,
   fogLevel: 60,
   eraserSize: 60,
   fogPersist: [],
 }
 
-const menuReducer = (state = INITIAL_STATE, action: ReduxAction): MenuState => {
+const menuReducer = function menu(state = INITIAL_STATE, action) {
   switch (action.type) {
     case '@menu/SHOW_MENU_SUCCESS':
       return {

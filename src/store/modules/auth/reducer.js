@@ -1,16 +1,12 @@
 import produce from 'immer'
-import { AuthState, ReduxAction } from '../../types'
 
-const INITIAL_STATE: AuthState = {
+const INITIAL_STATE = {
   token: null,
   signed: false,
   loading: false,
 }
 
-export default function auth(
-  state = INITIAL_STATE,
-  action: ReduxAction
-): AuthState {
+export default function auth(state = INITIAL_STATE, action) {
   return produce(state, draft => {
     switch (action.type) {
       case '@auth/SIGN_IN_REQUEST': {

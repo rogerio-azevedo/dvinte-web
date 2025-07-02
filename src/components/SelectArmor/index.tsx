@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import Select, { ActionMeta, SingleValue } from 'react-select'
+import { useEffect, useState } from "react"
+import Select, { type ActionMeta, type SingleValue } from "react-select"
 
 interface Option {
   value: string
@@ -19,7 +19,7 @@ export default function SelectArmor({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const data = weapons.map(weapon => ({
+    const data = weapons.map((weapon) => ({
       value: weapon.value,
       label: weapon.label.toUpperCase(),
     }))
@@ -31,13 +31,13 @@ export default function SelectArmor({
   const customStyles = {
     input: (styles: any) => ({
       ...styles,
-      height: '30px',
-      minHeight: '30px',
+      height: "30px",
+      minHeight: "30px",
     }),
   }
 
   return (
-    <div style={{ width: '220px', marginRight: '15px' }}>
+    <div style={{ width: "220px", marginRight: "15px" }}>
       <Select
         styles={customStyles}
         maxMenuHeight={220}

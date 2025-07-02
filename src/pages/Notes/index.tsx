@@ -1,86 +1,87 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
-import { toast } from 'react-toastify'
-import { format, parseISO } from 'date-fns'
-import { utcToZonedTime } from 'date-fns-tz'
-import api from '../../services/api'
+import React, { useEffect, useState, useRef } from "react";
+import { useAuth } from "../../contexts";
+import { toast } from "react-toastify";
+import { format, parseISO } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
+import api from "../../services/api";
 
-import * as Styles from './styles'
+import * as Styles from "./styles";
 
-import { connect, socket } from '../../services/socket'
+import { connect, socket } from "../../services/socket";
 
 interface Note {
-  date: string
-  user: string
-  note: string
+  date: string;
+  user: string;
+  note: string;
 }
 
 export default function Notes() {
-  const { user } = useAuth()
+  const { user } = useAuth();
 
-  const [note, setNote] = useState('')
-  const [notes, setNotes] = useState<Note[]>([])
+  const [note, setNote] = useState("");
+  const [notes, setNotes] = useState<Note[]>([]);
 
-  const messagesEndRef = useRef<HTMLLIElement>(null)
+  const messagesEndRef = useRef<HTMLLIElement>(null);
 
   function formatDate(date: string) {
-    const convertedDate = parseISO(date)
-    const localDate = utcToZonedTime(convertedDate, 'America/Sao_Paulo')
+    const convertedDate = parseISO(date);
+    const localDate = toZonedTime(convertedDate, "America/Sao_Paulo");
 
-    return format(localDate, 'dd-MM-yy HH:mm:ss')
+    return format(localDate, "dd-MM-yy HH:mm:ss");
   }
 
   function scrollToBottom() {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }
 
   async function loadAllMessages() {
     try {
-      const response = await api.get('/notes', {
+      const response = await api.get("/notes", {
         params: {
           user_id: user?.id,
         },
-      })
+      });
 
-      setNotes(response.data)
-    } catch (e) {
-      toast.error('Conexao com a API mal sucedida.')
+      setNotes(response.data);
+    } catch (error) {
+      console.error("Erro ao carregar notas:", error);
+      toast.error("Conexao com a API mal sucedida.");
     }
   }
 
   useEffect(() => {
-    scrollToBottom()
-  })
+    scrollToBottom();
+  });
 
   useEffect(() => {
-    connect()
-    loadAllMessages()
-  }, []) // eslint-disable-line
+    connect();
+    loadAllMessages();
+  }, []); // eslint-disable-line
 
   useEffect(() => {
     const handleNewMessage = (newMessage: Note) =>
-      setNotes([...notes, newMessage])
+      setNotes([...notes, newMessage]);
 
-    socket.on('note.message', handleNewMessage)
+    socket.on("note.message", handleNewMessage);
 
-    return () => socket.off('note.message', handleNewMessage)
-  }, [notes])
+    return () => socket.off("note.message", handleNewMessage);
+  }, [notes]);
 
   const handleFormSubmit = (event: React.FormEvent) => {
-    event.preventDefault()
+    event.preventDefault();
 
     if (note.trim()) {
-      api.post('notes', {
+      api.post("notes", {
         user_id: user?.id,
         user: user?.name,
         note,
-      })
+      });
 
-      setNote('')
+      setNote("");
     }
-  }
+  };
 
   return (
     <Styles.Container>
@@ -107,7 +108,7 @@ export default function Notes() {
 
         <Styles.FormMessage onSubmit={handleFormSubmit}>
           <Styles.InputMessage
-            onChange={e => setNote(e.target.value)}
+            onChange={(e) => setNote(e.target.value)}
             placeholder="Nota..."
             type="text"
             value={note}
@@ -115,5 +116,5 @@ export default function Notes() {
         </Styles.FormMessage>
       </Styles.ChatContainer>
     </Styles.Container>
-  )
+  );
 }

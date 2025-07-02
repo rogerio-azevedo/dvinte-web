@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import Select, { ActionMeta, SingleValue } from 'react-select'
+import { useEffect, useState } from "react"
+import Select, { type ActionMeta, type SingleValue } from "react-select"
 
 interface Option {
   value: string
@@ -21,7 +21,7 @@ export default function SelectGender({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const data = genders.map(gender => ({
+    const data = genders.map((gender) => ({
       value: gender.value,
       label: gender.label.toUpperCase(),
     }))
@@ -33,15 +33,15 @@ export default function SelectGender({
   const customStyles = {
     input: (styles: any) => ({
       ...styles,
-      height: '30px',
-      minHeight: '30px',
+      height: "30px",
+      minHeight: "30px",
     }),
   }
 
   return (
-    <div style={{ width: '220px', marginRight: '15px' }}>
+    <div style={{ width: "220px", marginRight: "15px" }}>
       <Select
-        value={genderOptions.find(option => option.value === value)}
+        value={genderOptions.find((option) => option.value === value)}
         styles={customStyles}
         maxMenuHeight={220}
         placeholder="ESCOLHA O GÊNERO"

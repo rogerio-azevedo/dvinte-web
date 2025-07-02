@@ -1,109 +1,110 @@
 /* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router'
-import { toast } from 'react-toastify'
-import api from '../../../services/api'
+import { useState, useEffect } from "react";
+import { Link } from "react-router";
+import { toast } from "react-toastify";
+import api from "../../../services/api";
 
-import { useCharacterCreation } from '../../../contexts/CharacterCreationContext'
+import { useCharacterCreation } from "../../../contexts";
 
-import ButtonPrev from '../../../components/ButtonPrev'
-import ButtonNext from '../../../components/ButtonNext'
+import ButtonPrev from "../../../components/ButtonPrev";
+import ButtonNext from "../../../components/ButtonNext";
 
-import * as Styles from './styles'
-import { navigate } from '../../../services/navigate'
+import * as Styles from "./styles";
+import { navigate } from "../../../services/navigate";
 
 interface CharacterClass {
-  id: number
-  className: string
-  level: number
+  id: number;
+  className: string;
+  level: number;
 }
 
 interface Character {
-  name: string
-  age: string
-  gender: string
-  skin: string
-  eye: string
-  hair: string
-  height: string
-  weight: string
-  level: string
-  health: number
-  health_now: number
-  exp: number
-  size: string
-  user_id: number
-  portrait_id: string
-  alignment_id: string
-  race_id: string
-  divinity_id: string
-  is_ativo: boolean
-  classe: CharacterClass[]
+  name: string;
+  age: string;
+  gender: string;
+  skin: string;
+  eye: string;
+  hair: string;
+  height: string;
+  weight: string;
+  level: string;
+  health: number;
+  health_now: number;
+  exp: number;
+  size: string;
+  user_id: number;
+  portrait_id: string;
+  alignment_id: string;
+  race_id: string;
+  divinity_id: string;
+  is_ativo: boolean;
+  classe: CharacterClass[];
   attributes: {
-    str: number
-    dex: number
-    con: number
-    int: number
-    wis: number
-    cha: number
-  }
+    str: number;
+    dex: number;
+    con: number;
+    int: number;
+    wis: number;
+    cha: number;
+  };
 }
 
 export default function CharPreview() {
-  const { state, actions } = useCharacterCreation()
+  const { state, actions } = useCharacterCreation();
 
-  const [character, setCharacter] = useState<Character | undefined>()
-  const [portrait, setPortrait] = useState<string | undefined>()
-  const [race, setRace] = useState<string | undefined>()
-  const [divinity, setDivinity] = useState<string | undefined>()
-  const [alignment, setAlignment] = useState<string | undefined>()
+  const [character, setCharacter] = useState<Character | undefined>();
+  const [portrait, setPortrait] = useState<string | undefined>();
+  const [race, setRace] = useState<string | undefined>();
+  const [divinity, setDivinity] = useState<string | undefined>();
+  const [alignment, setAlignment] = useState<string | undefined>();
 
   function getGender(gender: string): string {
-    if (gender === 'M' || gender === '1') {
-      return 'MASCULINO'
+    if (gender === "M" || gender === "1") {
+      return "MASCULINO";
     }
-    if (gender === 'F' || gender === '2') {
-      return 'FEMININO'
+    if (gender === "F" || gender === "2") {
+      return "FEMININO";
     }
-    return 'MASCULINO' // fallback
+    return "MASCULINO"; // fallback
   }
 
   function getSize(size: string): string {
-    if (size === '1') {
-      return 'PEQUENO'
+    if (size === "1") {
+      return "PEQUENO";
     }
-    if (size === '2') {
-      return 'MEDIO'
+    if (size === "2") {
+      return "MEDIO";
     }
-    if (size === '3') {
-      return 'GRANDE'
+    if (size === "3") {
+      return "GRANDE";
     }
-    return 'MEDIO' // fallback
+    return "MEDIO"; // fallback
   }
 
   useEffect(() => {
     // Carregar dados básicos se disponíveis
     if (state.base) {
       const characterData: Character = {
-        name: state.base.name || '',
-        age: state.base.age || '',
-        gender: state.base.gender || '',
-        skin: state.base.skin || '',
-        eye: state.base.eye || '',
-        hair: state.base.hair || '',
-        height: state.base.height || '',
-        weight: state.base.weight || '',
-        level: state.base.level || '',
+        name: state.base.name || "",
+        age: state.base.age || "",
+        gender: state.base.gender || "",
+        skin: state.base.skin || "",
+        eye: state.base.eye || "",
+        hair: state.base.hair || "",
+        height: state.base.height || "",
+        weight: state.base.weight || "",
+        level: state.base.level || "",
         health: 0,
         health_now: 0,
         exp: 0,
-        size: state.base.size || '',
+        size: state.base.size || "",
         user_id: state.base.user_id || 1,
-        portrait_id: state.portrait || '',
-        alignment_id: state.base.alignment || '',
-        race_id: state.base.race || '',
-        divinity_id: state.base.divinity || '',
+        portrait_id: state.portrait || "",
+        alignment_id: state.base.alignment || "",
+        race_id: state.base.race || "",
+        divinity_id: state.base.divinity || "",
         is_ativo: true,
         classe: state.classe || [],
         attributes: state.attributes || {
@@ -114,95 +115,95 @@ export default function CharPreview() {
           wis: 0,
           cha: 0,
         },
-      }
+      };
 
-      console.log('🔍 CharPreview - Estado do contexto:', {
+      console.log("🔍 CharPreview - Estado do contexto:", {
         base: state.base,
         portrait: state.portrait,
         classe: state.classe,
         attributes: state.attributes,
-      })
+      });
 
-      console.log('🔍 CharPreview - Character montado:', characterData)
+      console.log("🔍 CharPreview - Character montado:", characterData);
 
-      setCharacter(characterData)
+      setCharacter(characterData);
     }
-  }, [state.base, state.portrait, state.classe, state.attributes])
+  }, [state.base, state.portrait, state.classe, state.attributes]);
 
   useEffect(() => {
     async function loadPortrait(): Promise<void> {
       try {
-        const response = await api.get(`/portraits/${state.portrait}`)
-        setPortrait(response.data.url)
+        const response = await api.get(`/portraits/${state.portrait}`);
+        setPortrait(response.data.url);
       } catch (error) {
-        console.error('Erro ao carregar portrait:', error)
-        setPortrait('')
+        console.error("Erro ao carregar portrait:", error);
+        setPortrait("");
       }
     }
 
     if (state.portrait) {
-      loadPortrait()
+      loadPortrait();
     } else {
-      setPortrait('')
+      setPortrait("");
     }
-  }, [state.portrait])
+  }, [state.portrait]);
 
   useEffect(() => {
     if (!state.base?.race) {
-      setRace('')
-      return
+      setRace("");
+      return;
     }
 
     async function loadRace(): Promise<void> {
       try {
-        const response = await api.get(`races/${state.base.race}`)
-        setRace(response.data.name)
+        const response = await api.get(`races/${state.base.race}`);
+        setRace(response.data.name);
       } catch (error) {
-        console.error('Erro ao carregar raça:', error)
-        setRace('')
+        console.error("Erro ao carregar raça:", error);
+        setRace("");
       }
     }
 
-    loadRace()
-  }, [state.base?.race])
+    loadRace();
+  }, [state.base?.race]);
 
   useEffect(() => {
     if (!state.base?.divinity) {
-      setDivinity('')
-      return
+      setDivinity("");
+      return;
     }
 
     async function loadDivinitie(): Promise<void> {
       try {
-        const response = await api.get(`divinities/${state.base.divinity}`)
-        setDivinity(response.data.name)
+        const response = await api.get(`divinities/${state.base.divinity}`);
+        setDivinity(response.data.name);
       } catch (error) {
-        console.error('Erro ao carregar divindade:', error)
-        setDivinity('')
+        console.error("Erro ao carregar divindade:", error);
+        setDivinity("");
       }
     }
 
-    loadDivinitie()
-  }, [state.base?.divinity])
+    loadDivinitie();
+  }, [state.base?.divinity]);
 
   useEffect(() => {
     if (!state.base?.alignment) {
-      setAlignment('')
-      return
+      setAlignment("");
+      return;
     }
 
     async function loadAlignment(): Promise<void> {
       try {
-        const response = await api.get(`alignments/${state.base.alignment}`)
-        setAlignment(response.data.name)
+        const response = await api.get(`alignments/${state.base.alignment}`);
+        setAlignment(response.data.name);
       } catch (error) {
-        console.error('Erro ao carregar alinhamento:', error)
-        setAlignment('')
+        console.error("Erro ao carregar alinhamento:", error);
+        setAlignment("");
       }
     }
 
-    loadAlignment()
-  }, [state.base?.alignment])
+    loadAlignment();
+  }, [state.base?.alignment]);
 
   async function handleSave(): Promise<void> {
     try {
@@ -213,41 +214,41 @@ export default function CharPreview() {
       ): number => {
         if (
           !value ||
-          value === '' ||
-          value === 'undefined' ||
-          value === 'null'
+          value === "" ||
+          value === "undefined" ||
+          value === "null"
         ) {
-          return fallback
+          return fallback;
         }
-        const parsed = parseInt(value, 10)
-        return isNaN(parsed) ? fallback : parsed
-      }
+        const parsed = parseInt(value, 10);
+        return isNaN(parsed) ? fallback : parsed;
+      };
 
       // Função específica para converter gender
       const convertGender = (gender: string | undefined): number => {
-        if (gender === 'M' || gender === '1') return 1
-        if (gender === 'F' || gender === '2') return 2
-        return 1 // fallback para masculino
-      }
+        if (gender === "M" || gender === "1") return 1;
+        if (gender === "F" || gender === "2") return 2;
+        return 1; // fallback para masculino
+      };
 
       // Função específica para converter size
       const convertSize = (size: string | undefined): number => {
-        if (size === 'PEQUENO' || size === '1') return 1
-        if (size === 'MEDIO' || size === '2') return 2
-        if (size === 'GRANDE' || size === '3') return 3
-        return 2 // fallback para médio
-      }
+        if (size === "PEQUENO" || size === "1") return 1;
+        if (size === "MEDIO" || size === "2") return 2;
+        if (size === "GRANDE" || size === "3") return 3;
+        return 2; // fallback para médio
+      };
 
       // Converter dados para o formato correto esperado pelo backend
       const characterData = {
-        name: character?.name || '',
+        name: character?.name || "",
         age: toNumber(character?.age, 18),
         gender: convertGender(character?.gender),
-        skin: character?.skin || '',
-        eye: character?.eye || '',
-        hair: character?.hair || '',
-        height: character?.height || '',
-        weight: character?.weight || '',
+        skin: character?.skin || "",
+        eye: character?.eye || "",
+        hair: character?.hair || "",
+        height: character?.height || "",
+        weight: character?.weight || "",
         level: toNumber(character?.level, 1),
         health: character?.health || 0,
         health_now: character?.health_now || 0,
@@ -268,10 +269,10 @@ export default function CharPreview() {
           wis: 8,
           cha: 8,
         },
-      }
+      };
 
-      console.log('📤 Dados sendo enviados para o backend:', characterData)
-      console.log('🔍 Verificando campos críticos:', {
+      console.log("📤 Dados sendo enviados para o backend:", characterData);
+      console.log("🔍 Verificando campos críticos:", {
         portrait_id: {
           original: character?.portrait_id,
           fromContext: state.portrait,
@@ -288,17 +289,17 @@ export default function CharPreview() {
           converted: characterData.size,
           type: typeof characterData.size,
         },
-      })
+      });
 
-      await api.post('characters', characterData)
-      toast.success('Personagem criado com sucesso!')
-      actions.resetCharacter()
-      localStorage.removeItem('character_creation_in_progress')
-      navigate('/characters')
+      await api.post("characters", characterData);
+      toast.success("Personagem criado com sucesso!");
+      actions.resetCharacter();
+      localStorage.removeItem("character_creation_in_progress");
+      navigate("/characters");
     } catch (error: any) {
-      console.error('Erro ao criar personagem:', error)
-      console.error('📋 Response data:', error.response?.data)
-      toast.error('Houve um erro ao criar o Personagem')
+      console.error("Erro ao criar personagem:", error);
+      console.error("📋 Response data:", error.response?.data);
+      toast.error("Houve um erro ao criar o Personagem");
     }
   }
 
@@ -316,13 +317,13 @@ export default function CharPreview() {
               ) : (
                 <div
                   style={{
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: '#f0f0f0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#999',
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "#f0f0f0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#999",
                   }}
                 >
                   Sem retrato
@@ -333,25 +334,25 @@ export default function CharPreview() {
             <Styles.BaseContainer>
               <Styles.LineContaniner>
                 <div>
-                  <Styles.InputLarge readOnly value={character?.name || ''} />
+                  <Styles.InputLarge readOnly value={character?.name || ""} />
                   <label htmlFor="CharName">Nome do Personagem</label>
                 </div>
                 <div>
-                  <Styles.InputShort readOnly value={character?.level || ''} />
+                  <Styles.InputShort readOnly value={character?.level || ""} />
                   <label htmlFor="CharAge">Level</label>
                 </div>
 
                 <div>
                   <Styles.InputLarge
                     readOnly
-                    value={race ? race.toUpperCase() : ''}
+                    value={race ? race.toUpperCase() : ""}
                   />
                   <label htmlFor="CharRace">Raça</label>
                 </div>
                 <div>
                   <Styles.InputLarge
                     readOnly
-                    value={alignment ? alignment.toUpperCase() : ''}
+                    value={alignment ? alignment.toUpperCase() : ""}
                   />
                   <label htmlFor="CharAlignment">Tendência</label>
                 </div>
@@ -359,28 +360,28 @@ export default function CharPreview() {
 
               <Styles.LineContaniner>
                 <div>
-                  <Styles.InputShort readOnly value={character?.age || ''} />
+                  <Styles.InputShort readOnly value={character?.age || ""} />
                   <label htmlFor="CharAge">Idade</label>
                 </div>
 
                 <div>
                   <Styles.InputMed
                     readOnly
-                    value={getGender(character?.gender || '')}
+                    value={getGender(character?.gender || "")}
                   />
                   <label htmlFor="CharGender">Sexo</label>
                 </div>
                 <div>
                   <Styles.InputMed
                     readOnly
-                    value={getSize(character?.size || '')}
+                    value={getSize(character?.size || "")}
                   />
                   <label htmlFor="CharSize">Tamanho</label>
                 </div>
                 <div>
                   <Styles.InputLarge
                     readOnly
-                    value={divinity ? divinity.toUpperCase() : ''}
+                    value={divinity ? divinity.toUpperCase() : ""}
                   />
                   <label htmlFor="CharDivinity">Divindade</label>
                 </div>
@@ -388,23 +389,23 @@ export default function CharPreview() {
 
               <Styles.LineContaniner>
                 <div>
-                  <Styles.InputShort value={character?.height || ''} />
+                  <Styles.InputShort value={character?.height || ""} />
                   <label htmlFor="CharHeight">Altura</label>
                 </div>
                 <div>
-                  <Styles.InputShort readOnly value={character?.weight || ''} />
+                  <Styles.InputShort readOnly value={character?.weight || ""} />
                   <label htmlFor="CharWeight">Peso</label>
                 </div>
                 <div>
-                  <Styles.InputMed readOnly value={character?.eye || ''} />
+                  <Styles.InputMed readOnly value={character?.eye || ""} />
                   <label htmlFor="CharEye">Olhos</label>
                 </div>
                 <div>
-                  <Styles.InputMed readOnly value={character?.hair || ''} />
+                  <Styles.InputMed readOnly value={character?.hair || ""} />
                   <label htmlFor="CharHair">Cabelos</label>
                 </div>
                 <div>
-                  <Styles.InputMed readOnly value={character?.skin || ''} />
+                  <Styles.InputMed readOnly value={character?.skin || ""} />
                   <label htmlFor="CharSkin">Pele</label>
                 </div>
               </Styles.LineContaniner>
@@ -476,7 +477,7 @@ export default function CharPreview() {
               <ul>
                 {character?.classe?.map((item, index) => (
                   <li key={item.id || `class-${index}`}>
-                    <Styles.ClassInput readOnly value={item.className || ''} />
+                    <Styles.ClassInput readOnly value={item.className || ""} />
                     <Styles.ClassValueInput readOnly value={item.level || 0} />
                   </li>
                 ))}
@@ -511,5 +512,5 @@ export default function CharPreview() {
 
       <ButtonNext linkto="characters" display="show" handleSave={handleSave} />
     </Styles.Container>
-  )
+  );
 }

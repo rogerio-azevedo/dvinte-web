@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react'
-import { Image, Transformer } from 'react-konva'
-import Konva from 'konva'
-import useImage from 'use-image'
+import { useEffect, useRef } from "react"
+import { Image, Transformer } from "react-konva"
+import Konva from "konva"
+import useImage from "use-image"
 
-import api from '../../../services/api'
+import api from "../../../services/api"
 
 interface CharTokenProps {
   image: string
@@ -14,7 +14,7 @@ interface CharTokenProps {
   height: number
   rotation: number
   onSelect: () => void
-  isSelected: boolean
+  isSelected: boolean | undefined
   draggable: boolean
   opacity: number
 }
@@ -68,7 +68,7 @@ export default function CharToken({
     }
 
     // Salva no banco (o backend já emite via Socket.IO)
-    await api.put('chartokens', tokenData)
+    await api.put("chartokens", tokenData)
   }
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export default function CharToken({
     }
 
     // Salva no banco (o backend já emite via Socket.IO)
-    await api.put('chartokens', tokenData)
+    await api.put("chartokens", tokenData)
   }
 
   const [tokenImg] = useImage(image)

@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react'
-import { useForm, Controller } from 'react-hook-form'
-import { Select } from 'antd'
-import type { ColumnsType } from 'antd/es/table'
+import { useEffect, useState } from "react"
+import { useForm, Controller } from "react-hook-form"
+import { Select } from "antd"
+import type { ColumnsType } from "antd/es/table"
 
-import Button from '../../components/Button'
-import { FaPlusCircle } from 'react-icons/fa'
+import Button from "../../components/Button"
+import { FaPlusCircle } from "react-icons/fa"
 
-import api from '../../services/api'
+import api from "../../services/api"
 
-import * as Styles from './styles'
-import ModalArmorBind from '../../components/Modals/ModalArmorBind'
+import * as Styles from "./styles"
+import ModalArmorBind from "../../components/Modals/ModalArmorBind"
 
 const { Option } = Select
 
@@ -45,18 +45,18 @@ interface ArmorProps {
 }
 
 const defaultValues: Partial<ArmorFormData> = {
-  name: '',
-  type: '',
-  bonus: '',
-  dexterity: '',
-  penalty: '',
-  magic: '',
-  displacement_s: '',
-  displacement_m: '',
-  weight: '',
-  price: '',
-  book: '',
-  version: '',
+  name: "",
+  type: "",
+  bonus: "",
+  dexterity: "",
+  penalty: "",
+  magic: "",
+  displacement_s: "",
+  displacement_m: "",
+  weight: "",
+  price: "",
+  book: "",
+  version: "",
 }
 
 export default function Armor() {
@@ -65,17 +65,17 @@ export default function Armor() {
   })
   const [loading, setLoading] = useState(false)
   const [list, setList] = useState<ArmorProps[]>([])
-  const [showform, setShowform] = useState<'hide' | 'show'>('hide')
+  const [showform, setShowform] = useState<"hide" | "show">("hide")
 
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true)
-        const response = await api.get('/armors')
+        const response = await api.get("/armors")
         setList(response.data || [])
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.error('Erro ao carregar armaduras:', error)
+        console.error("Erro ao carregar armaduras:", error)
         setList([])
       } finally {
         setLoading(false)
@@ -88,14 +88,14 @@ export default function Armor() {
   const onSubmit = async (data: ArmorFormData) => {
     try {
       setLoading(true)
-      const response = await api.post('/armors', data)
+      const response = await api.post("/armors", data)
       const newList = [response.data, ...list]
       setList(newList)
       reset(defaultValues)
-      setShowform('hide')
+      setShowform("hide")
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('Erro ao salvar armadura:', error)
+      console.error("Erro ao salvar armadura:", error)
     } finally {
       setLoading(false)
     }
@@ -103,87 +103,87 @@ export default function Armor() {
 
   const columns: ColumnsType<ArmorProps> = [
     {
-      title: 'Cod',
-      dataIndex: 'id',
-      key: 'id',
+      title: "Cod",
+      dataIndex: "id",
+      key: "id",
       width: 80,
     },
     {
-      title: 'Nome',
-      dataIndex: 'name',
-      key: 'name',
+      title: "Nome",
+      dataIndex: "name",
+      key: "name",
     },
     {
-      title: 'Tipo',
-      dataIndex: 'type',
-      render: type => {
+      title: "Tipo",
+      dataIndex: "type",
+      render: (type) => {
         switch (type) {
           case 1:
-            return 'Armadura'
+            return "Armadura"
           case 2:
-            return 'Escudo'
+            return "Escudo"
           case 3:
-            return 'Natural'
+            return "Natural"
           case 5:
-            return 'Outros'
+            return "Outros"
           default:
-            return 'Desconhecido'
+            return "Desconhecido"
         }
       },
     },
     {
-      title: 'Bônus',
-      dataIndex: 'bonus',
-      key: 'bonus',
+      title: "Bônus",
+      dataIndex: "bonus",
+      key: "bonus",
     },
     {
-      title: 'Destreza',
-      dataIndex: 'dexterity',
-      key: 'dexterity',
+      title: "Destreza",
+      dataIndex: "dexterity",
+      key: "dexterity",
     },
     {
-      title: 'Penalidade',
-      dataIndex: 'penalty',
-      key: 'penalty',
+      title: "Penalidade",
+      dataIndex: "penalty",
+      key: "penalty",
     },
     {
-      title: 'Mágica',
-      dataIndex: 'magic',
-      key: 'magic',
+      title: "Mágica",
+      dataIndex: "magic",
+      key: "magic",
     },
     {
-      title: 'Desloc (P)',
-      dataIndex: 'displacement_s',
-      key: 'displacement_s',
+      title: "Desloc (P)",
+      dataIndex: "displacement_s",
+      key: "displacement_s",
     },
     {
-      title: 'Desloc (M)',
-      dataIndex: 'displacement_m',
-      key: 'displacement_m',
+      title: "Desloc (M)",
+      dataIndex: "displacement_m",
+      key: "displacement_m",
     },
     {
-      title: 'Peso',
-      dataIndex: 'weight',
+      title: "Peso",
+      dataIndex: "weight",
       render: (_, item) => `${item.weight} kg`,
     },
     {
-      title: 'Preço',
-      dataIndex: 'price',
+      title: "Preço",
+      dataIndex: "price",
       render: (_, item) => `${item.price || 0} PO`,
     },
     {
-      title: 'Livro',
-      dataIndex: 'book',
-      key: 'book',
+      title: "Livro",
+      dataIndex: "book",
+      key: "book",
     },
     {
-      title: 'Versão',
-      dataIndex: 'version',
-      key: 'version',
+      title: "Versão",
+      dataIndex: "version",
+      key: "version",
     },
     {
-      title: 'Comprar',
-      dataIndex: 'buy',
+      title: "Comprar",
+      dataIndex: "buy",
       render: (_, item) => (
         <ModalArmorBind armor={{ id: String(item.id), name: item.name }} />
       ),
@@ -191,7 +191,7 @@ export default function Armor() {
   ]
 
   function handleAdd() {
-    setShowform('show')
+    setShowform("show")
   }
 
   return (
@@ -204,7 +204,7 @@ export default function Armor() {
             color="#8e0e00"
             size={40}
             onClick={handleAdd}
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "pointer" }}
           />
         </Styles.HeaderContainer>
 
@@ -213,7 +213,7 @@ export default function Armor() {
             <Styles.InputContainer>
               <div>
                 <label htmlFor="name">Nome</label>
-                <Styles.InputLarge {...register('name', { required: true })} />
+                <Styles.InputLarge {...register("name", { required: true })} />
               </div>
               <div>
                 <label htmlFor="type">Tipo</label>
@@ -226,7 +226,7 @@ export default function Armor() {
                       {...field}
                       size="large"
                       showSearch
-                      style={{ width: '100%' }}
+                      style={{ width: "100%" }}
                       placeholder="Escolha o Tipo"
                       optionFilterProp="children"
                       filterOption={(input, option) => {
@@ -253,28 +253,28 @@ export default function Armor() {
                 <label htmlFor="bonus">Bônus</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('bonus', { required: true })}
+                  {...register("bonus", { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="dexterity">Destreza</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('dexterity', { required: true })}
+                  {...register("dexterity", { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="penalty">Penalidade</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('penalty', { required: true })}
+                  {...register("penalty", { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="magic">Mágica</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('magic', { required: true })}
+                  {...register("magic", { required: true })}
                 />
               </div>
             </Styles.InputContainer>
@@ -284,14 +284,14 @@ export default function Armor() {
                 <label htmlFor="displacement_s">Desloc (P)</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('displacement_s', { required: true })}
+                  {...register("displacement_s", { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="displacement_m">Desloc (M)</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('displacement_m', { required: true })}
+                  {...register("displacement_m", { required: true })}
                 />
               </div>
               <div>
@@ -299,14 +299,14 @@ export default function Armor() {
                 <Styles.InputMed
                   type="number"
                   step="0.1"
-                  {...register('weight', { required: true })}
+                  {...register("weight", { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="price">Preço</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('price', { required: true })}
+                  {...register("price", { required: true })}
                 />
               </div>
             </Styles.InputContainer>
@@ -314,7 +314,7 @@ export default function Armor() {
             <Styles.InputContainer>
               <div>
                 <label htmlFor="book">Livro</label>
-                <Styles.InputLarge {...register('book', { required: true })} />
+                <Styles.InputLarge {...register("book", { required: true })} />
               </div>
 
               <div>
@@ -328,7 +328,7 @@ export default function Armor() {
                       {...field}
                       size="large"
                       showSearch
-                      style={{ width: '100%' }}
+                      style={{ width: "100%" }}
                       placeholder="Escolha a Versão"
                       optionFilterProp="children"
                       filterOption={(input, option) => {

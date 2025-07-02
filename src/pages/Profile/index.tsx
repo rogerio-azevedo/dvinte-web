@@ -1,34 +1,35 @@
-import React from 'react'
-import { Form, Input } from '@rocketseat/unform'
+import React from "react";
+import { Form, Input } from "@rocketseat/unform";
 
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from "../../contexts";
 // import AvatarInput from './AvatarInput'
 
-import { Container } from './styles'
-
-interface ProfileData {
-  name: string
-  email: string
-  oldPassword?: string
-  password?: string
-  confirmPassword?: string
-  avatar_id?: number
-}
+import { Container } from "./styles";
 
 const Profile: React.FC = () => {
-  const { user, updateProfile, signOut } = useAuth()
+  const { user, updateProfile, signOut } = useAuth();
 
-  const handleSubmit = (data: ProfileData): void => {
-    updateProfile(data)
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSubmit = (data: any): void => {
+    const { name, email, oldPassword, password, confirmPassword, avatar_id } =
+      data;
+    updateProfile({
+      name,
+      email,
+      oldPassword,
+      password,
+      confirmPassword,
+      avatar_id,
+    });
+  };
 
   const handleSignOut = (): void => {
-    signOut()
-  }
+    signOut();
+  };
 
   return (
     <Container>
-      <Form initialData={user} onSubmit={handleSubmit}>
+      <Form initialData={user || undefined} onSubmit={handleSubmit}>
         {/* <AvatarInput name="avatar_id" /> */}
         <Input name="name" placeholder="Nome completo" />
         <Input type="email" name="email" placeholder="Seu e-mail" />
@@ -52,7 +53,7 @@ const Profile: React.FC = () => {
         Sair
       </button>
     </Container>
-  )
-}
+  );
+};
 
-export default Profile
+export default Profile;

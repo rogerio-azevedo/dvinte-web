@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import Select, { SingleValue } from 'react-select'
+import { useEffect, useState } from "react"
+import Select, { type SingleValue } from "react-select"
 
 interface Option {
   value: string
@@ -19,7 +19,7 @@ export default function SelectCharacter({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const data = characters.map(character => ({
+    const data = characters.map((character) => ({
       value: character.value,
       label: character.label.toUpperCase(),
     }))
@@ -31,8 +31,8 @@ export default function SelectCharacter({
   const customStyles = {
     input: (styles: any) => ({
       ...styles,
-      height: '30px',
-      minHeight: '30px',
+      height: "30px",
+      minHeight: "30px",
     }),
   }
 
@@ -48,7 +48,7 @@ export default function SelectCharacter({
   }
 
   return (
-    <div style={{ width: '220px', marginRight: '15px' }}>
+    <div style={{ width: "220px", marginRight: "15px" }}>
       <Select
         styles={customStyles}
         maxMenuHeight={220}

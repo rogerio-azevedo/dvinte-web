@@ -1,30 +1,29 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router'
-import { FaAlignJustify } from 'react-icons/fa'
+import { useState } from "react";
+import { Link } from "react-router";
+import { FaAlignJustify } from "react-icons/fa";
 
-import TopNav from '../TopNav'
-import { useAuth } from '../../contexts/AuthContext'
-import { useMenu } from '../../contexts/MenuContext'
-import * as Styles from './styles'
+import TopNav from "../TopNav";
+import { useAuth, useMenu } from "../../contexts";
+import * as Styles from "./styles";
 
 // import Notifications from '~/components/Notifications';
 
 export default function Header() {
-  const { user } = useAuth()
-  const { state: menuState, actions: menuActions } = useMenu()
-  const showMenu = menuState.chatMenu
-  const [chatMenu, setChatMenu] = useState(showMenu || false)
+  const { user } = useAuth();
+  const { state: menuState, actions: menuActions } = useMenu();
+  const showMenu = menuState.chatMenu;
+  const [chatMenu, setChatMenu] = useState(showMenu || false);
 
   function handleShowMenu() {
-    const newMenuState = !chatMenu
-    menuActions.showMenu(newMenuState)
-    setChatMenu(newMenuState)
+    const newMenuState = !chatMenu;
+    menuActions.showMenu(newMenuState);
+    setChatMenu(newMenuState);
   }
 
-  const defaultAvatar = '/favicon.ico'
+  const defaultAvatar = "/favicon.ico";
 
   if (!user) {
-    return null
+    return null;
   }
 
   return (
@@ -50,5 +49,5 @@ export default function Header() {
         </aside>
       </Styles.Content>
     </Styles.Container>
-  )
+  );
 }

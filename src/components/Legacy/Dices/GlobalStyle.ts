@@ -1,4 +1,4 @@
-import { createGlobalStyle, DefaultTheme } from 'styled-components'
+import { createGlobalStyle, type DefaultTheme } from "styled-components"
 
 interface GlobalStyleProps {
   theme?: DefaultTheme
@@ -7,7 +7,7 @@ interface GlobalStyleProps {
 
 export const GlobalStyle = createGlobalStyle<GlobalStyleProps>`
   body {
-    background: ${({ whiteColor }) => (whiteColor ? 'white' : 'black')};
+    background: ${({ whiteColor }) => (whiteColor ? "white" : "black")};
     margin: 0;
     font-family: Georgia, serif;
   }

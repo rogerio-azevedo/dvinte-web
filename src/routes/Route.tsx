@@ -1,12 +1,11 @@
-import React from 'react'
-import { Navigate } from 'react-router'
+import { Navigate } from "react-router";
 
-import AuthLayout from '../pages/_Layouts/auth'
-import DefaultLayout from '../pages/_Layouts/default'
-import { useAuth } from '../contexts/AuthContext'
+import AuthLayout from "../pages/_Layouts/auth";
+import DefaultLayout from "../pages/_Layouts/default";
+import { useAuth } from "../contexts";
 
 interface WithAuthProps {
-  isPrivate?: boolean
+  isPrivate?: boolean;
 }
 
 // HOC para autenticação
@@ -15,27 +14,27 @@ export function withAuth<P extends object>(
   isPrivate = false
 ) {
   return function WrappedComponent(props: P & WithAuthProps) {
-    const { user } = useAuth()
-    const signed = user !== null
+    const { user } = useAuth();
+    const signed = user !== null;
 
     // Se a rota é privada e o usuário não está autenticado
     if (!signed && isPrivate) {
-      return <Navigate to="/" replace />
+      return <Navigate to="/" replace />;
     }
 
     // Se a rota é pública e o usuário está autenticado
     if (signed && !isPrivate) {
-      return <Navigate to="/dashboard" replace />
+      return <Navigate to="/dashboard" replace />;
     }
 
-    const Layout = signed ? DefaultLayout : AuthLayout
+    const Layout = signed ? DefaultLayout : AuthLayout;
 
     return (
       <Layout>
         <Component {...props} />
       </Layout>
-    )
-  }
+    );
+  };
 }
 
 // Função helper para criar componentes protegidos
@@ -43,5 +42,5 @@ export function createProtectedComponent<P extends object>(
   Component: React.ComponentType<P>,
   isPrivate = false
 ) {
-  return withAuth(Component, isPrivate)
+  return withAuth(Component, isPrivate);
 }

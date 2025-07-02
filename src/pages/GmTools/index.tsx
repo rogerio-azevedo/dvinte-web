@@ -1,17 +1,18 @@
 /* eslint-disable no-unused-vars */
 
-import React, { useState, useEffect, useRef, ChangeEvent } from 'react'
+import { useState, useEffect, useRef } from "react"
+import type { ChangeEvent } from "react"
 // import { useSelector } from 'react-redux'
 
-import { Link } from 'react-router'
-import Select from 'react-select'
-import { Table } from 'antd'
-import type { ColumnsType } from 'antd/es/table'
+import { Link } from "react-router"
+import Select from "react-select"
+import { Table } from "antd"
+import type { ColumnsType } from "antd/es/table"
 
-import api from '../../services/api'
+import api from "../../services/api"
 
 // import SelectCharacter from '~/components/SelectCharacter'
-import * as Styles from './styles'
+import * as Styles from "./styles"
 
 interface Character {
   id: number
@@ -74,12 +75,12 @@ export default function GmTools() {
 
   async function loadChar() {
     setLoading(true)
-    const response = await api.get('characters')
-    const respMonster = await api.get('monsters')
+    const response = await api.get("characters")
+    const respMonster = await api.get("monsters")
 
     const newMonsters = await respMonster?.data?.map((item: Monster) => ({
       ...item,
-      attacks: item?.monster_attack?.map(a => ({
+      attacks: item?.monster_attack?.map((a) => ({
         value: a.id,
         label: a.name.toUpperCase(),
       })),
@@ -96,7 +97,7 @@ export default function GmTools() {
 
   async function handleInitiative(monsterId: number) {
     const monster = await monsters.filter(
-      monster => monster.id === monsterId
+      (monster) => monster.id === monsterId
     )[0]
 
     const dext = Number(monster.initiative)
@@ -108,7 +109,7 @@ export default function GmTools() {
 
     const rolled = `Rolou iniciativa d20: ${dice} + ${dext} de destreza, com resultado: ${initTotal}`
 
-    api.post('combats', {
+    api.post("combats", {
       id: 0,
       user_id: 0,
       user: monsterName,
@@ -117,7 +118,7 @@ export default function GmTools() {
       type: 8,
     })
 
-    api.post('initiatives', {
+    api.post("initiatives", {
       user_id: 0,
       user: monsterName,
       initiative: initTotal,
@@ -126,10 +127,12 @@ export default function GmTools() {
 
   async function handleAttack(monsterId: number) {
     const monster = await monsters.filter(
-      monster => monster.id === monsterId
+      (monster) => monster.id === monsterId
     )[0]
 
-    const attacks = monster?.monster_attack?.filter(a => a.id === selAttack)[0]
+    const attacks = monster?.monster_attack?.filter(
+      (a) => a.id === selAttack
+    )[0]
 
     const monsterName = monster.name
     const base = Number(attacks?.hit)
@@ -137,29 +140,29 @@ export default function GmTools() {
     const attackName = attacks?.name
     const dice = Math.floor(Math.random() * 20) + 1
 
-    let isCrit = ''
+    let isCrit = ""
 
     if (dice >= critFrom) {
-      isCrit = 'HIT'
+      isCrit = "HIT"
     } else if (dice === 1) {
-      isCrit = 'FAIL'
+      isCrit = "FAIL"
     } else {
-      isCrit = 'NORMAL'
+      isCrit = "NORMAL"
     }
 
     const attackTotal = Number(base) + Number(dice)
 
-    let rolled = ''
+    let rolled = ""
 
-    if (isCrit === 'HIT') {
+    if (isCrit === "HIT") {
       rolled = `ACERTO CRÍTICO: ATACOU com ${attackName}: d20: ${dice} + ${base} de base de ataque, com resultado: ${attackTotal}`
-    } else if (isCrit === 'FAIL') {
+    } else if (isCrit === "FAIL") {
       rolled = `ERRO CRÍTICO: ATACOU com ${attackName}: d20: ${dice} + ${base} de base de ataque, com resultado: ${attackTotal}`
     } else {
       rolled = `ATACOU com ${attackName}: d20: ${dice} + ${base} de base de ataque, com resultado: ${attackTotal}`
     }
 
-    api.post('combats', {
+    api.post("combats", {
       id: 0,
       user_id: 0,
       user: monsterName,
@@ -172,10 +175,12 @@ export default function GmTools() {
 
   async function handleDamage(monsterId: number) {
     const monster = await monsters.filter(
-      monster => monster.id === monsterId
+      (monster) => monster.id === monsterId
     )[0]
 
-    const attacks = monster?.monster_attack?.filter(a => a.id === selAttack)[0]
+    const attacks = monster?.monster_attack?.filter(
+      (a) => a.id === selAttack
+    )[0]
 
     const monsterName = monster?.name
     const attackName = attacks?.name
@@ -197,7 +202,7 @@ export default function GmTools() {
 
     const rolled = `CAUSOU DANO com ${attackName}: ${monsterMulti} x d${monsterDice}: ${result} + ${extraDamage} de bônus, com resultado: ${totalDamage}.`
 
-    api.post('combats', {
+    api.post("combats", {
       id: 0,
       user_id: 0,
       user: monsterName,
@@ -209,10 +214,12 @@ export default function GmTools() {
 
   async function handleCritDamage(monsterId: number) {
     const monster = await monsters.filter(
-      monster => monster.id === monsterId
+      (monster) => monster.id === monsterId
     )[0]
 
-    const attacks = monster?.monster_attack?.filter(a => a.id === selAttack)[0]
+    const attacks = monster?.monster_attack?.filter(
+      (a) => a.id === selAttack
+    )[0]
 
     const monsterName = monster.name
     const attackName = attacks?.name
@@ -239,20 +246,20 @@ export default function GmTools() {
 
     const rolled = `CAUSOU DANO CRÍTICO com ${attackName}: ${monsterMulti} x d${monsterDice}: ${result} x ${monsterCrit} CRIT: ${diceCrit} + bônus de dano ${extraDamage} x ${monsterCrit}: ${damageCrit}, com resultado: ${totalDamage}.`
 
-    api.post('combats', {
+    api.post("combats", {
       id: 0,
       user_id: 0,
       user: monsterName,
       message: rolled,
       result: totalDamage,
       type: 4,
-      isCrit: 'HIT',
+      isCrit: "HIT",
     })
   }
 
   async function handleHealth(char: number) {
     await api.put(
-      '/healthnow',
+      "/healthnow",
       { newHealth: health },
       {
         params: {
@@ -266,7 +273,7 @@ export default function GmTools() {
 
   async function handleMonsterHealth(monster: number) {
     await api.put(
-      '/monsterhealthnow',
+      "/monsterhealthnow",
       { newHealth: monsterHealth },
       {
         params: {
@@ -294,32 +301,32 @@ export default function GmTools() {
 
   const columns: ColumnsType<Character> = [
     {
-      title: 'Cod',
-      dataIndex: 'id',
-      key: 'id',
+      title: "Cod",
+      dataIndex: "id",
+      key: "id",
     },
     {
-      title: 'Portrait',
-      dataIndex: 'portrait',
-      render: portrait => (
+      title: "Portrait",
+      dataIndex: "portrait",
+      render: (portrait) => (
         <Styles.Portrait>
           <img alt={portrait} src={portrait} />
         </Styles.Portrait>
       ),
     },
     {
-      title: 'Nome',
-      dataIndex: 'name',
-      key: 'name',
+      title: "Nome",
+      dataIndex: "name",
+      key: "name",
     },
     {
-      title: 'Level',
-      dataIndex: 'level',
-      key: 'level',
+      title: "Level",
+      dataIndex: "level",
+      key: "level",
     },
     {
-      title: 'CA',
-      dataIndex: 'armor',
+      title: "CA",
+      dataIndex: "armor",
       render: (text, item) =>
         `${
           10 +
@@ -332,33 +339,33 @@ export default function GmTools() {
         }`,
     },
     {
-      title: 'Melee',
-      dataIndex: 'melee',
+      title: "Melee",
+      dataIndex: "melee",
       render: (text, item) => `${item.baseAttack + item.strMod}`,
     },
     {
-      title: 'Range',
-      dataIndex: 'range',
+      title: "Range",
+      dataIndex: "range",
       render: (text, item) => `${item.baseAttack + item.dexMod}`,
     },
     {
-      title: 'Vida',
-      dataIndex: 'health',
-      key: 'health',
+      title: "Vida",
+      dataIndex: "health",
+      key: "health",
     },
     {
-      title: 'Saúde',
-      dataIndex: 'health_now',
-      key: 'health_now',
+      title: "Saúde",
+      dataIndex: "health_now",
+      key: "health_now",
     },
     {
-      title: 'Jogador',
-      dataIndex: 'user',
-      key: 'user',
+      title: "Jogador",
+      dataIndex: "user",
+      key: "user",
     },
     {
-      title: 'Dano/Cura',
-      dataIndex: 'pv',
+      title: "Dano/Cura",
+      dataIndex: "pv",
       render: (text, item) => (
         <input
           ref={inputRef}
@@ -370,15 +377,15 @@ export default function GmTools() {
       ),
     },
     {
-      title: 'Salvar',
-      dataIndex: 'Salvar',
+      title: "Salvar",
+      dataIndex: "Salvar",
       render: (text, item) => (
         <button onClick={() => handleHealth(item.id)}>Salvar</button>
       ),
     },
     {
-      title: 'Ação',
-      dataIndex: 'ver',
+      title: "Ação",
+      dataIndex: "ver",
       render: (text, item) => <Link to={`/characterview/${item.id}`}>Ver</Link>,
     },
   ]
@@ -386,89 +393,89 @@ export default function GmTools() {
   const customStyles = {
     control: (provided: any, state: any) => ({
       ...provided,
-      background: '#fff',
-      borderColor: '#9e9e9e',
-      minHeight: '32px',
-      height: '32px',
-      minWidth: '100px',
+      background: "#fff",
+      borderColor: "#9e9e9e",
+      minHeight: "32px",
+      height: "32px",
+      minWidth: "100px",
       boxShadow: state.isFocused ? null : null,
     }),
 
     valueContainer: (provided: any, state: any) => ({
       ...provided,
-      height: '32px',
-      padding: '0 6px',
+      height: "32px",
+      padding: "0 6px",
     }),
 
     input: (provided: any, state: any) => ({
       ...provided,
-      margin: '0px',
+      margin: "0px",
     }),
     indicatorSeparator: (state: any) => ({
-      display: 'none',
+      display: "none",
     }),
     indicatorsContainer: (provided: any, state: any) => ({
       ...provided,
-      height: '32px',
+      height: "32px",
     }),
   }
 
   const monsterColumns: ColumnsType<Monster> = [
     {
-      title: 'Cod',
-      dataIndex: 'id',
-      key: 'id',
+      title: "Cod",
+      dataIndex: "id",
+      key: "id",
     },
     {
-      title: 'Portrait',
-      dataIndex: 'monster_url',
-      render: monster_url => (
+      title: "Portrait",
+      dataIndex: "monster_url",
+      render: (monster_url) => (
         <Styles.Portrait>
           <img alt={monster_url} src={monster_url} />
         </Styles.Portrait>
       ),
     },
     {
-      title: 'Nome',
-      dataIndex: 'name',
-      key: 'name',
+      title: "Nome",
+      dataIndex: "name",
+      key: "name",
     },
     {
-      title: 'ND',
-      dataIndex: 'challenge',
-      key: 'challenge',
+      title: "ND",
+      dataIndex: "challenge",
+      key: "challenge",
     },
     {
-      title: 'CA',
-      dataIndex: 'ca',
-      key: 'ca',
+      title: "CA",
+      dataIndex: "ca",
+      key: "ca",
     },
     {
-      title: 'Dex',
-      dataIndex: 'initiative',
-      key: 'initiative',
+      title: "Dex",
+      dataIndex: "initiative",
+      key: "initiative",
     },
     {
-      title: 'Vida',
-      dataIndex: 'health',
-      key: 'health',
+      title: "Vida",
+      dataIndex: "health",
+      key: "health",
     },
     {
-      title: 'Saúde',
-      dataIndex: 'health_now',
-      key: 'health_now',
+      title: "Saúde",
+      dataIndex: "health_now",
+      key: "health_now",
     },
 
     {
-      title: 'Init',
-      dataIndex: 'Init',
+      title: "Init",
+      dataIndex: "Init",
       render: (text, item) => (
         <button onClick={() => handleInitiative(item.id)}>Init</button>
       ),
     },
     {
-      title: 'Arma',
-      dataIndex: 'Arma',
+      title: "Arma",
+      dataIndex: "Arma",
       render: (text, item) => (
         <div>
           <Select
@@ -478,7 +485,7 @@ export default function GmTools() {
             onChange={(e: SelectOption | null) =>
               setSelAttack(e?.value || null)
             }
-            options={monsters.find(m => m.id === item.id)?.attacks}
+            options={monsters.find((m) => m.id === item.id)?.attacks}
             isClearable
           />
         </div>
@@ -486,29 +493,29 @@ export default function GmTools() {
     },
 
     {
-      title: 'Attack',
-      dataIndex: 'Attack',
+      title: "Attack",
+      dataIndex: "Attack",
       render: (text, item) => (
         <button onClick={() => handleAttack(item.id)}>Ataq</button>
       ),
     },
     {
-      title: 'Dano',
-      dataIndex: 'Dano',
+      title: "Dano",
+      dataIndex: "Dano",
       render: (text, item) => (
         <button onClick={() => handleDamage(item.id)}>Dano</button>
       ),
     },
     {
-      title: 'Crit',
-      dataIndex: 'Crit',
+      title: "Crit",
+      dataIndex: "Crit",
       render: (text, item) => (
         <button onClick={() => handleCritDamage(item.id)}>Crit</button>
       ),
     },
     {
-      title: 'Dano/Cura',
-      dataIndex: 'pv',
+      title: "Dano/Cura",
+      dataIndex: "pv",
       render: (text, item) => (
         <input
           ref={inputRef}
@@ -520,15 +527,15 @@ export default function GmTools() {
       ),
     },
     {
-      title: 'Salvar',
-      dataIndex: 'Salvar',
+      title: "Salvar",
+      dataIndex: "Salvar",
       render: (text, item) => (
         <button onClick={() => handleMonsterHealth(item.id)}>Salvar</button>
       ),
     },
     {
-      title: 'Ação',
-      dataIndex: 'ver',
+      title: "Ação",
+      dataIndex: "ver",
       render: (text, item) => <Link to={`/monsterview/${item.id}`}>Ver</Link>,
     },
   ]
@@ -543,7 +550,7 @@ export default function GmTools() {
             dataSource={list}
             columns={columns}
             components={{
-              table: props => <Styles.MyTable {...props} rowKey="id" />,
+              table: (props) => <Styles.MyTable {...props} rowKey="id" />,
             }}
           />
         </Styles.TableContainer>
@@ -554,7 +561,7 @@ export default function GmTools() {
             dataSource={monsters}
             columns={monsterColumns}
             components={{
-              table: props => <Styles.MyTable {...props} rowKey="id" />,
+              table: (props) => <Styles.MyTable {...props} rowKey="id" />,
             }}
           />
         </Styles.TableContainer>

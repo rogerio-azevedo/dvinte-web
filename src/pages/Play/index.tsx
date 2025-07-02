@@ -1,12 +1,18 @@
-import { useState, useEffect } from 'react'
-import { toast } from 'react-toastify'
-import ReactTooltip from 'react-tooltip'
-import { Link } from 'react-router'
+import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import ReactTooltip from "react-tooltip";
+import { Link } from "react-router";
 
-import api from '../../services/api'
-import { connect } from '../../services/socket'
-import * as Styles from './styles'
-import { Character, Token, CharStatusData, WeaponItem } from './interfaces'
+import api from "../../services/api";
+import { connect } from "../../services/socket";
+import * as Styles from "./styles";
+import {
+  type Character,
+  type CharStatusData,
+  type WeaponItem,
+} from "./interfaces";
+
+import { type Token } from "../../components/CombatComponents/RenderMap/interfaces";
 
 import {
   FaComments,
@@ -14,7 +20,7 @@ import {
   FaDiceD20,
   FaExpandArrowsAlt,
   FaRunning,
-} from 'react-icons/fa/'
+} from "react-icons/fa/";
 
 import {
   GiSwordBrandish,
@@ -22,48 +28,48 @@ import {
   GiBloodySword,
   GiTreasureMap,
   GiBrain,
-} from 'react-icons/gi'
+} from "react-icons/gi";
 
-import Chat from '../../components/CombatComponents/Chat'
-import Savins from '../../components/CombatComponents/Savings'
-import ArmoryDelay from '../../components/CombatComponents/ArmoryDelay'
-import Initiatives from '../../components/CombatComponents/Initiatives'
-import DamagesCounter from '../../components/CombatComponents/DamagesCounter'
-import CharStatusComponent from '../../components/CombatComponents/CharStatus'
-import LogBoard from '../../components/CombatComponents/LogBoard'
-import MapTool from '../../components/CombatComponents/MapTool'
-import RenderMap from '../../components/CombatComponents/RenderMap'
-import ScrollContainer from 'react-indiana-drag-scroll'
-import MyDices from '../../components/CombatComponents/MyDices'
-import { useDices } from '../../contexts/DicesContext'
-import { useAuth } from '../../contexts/AuthContext'
+import Chat from "../../components/CombatComponents/Chat";
+import Savins from "../../components/CombatComponents/Savings";
+import ArmoryDelay from "../../components/CombatComponents/ArmoryDelay";
+import Initiatives from "../../components/CombatComponents/Initiatives";
+import DamagesCounter from "../../components/CombatComponents/DamagesCounter";
+import CharStatusComponent from "../../components/CombatComponents/CharStatus";
+import LogBoard from "../../components/CombatComponents/LogBoard";
+import MapTool from "../../components/CombatComponents/MapTool";
+import RenderMap from "../../components/CombatComponents/RenderMap";
+import ScrollContainer from "react-indiana-drag-scroll";
+import MyDices from "../../components/CombatComponents/MyDices";
+import { useDices } from "../../hooks/useDices";
+import { useAuth } from "../../contexts";
 
 export default function Play() {
   const {
     state: { diceShow },
-  } = useDices()
+  } = useDices();
 
-  const { user } = useAuth()
+  const { user } = useAuth();
 
-  const [allowDrag, setAllowDrag] = useState(false)
-  const [menu, setMenu] = useState('attack')
+  const [allowDrag, setAllowDrag] = useState(false);
+  const [menu, setMenu] = useState("attack");
 
-  const [charInit, setCharInit] = useState<number>()
-  const [character, setCharacter] = useState<Character>()
-  const [tokens, setTokens] = useState<Token[]>()
-  const [fortitude, setFortitude] = useState<number>()
-  const [reflex, setReflex] = useState<number>()
-  const [will, setWill] = useState<number>()
-  const [strength, setStrength] = useState<number>()
-  const [maxDex, setMaxDex] = useState<number>()
-  const [weapons, setWeapons] = useState<WeaponItem[]>()
-  const [charStatus, setCharStatus] = useState<CharStatusData>()
+  const [charInit, setCharInit] = useState<number>();
+  const [character, setCharacter] = useState<Character>();
+  const [tokens, setTokens] = useState<Token[]>([]);
+  const [fortitude, setFortitude] = useState<number>();
+  const [reflex, setReflex] = useState<number>();
+  const [will, setWill] = useState<number>();
+  const [strength, setStrength] = useState<number>();
+  const [maxDex, setMaxDex] = useState<number>();
+  const [weapons, setWeapons] = useState<WeaponItem[]>();
+  const [charStatus, setCharStatus] = useState<CharStatusData>();
   // const dispatch = useDispatch()
 
   const clickListener = (event: MouseEvent) => {
     if (
       event.target instanceof HTMLElement &&
-      event.target.tagName === 'CANVAS'
+      event.target.tagName === "CANVAS"
     ) {
       // dispatch(
       //   diceDataRequest({
@@ -71,90 +77,94 @@ export default function Play() {
       //   })
       // )
     }
-  }
+  };
 
   useEffect(() => {
-    document.addEventListener('click', clickListener)
+    document.addEventListener("click", clickListener);
     return () => {
-      document.removeEventListener('click', clickListener)
-    }
-  }, []) // eslint-disable-line
+      document.removeEventListener("click", clickListener);
+    };
+  }, []); // eslint-disable-line
 
   async function calcDext(dexMod: number): Promise<number> {
-    let dextBonus = 0
+    let dextBonus = 0;
 
     if (maxDex !== undefined && dexMod <= maxDex) {
-      dextBonus = dexMod
+      dextBonus = dexMod;
     } else if (!maxDex || maxDex === 0) {
-      dextBonus = dexMod
+      dextBonus = dexMod;
     } else {
-      dextBonus = maxDex
+      dextBonus = maxDex;
     }
 
-    return dextBonus
+    return dextBonus;
   }
 
   async function GetTokens() {
     try {
-      const response = await api.get<Token[]>('/chartokens')
-      setTokens(response.data)
+      const response = await api.get<Token[]>("/chartokens");
+      setTokens(response.data);
     } catch (e) {
-      toast.error('Houve um problema ao carregar as Tokens dos Personagens!')
+      console.error("Erro ao carregar as Tokens dos Personagens:", e);
+      toast.error("Houve um problema ao carregar as Tokens dos Personagens!");
     }
   }
 
   async function getCharacter() {
     try {
-      const response = await api.get<Character>(`combats/${user?.id}`)
-      const char = response.data
-      setCharacter(char)
+      const response = await api.get<Character>(`combats/${user?.id}`);
+      const char = response.data;
+      setCharacter(char);
 
-      const StrMod = char.StrModTemp ? char.StrModTemp : char.StrMod
-      const ConMod = char.ConModTemp ? char.ConModTemp : char.ConMod
-      const DexMod = char.DexModTemp ? char.DexModTemp : char.DexMod
-      const WisMod = char.WisModTemp ? char.WisModTemp : char.WisMod
+      const StrMod = char.StrModTemp ? char.StrModTemp : char.StrMod;
+      const ConMod = char.ConModTemp ? char.ConModTemp : char.ConMod;
+      const DexMod = char.DexModTemp ? char.DexModTemp : char.DexMod;
+      const WisMod = char.WisModTemp ? char.WisModTemp : char.WisMod;
 
-      const shield = char?.Armor.filter(t => t.type === 2).reduce(
+      const shield = char?.Armor.filter((t) => t.type === 2).reduce(
         (acc, val) => {
-          return acc + (val.bonus + val.defense)
+          return acc + (val.bonus + val.defense);
         },
         0
-      )
+      );
 
-      const armor = char?.Armor.filter(t => t.type === 1).reduce((acc, val) => {
-        return acc + (val.bonus + val.defense)
-      }, 0)
-
-      const natural = char?.Armor.filter(t => t.type === 3).reduce(
+      const armor = char?.Armor.filter((t) => t.type === 1).reduce(
         (acc, val) => {
-          return acc + (val.bonus + val.defense)
+          return acc + (val.bonus + val.defense);
         },
         0
-      )
+      );
 
-      const outros = char?.Armor.filter(t => t.type === 5).reduce(
+      const natural = char?.Armor.filter((t) => t.type === 3).reduce(
         (acc, val) => {
-          return acc + (val.bonus + val.defense)
+          return acc + (val.bonus + val.defense);
         },
         0
-      )
+      );
+
+      const outros = char?.Armor.filter((t) => t.type === 5).reduce(
+        (acc, val) => {
+          return acc + (val.bonus + val.defense);
+        },
+        0
+      );
 
       const maxDext = char?.Armor.reduce(
         (min, p) => (p?.dexterity < min ? p?.dexterity : min),
         char?.Armor[0]?.dexterity
-      )
+      );
 
-      setMaxDex(maxDext)
-      setWeapons(char?.Weapon)
+      setMaxDex(maxDext);
+      setWeapons(char?.Weapon);
 
-      const bonusDext = await calcDext(DexMod)
-      const ca = 10 + shield + armor + bonusDext + natural + outros
+      const bonusDext = await calcDext(DexMod);
+      const ca = 10 + shield + armor + bonusDext + natural + outros;
 
-      setCharInit(DexMod)
-      setFortitude(char.Fortitude + ConMod)
-      setReflex(char.Reflex + DexMod)
-      setWill(char.Will + WisMod)
-      setStrength(char.BaseAttack + StrMod)
+      setCharInit(DexMod);
+      setFortitude(char.Fortitude + ConMod);
+      setReflex(char.Reflex + DexMod);
+      setWill(char.Will + WisMod);
+      setStrength(char.BaseAttack + StrMod);
 
       setCharStatus({
         fortitude: char.Fortitude + ConMod,
@@ -166,9 +176,10 @@ export default function Play() {
         totalCa: ca,
         health: char.Health,
         healthNow: char.HealthNow,
-      })
+      });
     } catch (e) {
-      toast.error('Houve um problema ao carregar os dados dos personagens!')
+      console.error("Erro ao carregar os dados dos personagens:", e);
+      toast.error("Houve um problema ao carregar os dados dos personagens!");
     }
   }
 
@@ -180,17 +191,17 @@ export default function Play() {
     //   })
     // )
 
-    connect()
-    getCharacter()
-    GetTokens()
-  }, []) // eslint-disable-line
+    connect();
+    getCharacter();
+    GetTokens();
+  }, []); // eslint-disable-line
 
   function handleMenu(tipo: string) {
-    setMenu(tipo)
+    setMenu(tipo);
   }
 
   function handleDragable() {
-    setAllowDrag(!allowDrag)
+    setAllowDrag(!allowDrag);
   }
 
   return (
@@ -235,7 +246,7 @@ export default function Play() {
               size={25}
               color="#8e0e00"
               cursor="pointer"
-              onClick={() => handleMenu('attack')}
+              onClick={() => handleMenu("attack")}
             />
           </div>
 
@@ -244,7 +255,7 @@ export default function Play() {
               size={28}
               color="#8e0e00"
               cursor="pointer"
-              onClick={() => handleMenu('chat')}
+              onClick={() => handleMenu("chat")}
             />
           </div>
 
@@ -253,7 +264,7 @@ export default function Play() {
               size={25}
               color="#8e0e00"
               cursor="pointer"
-              onClick={() => handleMenu('saves')}
+              onClick={() => handleMenu("saves")}
             />
           </div>
 
@@ -262,7 +273,7 @@ export default function Play() {
               size={30}
               color="#8e0e00"
               cursor="pointer"
-              onClick={() => handleMenu('damage')}
+              onClick={() => handleMenu("damage")}
             />
           </div>
 
@@ -271,7 +282,7 @@ export default function Play() {
               size={30}
               color="#8e0e00"
               cursor="pointer"
-              onClick={() => handleMenu('init')}
+              onClick={() => handleMenu("init")}
             />
           </div>
 
@@ -280,7 +291,7 @@ export default function Play() {
               size={28}
               color="#8e0e00"
               cursor="pointer"
-              onClick={() => handleMenu('status')}
+              onClick={() => handleMenu("status")}
             />
           </div>
 
@@ -290,7 +301,7 @@ export default function Play() {
                 size={28}
                 color="#8e0e00"
                 cursor="pointer"
-                onClick={() => handleMenu('config')}
+                onClick={() => handleMenu("config")}
               />
             </div>
           )}
@@ -303,25 +314,31 @@ export default function Play() {
           )}
         </Styles.IconContainer>
 
-        {menu === 'chat' ? (
+        {menu === "chat" ? (
           <Chat />
-        ) : menu === 'init' ? (
-          <Initiatives profile={user} from={user?.id} charInit={charInit} />
-        ) : menu === 'attack' ? (
+        ) : menu === "init" ? (
+          <Initiatives
+            profile={user || undefined}
+            from={user?.id}
+            charInit={charInit}
+          />
+        ) : menu === "attack" ? (
           <Styles.AttackContainer>
             <ArmoryDelay
               character={character}
-              weapons={weapons}
+              weapons={weapons || []}
               loadChar={getCharacter}
             />
             <h2>Painel Logs</h2>
             <LogBoard />
           </Styles.AttackContainer>
-        ) : menu === 'damage' ? (
+        ) : menu === "damage" ? (
           <DamagesCounter />
-        ) : menu === 'status' ? (
-          <CharStatusComponent charStatus={charStatus} />
-        ) : menu === 'saves' ? (
+        ) : menu === "status" ? (
+          <CharStatusComponent
+            charStatus={charStatus || ({} as CharStatusData)}
+          />
+        ) : menu === "saves" ? (
           <Styles.SavesConteiner>
             <Styles.ButtonsContainer>
               <Savins
@@ -339,5 +356,5 @@ export default function Play() {
         )}
       </Styles.ToolsContainer>
     </Styles.Container>
-  )
+  );
 }

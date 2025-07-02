@@ -1,70 +1,70 @@
 /* eslint-disable no-console */
 
-import { useState, useEffect } from 'react'
-import { useForm, SubmitHandler } from 'react-hook-form'
-import api from '../../services/api'
-import { useAuth } from '../../contexts/AuthContext'
+import { useState, useEffect } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import api from "../../services/api";
+import { useAuth } from "../../contexts";
 
-import Button from '../../components/Button'
-import * as Styles from './styles'
+import Button from "../../components/Button";
+import * as Styles from "./styles";
 
 interface CampaignProps {
-  id: number
-  name: string
-  description: string
-  user_id: number
+  id: number;
+  name: string;
+  description: string;
+  user_id: number;
 }
 
 interface CampaignFormData {
-  name: string
-  description: string
+  name: string;
+  description: string;
 }
 
 export default function Campaign() {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<CampaignFormData>()
+  } = useForm<CampaignFormData>();
 
-  const [campaigns, setCampaigns] = useState<CampaignProps[]>([])
-  const [loading, setLoading] = useState(false)
+  const [campaigns, setCampaigns] = useState<CampaignProps[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function loadCampaigns() {
       try {
-        setLoading(true)
-        const response = await api.get<CampaignProps[]>('campaigns')
-        setCampaigns(response.data)
+        setLoading(true);
+        const response = await api.get<CampaignProps[]>("campaigns");
+        setCampaigns(response.data);
       } catch (error) {
-        console.error('Erro ao carregar campanhas:', error)
+        console.error("Erro ao carregar campanhas:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    loadCampaigns()
-  }, [])
+    loadCampaigns();
+  }, []);
 
-  const onSubmit: SubmitHandler<CampaignFormData> = async data => {
+  const onSubmit: SubmitHandler<CampaignFormData> = async (data) => {
     try {
-      setLoading(true)
-      const response = await api.post<CampaignProps>('campaigns', {
+      setLoading(true);
+      const response = await api.post<CampaignProps>("campaigns", {
         name: data.name,
         description: data.description,
         user_id: user?.id,
-      })
+      });
 
-      setCampaigns(prevCampaigns => [response.data, ...prevCampaigns])
-      reset()
+      setCampaigns((prevCampaigns) => [response.data, ...prevCampaigns]);
+      reset();
     } catch (error) {
-      console.error('Erro ao salvar campanha:', error)
+      console.error("Erro ao salvar campanha:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Styles.Container>
@@ -74,7 +74,7 @@ export default function Campaign() {
         <Styles.FormContainer>
           <div>
             <input
-              {...register('name', { required: true })}
+              {...register("name", { required: true })}
               placeholder="Informe o nome da Campanha"
             />
             {errors.name && <span>Essa informação é obrigatória</span>}
@@ -82,7 +82,7 @@ export default function Campaign() {
 
           <div>
             <input
-              {...register('description', { required: true })}
+              {...register("description", { required: true })}
               placeholder="Informe uma breve descrição"
             />
             {errors.description && <span>Essa informação é obrigatória</span>}
@@ -93,12 +93,12 @@ export default function Campaign() {
       </form>
 
       <Styles.ListItens>
-        {campaigns.map(campaign => (
+        {campaigns.map((campaign) => (
           <ul key={campaign.id}>
             <li>{campaign.name.toUpperCase()}</li>
           </ul>
         ))}
       </Styles.ListItens>
     </Styles.Container>
-  )
+  );
 }

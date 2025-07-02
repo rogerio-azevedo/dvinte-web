@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import Select, { ActionMeta, SingleValue } from 'react-select'
+import { useEffect, useState } from "react"
+import Select, { type ActionMeta, type SingleValue } from "react-select"
 
 interface Option {
   value: string
@@ -21,7 +21,7 @@ export default function SelectRace({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const data = races.map(race => ({
+    const data = races.map((race) => ({
       value: race.value,
       label: race.label.toUpperCase(),
     }))
@@ -33,15 +33,15 @@ export default function SelectRace({
   const customStyles = {
     input: (styles: any) => ({
       ...styles,
-      height: '30px',
-      minHeight: '30px',
+      height: "30px",
+      minHeight: "30px",
     }),
   }
 
   return (
-    <div style={{ width: '220px', marginRight: '15px' }}>
+    <div style={{ width: "220px", marginRight: "15px" }}>
       <Select
-        value={raceOptions.find(option => option.value === value)}
+        value={raceOptions.find((option) => option.value === value)}
         styles={customStyles}
         maxMenuHeight={220}
         placeholder="ESCOLHA A RAÇA"

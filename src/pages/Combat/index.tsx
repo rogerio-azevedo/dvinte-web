@@ -1,22 +1,21 @@
 /* eslint-disable no-console */
 
-import React, { useEffect, useState } from 'react'
-import { toast } from 'react-toastify'
-import ReactTooltip from 'react-tooltip'
-import { Link } from 'react-router'
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import ReactTooltip from "react-tooltip";
+import { Link } from "react-router";
 
-import api from '../../services/api'
-import { useAuth } from '../../contexts/AuthContext'
-import { useMenu } from '../../contexts/MenuContext'
+import api from "../../services/api";
+import { useAuth, useMenu } from "../../contexts";
 
-import { connect, socket } from '../../services/socket'
+import { connect, socket } from "../../services/socket";
 import {
   FaComments,
   FaUserClock,
   FaDiceD20,
   FaExpandArrowsAlt,
   FaRunning,
-} from 'react-icons/fa/'
+} from "react-icons/fa/";
 
 import {
   GiSwordBrandish,
@@ -24,132 +23,137 @@ import {
   GiBloodySword,
   GiTreasureMap,
   GiBrain,
-} from 'react-icons/gi'
+} from "react-icons/gi";
 
-import * as Styles from './styles'
+import * as Styles from "./styles";
 
-import RenderMap from '../../components/CombatComponents/RenderMap'
-import Chat from '../../components/CombatComponents/Chat'
-import Savins from '../../components/CombatComponents/Savings'
-import Armory from '../../components/CombatComponents/Armory'
-import Initiatives from '../../components/CombatComponents/Initiatives'
-import DamagesCounter from '../../components/CombatComponents/DamagesCounter'
-import CharStatus from '../../components/CombatComponents/CharStatus'
-import LogBoard from '../../components/CombatComponents/LogBoard'
-import MapTool from '../../components/CombatComponents/MapTool'
-import Dices from '../../components/CombatComponents/Dices'
+import RenderMap from "../../components/CombatComponents/RenderMap";
+import Chat from "../../components/CombatComponents/Chat";
+import Savins from "../../components/CombatComponents/Savings";
+import Armory from "../../components/CombatComponents/Armory";
+import Initiatives from "../../components/CombatComponents/Initiatives";
+import DamagesCounter from "../../components/CombatComponents/DamagesCounter";
+import CharStatus from "../../components/CombatComponents/CharStatus";
+import LogBoard from "../../components/CombatComponents/LogBoard";
+import MapTool from "../../components/CombatComponents/MapTool";
+import Dices from "../../components/CombatComponents/Dices";
 
-import ScrollContainer from 'react-indiana-drag-scroll'
+import ScrollContainer from "react-indiana-drag-scroll";
+
 import {
-  MenuType,
-  Character,
-  Token,
-  Weapon,
-  CharStatusProps,
-} from './interfaces'
+  type MenuType,
+  type Character,
+  type Weapon,
+  type CharStatusProps,
+} from "./interfaces";
+
+import { type Token } from "../../components/CombatComponents/RenderMap/interfaces";
 
 export default function Combat(): React.JSX.Element {
-  const { user } = useAuth()
-  const { state: menuState } = useMenu()
-  const showMenu = menuState.chatMenu
-  const [menu, setMenu] = useState<MenuType>('attack')
-  const [charInit, setCharInit] = useState<number | undefined>()
-  const [character, setCharacter] = useState<Character | undefined>()
-  const [tokens, setTokens] = useState<Token[]>([])
+  const { user } = useAuth();
+  const { state: menuState } = useMenu();
+  const showMenu = menuState.chatMenu;
+  const [menu, setMenu] = useState<MenuType>("attack");
+  const [charInit, setCharInit] = useState<number | undefined>();
+  const [character, setCharacter] = useState<Character | undefined>();
+  const [tokens, setTokens] = useState<Token[]>([]);
 
-  useEffect(() => {}, [tokens])
-  const [fortitude, setFortitude] = useState<number | undefined>()
-  const [reflex, setReflex] = useState<number | undefined>()
-  const [will, setWill] = useState<number | undefined>()
-  const [strength, setStrength] = useState<number | undefined>()
+  useEffect(() => {}, [tokens]);
+  const [fortitude, setFortitude] = useState<number | undefined>();
+  const [reflex, setReflex] = useState<number | undefined>();
+  const [will, setWill] = useState<number | undefined>();
+  const [strength, setStrength] = useState<number | undefined>();
 
-  const [maxDex, setMaxDex] = useState<number | undefined>()
-  const [weapons, setWeapons] = useState<Weapon[] | undefined>()
-  const [charStatus, setCharStatus] = useState<CharStatusProps | undefined>()
-  const [allowDrag, setAllowDrag] = useState<boolean>(false)
+  const [maxDex, setMaxDex] = useState<number | undefined>();
+  const [weapons, setWeapons] = useState<Weapon[] | undefined>();
+  const [charStatus, setCharStatus] = useState<CharStatusProps | undefined>();
+  const [allowDrag, setAllowDrag] = useState<boolean>(false);
 
   async function calcDext(dexMod: number): Promise<number> {
-    let dextBonus = 0
+    let dextBonus = 0;
 
     if (maxDex !== undefined && dexMod <= maxDex) {
-      dextBonus = dexMod
+      dextBonus = dexMod;
     } else if (!maxDex || maxDex === 0) {
-      dextBonus = dexMod
+      dextBonus = dexMod;
     } else {
-      dextBonus = maxDex
+      dextBonus = maxDex;
     }
 
-    return dextBonus
+    return dextBonus;
   }
 
   async function GetTokens(): Promise<void> {
     try {
-      const response = await api.get<Token[]>('/chartokens')
+      const response = await api.get<Token[]>("/chartokens");
 
       // Garantir que sempre seja um array
-      const tokensData = Array.isArray(response.data) ? response.data : []
-      setTokens(tokensData)
+      const tokensData = Array.isArray(response.data) ? response.data : [];
+      setTokens(tokensData);
     } catch (e) {
-      console.error('🔴 Combat: Error loading tokens:', e)
-      toast.error('Houve um problema ao carregar as Tokens dos Personagens!')
+      console.error("🔴 Combat: Error loading tokens:", e);
+      toast.error("Houve um problema ao carregar as Tokens dos Personagens!");
     }
   }
 
   async function getCharacter(): Promise<void> {
     try {
-      const response = await api.get<Character>(`combats/${user?.id}`)
-      const char = response.data
-      setCharacter(char)
+      const response = await api.get<Character>(`combats/${user?.id}`);
+      const char = response.data;
+      setCharacter(char);
 
-      const StrMod = char.StrModTemp ? char.StrModTemp : char.StrMod
-      const ConMod = char.ConModTemp ? char.ConModTemp : char.ConMod
-      const DexMod = char.DexModTemp ? char.DexModTemp : char.DexMod
-      const WisMod = char.WisModTemp ? char.WisModTemp : char.WisMod
+      const StrMod = char.StrModTemp ? char.StrModTemp : char.StrMod;
+      const ConMod = char.ConModTemp ? char.ConModTemp : char.ConMod;
+      const DexMod = char.DexModTemp ? char.DexModTemp : char.DexMod;
+      const WisMod = char.WisModTemp ? char.WisModTemp : char.WisMod;
 
-      const shield = char?.Armor.filter(t => t.type === 2).reduce(
+      const shield = char?.Armor.filter((t) => t.type === 2).reduce(
         (acc, val) => {
-          return acc + (val.bonus + val.defense)
+          return acc + (val.bonus + val.defense);
         },
         0
-      )
+      );
 
-      const armor = char?.Armor.filter(t => t.type === 1).reduce((acc, val) => {
-        return acc + (val.bonus + val.defense)
-      }, 0)
-
-      const natural = char?.Armor.filter(t => t.type === 3).reduce(
+      const armor = char?.Armor.filter((t) => t.type === 1).reduce(
         (acc, val) => {
-          return acc + (val.bonus + val.defense)
+          return acc + (val.bonus + val.defense);
         },
         0
-      )
+      );
 
-      const outros = char?.Armor.filter(t => t.type === 5).reduce(
+      const natural = char?.Armor.filter((t) => t.type === 3).reduce(
         (acc, val) => {
-          return acc + (val.bonus + val.defense)
+          return acc + (val.bonus + val.defense);
         },
         0
-      )
+      );
+
+      const outros = char?.Armor.filter((t) => t.type === 5).reduce(
+        (acc, val) => {
+          return acc + (val.bonus + val.defense);
+        },
+        0
+      );
 
       const maxDext = char?.Armor.reduce(
         (min, p) => (p?.dexterity < min ? p?.dexterity : min),
         char?.Armor[0]?.dexterity
-      )
+      );
 
-      setMaxDex(maxDext)
+      setMaxDex(maxDext);
 
-      const charWeapons = char?.Weapon
+      const charWeapons = char?.Weapon;
 
-      setWeapons(charWeapons)
+      setWeapons(charWeapons);
 
-      const bonusDext = await calcDext(DexMod)
-      const ca = 10 + shield + armor + bonusDext + natural + outros
+      const bonusDext = await calcDext(DexMod);
+      const ca = 10 + shield + armor + bonusDext + natural + outros;
 
-      setCharInit(DexMod)
-      setFortitude(char.Fortitude + ConMod)
-      setReflex(char.Reflex + DexMod)
-      setWill(char.Will + WisMod)
-      setStrength(char.BaseAttack + StrMod)
+      setCharInit(DexMod);
+      setFortitude(char.Fortitude + ConMod);
+      setReflex(char.Reflex + DexMod);
+      setWill(char.Will + WisMod);
+      setStrength(char.BaseAttack + StrMod);
 
       setCharStatus({
         fortitude: char.Fortitude + ConMod,
@@ -161,43 +165,44 @@ export default function Combat(): React.JSX.Element {
         totalCa: ca,
         health: char.Health,
         healthNow: char.HealthNow,
-      })
+      });
     } catch (e) {
-      toast.error('Houve um problema ao carregar os dados dos personagens!')
+      console.error(e);
+      toast.error("Houve um problema ao carregar os dados dos personagens!");
     }
   }
 
   useEffect(() => {
-    connect()
-    getCharacter()
-    GetTokens()
-  }, []) // eslint-disable-line
+    connect();
+    getCharacter();
+    GetTokens();
+  }, []); // eslint-disable-line
 
   useEffect(() => {
     const handleTokens = (Tokens: Token[]) => {
       // Garantir que sempre seja um array
-      const tokensArray = Array.isArray(Tokens) ? Tokens : []
-      setTokens(tokensArray)
-    }
+      const tokensArray = Array.isArray(Tokens) ? Tokens : [];
+      setTokens(tokensArray);
+    };
 
-    socket.on('token.message', handleTokens)
+    socket.on("token.message", handleTokens);
 
     return () => {
-      socket.off('token.message', handleTokens)
-    }
-  }, []) // Removida dependência [tokens] para evitar loop infinito
+      socket.off("token.message", handleTokens);
+    };
+  }, []); // Removida dependência [tokens] para evitar loop infinito
 
   function handleMenu(tipo: MenuType): void {
-    setMenu(tipo)
+    setMenu(tipo);
   }
 
   function handleDragable(): void {
-    setAllowDrag(!allowDrag)
+    setAllowDrag(!allowDrag);
   }
 
   return (
     <Styles.Container>
-      <Styles.CombatContainer show={showMenu}>
+      <Styles.CombatContainer show={!!showMenu}>
         <ScrollContainer vertical={allowDrag} horizontal={allowDrag}>
           <Styles.MapContainer>
             <RenderMap
@@ -209,7 +214,7 @@ export default function Combat(): React.JSX.Element {
         </ScrollContainer>
       </Styles.CombatContainer>
 
-      <Styles.TalkContainer show={showMenu}>
+      <Styles.TalkContainer show={!!showMenu}>
         <Styles.IconContainer>
           <ReactTooltip />
 
@@ -238,7 +243,7 @@ export default function Combat(): React.JSX.Element {
               size={25}
               color="#8e0e00"
               cursor="pointer"
-              onClick={() => handleMenu('attack')}
+              onClick={() => handleMenu("attack")}
             />
           </div>
 
@@ -247,7 +252,7 @@ export default function Combat(): React.JSX.Element {
               size={28}
               color="#8e0e00"
               cursor="pointer"
-              onClick={() => handleMenu('chat')}
+              onClick={() => handleMenu("chat")}
             />
           </div>
 
@@ -256,7 +261,7 @@ export default function Combat(): React.JSX.Element {
               size={25}
               color="#8e0e00"
               cursor="pointer"
-              onClick={() => handleMenu('saves')}
+              onClick={() => handleMenu("saves")}
             />
           </div>
 
@@ -265,7 +270,7 @@ export default function Combat(): React.JSX.Element {
               size={30}
               color="#8e0e00"
               cursor="pointer"
-              onClick={() => handleMenu('damage')}
+              onClick={() => handleMenu("damage")}
             />
           </div>
 
@@ -274,7 +279,7 @@ export default function Combat(): React.JSX.Element {
               size={30}
               color="#8e0e00"
               cursor="pointer"
-              onClick={() => handleMenu('init')}
+              onClick={() => handleMenu("init")}
             />
           </div>
 
@@ -283,7 +288,7 @@ export default function Combat(): React.JSX.Element {
               size={28}
               color="#8e0e00"
               cursor="pointer"
-              onClick={() => handleMenu('status')}
+              onClick={() => handleMenu("status")}
             />
           </div>
           {user?.is_gm && (
@@ -292,7 +297,7 @@ export default function Combat(): React.JSX.Element {
                 size={28}
                 color="#8e0e00"
                 cursor="pointer"
-                onClick={() => handleMenu('config')}
+                onClick={() => handleMenu("config")}
               />
             </div>
           )}
@@ -305,11 +310,15 @@ export default function Combat(): React.JSX.Element {
           )}
         </Styles.IconContainer>
 
-        {menu === 'chat' ? (
+        {menu === "chat" ? (
           <Chat />
-        ) : menu === 'init' ? (
-          <Initiatives profile={user} from={user?.id} charInit={charInit} />
-        ) : menu === 'saves' ? (
+        ) : menu === "init" ? (
+          <Initiatives
+            profile={user || undefined}
+            from={user?.id}
+            charInit={charInit}
+          />
+        ) : menu === "saves" ? (
           <Styles.SavesConteiner>
             <Styles.ButtonsContainer>
               <Savins
@@ -323,13 +332,17 @@ export default function Combat(): React.JSX.Element {
             <h2>Painel Logs</h2>
             <LogBoard />
           </Styles.SavesConteiner>
-        ) : menu === 'damage' ? (
+        ) : menu === "damage" ? (
           <DamagesCounter />
-        ) : menu === 'status' ? (
-          <CharStatus charStatus={charStatus} />
-        ) : menu === 'attack' ? (
+        ) : menu === "status" ? (
+          <CharStatus charStatus={charStatus || ({} as CharStatusProps)} />
+        ) : menu === "attack" ? (
           <Styles.AttackContainer>
-            <Armory character={character} weapons={weapons} loadChar={false} />
+            <Armory
+              character={character || ({} as Character)}
+              weapons={weapons || []}
+              loadChar={false}
+            />
             <h2>Painel Logs</h2>
             <LogBoard />
           </Styles.AttackContainer>
@@ -338,5 +351,5 @@ export default function Combat(): React.JSX.Element {
         )}
       </Styles.TalkContainer>
     </Styles.Container>
-  )
+  );
 }

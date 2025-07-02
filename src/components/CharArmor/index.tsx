@@ -1,9 +1,31 @@
 /* eslint-disable no-console */
 
-import { FaTimes } from 'react-icons/fa'
-import api from '../../services/api'
-import { Armor, ArmorType } from '../../types/armor'
-import { Container, InputLarge, InputMed, InputShort, LabelDel } from './styles'
+import { FaTimes } from "react-icons/fa"
+import api from "../../services/api"
+import { Container, InputLarge, InputMed, InputShort, LabelDel } from "./styles"
+
+interface Armor {
+  id: number
+  name?: string
+  type: number
+  bonus: number
+  defense: number
+  dexterity: number
+  penalty?: number
+  displacement_m?: number
+  displacement_s?: number
+  weight?: number
+  price?: number
+}
+
+export const ArmorType = {
+  Armor: 1,
+  Shield: 2,
+  Natural: 3,
+  Others: 5,
+} as const
+
+export type ArmorType = (typeof ArmorType)[keyof typeof ArmorType]
 
 interface CharArmorProps {
   armors: Armor[]
@@ -27,14 +49,14 @@ const CharArmor: React.FC<CharArmorProps> = ({
       })
       onArmorRemoved()
     } catch (error) {
-      console.error('Erro ao remover armadura:', error)
+      console.error("Erro ao remover armadura:", error)
     }
   }
 
   return (
     <Container>
       <ul>
-        {armors.map(item => (
+        {armors.map((item) => (
           <li key={item.id}>
             <div>
               <label htmlFor="name">Nome</label>
@@ -65,7 +87,7 @@ const CharArmor: React.FC<CharArmorProps> = ({
               <InputMed
                 readOnly
                 defaultValue={
-                  size === 'MÉDIO' ? item.displacement_m : item.displacement_s
+                  size === "MÉDIO" ? item.displacement_m : item.displacement_s
                 }
               />
             </div>
@@ -98,15 +120,15 @@ const CharArmor: React.FC<CharArmorProps> = ({
 function getArmorType(type: number): string {
   switch (type) {
     case ArmorType.Armor:
-      return 'Armadura'
+      return "Armadura"
     case ArmorType.Shield:
-      return 'Escudo'
+      return "Escudo"
     case ArmorType.Natural:
-      return 'Natural'
+      return "Natural"
     case ArmorType.Others:
-      return 'Outros'
+      return "Outros"
     default:
-      return 'Desconhecido'
+      return "Desconhecido"
   }
 }
 

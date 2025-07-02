@@ -1,50 +1,36 @@
-import React from 'react'
-import { Link } from 'react-router'
-import { Form, Input } from '@rocketseat/unform'
-import * as Yup from 'yup'
+import React from "react";
+import { Link } from "react-router";
+import { Form, Input } from "@rocketseat/unform";
+import * as Yup from "yup";
 
-import { useAuth } from '../../contexts/AuthContext'
-
-interface FormData {
-  name: string
-  email: string
-  password: string
-  phone: string
-  city: string
-  state: string
-}
+import { useAuth } from "../../contexts";
 
 const schema = Yup.object().shape({
-  name: Yup.string().required('O nome é obrigatório'),
+  name: Yup.string().required("O nome é obrigatório"),
 
   email: Yup.string()
-    .email('Insira um e-mail válido')
-    .required('O e-mail é obrigatório'),
+    .email("Insira um e-mail válido")
+    .required("O e-mail é obrigatório"),
 
   password: Yup.string()
-    .min(6, 'No mĩnimo 6 caracteres')
-    .required('A senha é obrigatória'),
+    .min(6, "No mĩnimo 6 caracteres")
+    .required("A senha é obrigatória"),
 
-  phone: Yup.string().required('O telefone é obrigatório'),
+  phone: Yup.string().required("O telefone é obrigatório"),
 
-  city: Yup.string().required('A cidade é obrigatória'),
+  city: Yup.string().required("A cidade é obrigatória"),
 
-  state: Yup.string().required('O estado é obrigatório'),
-})
+  state: Yup.string().required("O estado é obrigatório"),
+});
 
 const SignUp: React.FC = () => {
-  const { signUp } = useAuth()
+  const { signUp } = useAuth();
 
-  const handleSubimit = ({
-    name,
-    email,
-    password,
-    phone,
-    city,
-    state,
-  }: FormData): void => {
-    signUp({ name, email, password, phone, city, state })
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSubimit = (data: any): void => {
+    const { name, email, password, phone, city, state } = data;
+    signUp({ name, email, password, phone, city, state });
+  };
 
   return (
     <>
@@ -60,7 +46,7 @@ const SignUp: React.FC = () => {
         <Link to="/">Já tenho uma conta.</Link>
       </Form>
     </>
-  )
-}
+  );
+};
 
-export default SignUp
+export default SignUp;

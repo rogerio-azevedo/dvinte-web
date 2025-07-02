@@ -1,17 +1,17 @@
 /* eslint-disable no-console */
 
-import React, { useState, useEffect } from 'react'
-import Modal from 'react-modal'
-import { FaTimes } from 'react-icons/fa'
-import { FaRegMoneyBillAlt } from 'react-icons/fa'
-import { useForm, SubmitHandler } from 'react-hook-form'
-import { toast } from 'react-toastify'
+import React, { useState, useEffect } from "react"
+import Modal from "react-modal"
+import { FaTimes } from "react-icons/fa"
+import { FaRegMoneyBillAlt } from "react-icons/fa"
+import { useForm, type SubmitHandler } from "react-hook-form"
+import { toast } from "react-toastify"
 
-import api from '../../../services/api'
+import api from "../../../services/api"
 
-import SelectCharacter from '../../SelectCharacter'
+import SelectCharacter from "../../SelectCharacter"
 
-import * as Styles from './styles'
+import * as Styles from "./styles"
 
 interface Character {
   id: number
@@ -35,18 +35,18 @@ interface FormData {
 
 const customStyles = {
   content: {
-    width: '750px',
-    height: '550px',
-    top: '45%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
+    width: "750px",
+    height: "550px",
+    top: "45%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
   },
 }
 
-Modal.setAppElement('#root')
+Modal.setAppElement("#root")
 
 const ModalArmorBind: React.FC<ModalArmorBindProps> = ({ armor }) => {
   const { handleSubmit, register, setValue, watch } = useForm<FormData>()
@@ -58,17 +58,17 @@ const ModalArmorBind: React.FC<ModalArmorBindProps> = ({ armor }) => {
   // const [loadingCharacters, setLoadingCharacters] = useState(false)
 
   // Monitorar o valor do personagem selecionado
-  const selectedCharacter = watch('character')
+  const selectedCharacter = watch("character")
 
   useEffect(() => {
-    register('character', { required: true })
-    register('armor')
-    setValue('armor', selectedArmor?.id)
+    register("character", { required: true })
+    register("armor")
+    setValue("armor", selectedArmor?.id)
   }, [register, selectedArmor, setValue])
 
   async function loadCharacters() {
     try {
-      const response = await api.get('/characters')
+      const response = await api.get("/characters")
       const charactersData = response.data || []
 
       const characterOptions = charactersData.map((char: Character) => ({
@@ -78,7 +78,7 @@ const ModalArmorBind: React.FC<ModalArmorBindProps> = ({ armor }) => {
 
       setCharacters(characterOptions)
     } catch (error) {
-      toast.error('Erro ao carregar personagens')
+      toast.error("Erro ao carregar personagens")
     }
   }
 
@@ -86,7 +86,7 @@ const ModalArmorBind: React.FC<ModalArmorBindProps> = ({ armor }) => {
     async function saveData() {
       try {
         if (!data.character) {
-          toast.error('Selecione um personagem')
+          toast.error("Selecione um personagem")
           return
         }
 
@@ -96,17 +96,17 @@ const ModalArmorBind: React.FC<ModalArmorBindProps> = ({ armor }) => {
           armor_id: Number(selectedArmor.id),
           defense: Number(data.defense || 0),
           price: Number(data.price || 0),
-          description: data.description || '',
+          description: data.description || "",
         }
 
-        console.log('Sending armor data:', armorData)
+        console.log("Sending armor data:", armorData)
         await api.post(`/characters/${data.character}/armors`, armorData)
         e?.target.reset()
-        toast.success('Armadura vinculada com sucesso!')
+        toast.success("Armadura vinculada com sucesso!")
         setIsOpen(false)
       } catch (error) {
-        console.error('Error saving armor:', error)
-        toast.error('Erro ao vincular armadura ao personagem')
+        console.error("Error saving armor:", error)
+        toast.error("Erro ao vincular armadura ao personagem")
       }
     }
     saveData()
@@ -169,7 +169,7 @@ const ModalArmorBind: React.FC<ModalArmorBindProps> = ({ armor }) => {
             <div>
               <label htmlFor="price">Preço</label>
               <Styles.WeaponMed
-                {...register('price')}
+                {...register("price")}
                 type="number"
                 defaultValue={0}
               />
@@ -177,20 +177,20 @@ const ModalArmorBind: React.FC<ModalArmorBindProps> = ({ armor }) => {
             <div>
               <label htmlFor="defense">Defesa Extra</label>
               <Styles.WeaponMed
-                {...register('defense')}
+                {...register("defense")}
                 type="number"
                 defaultValue={0}
               />
             </div>
             <div>
-              <label style={{ color: '#fff' }} htmlFor="character">
+              <label style={{ color: "#fff" }} htmlFor="character">
                 .
               </label>
               <SelectCharacter
                 characters={characters}
-                changeCharacter={value => {
-                  console.log('Selected character:', value)
-                  setValue('character', value)
+                changeCharacter={(value) => {
+                  console.log("Selected character:", value)
+                  setValue("character", value || "")
                 }}
               />
             </div>
@@ -200,7 +200,7 @@ const ModalArmorBind: React.FC<ModalArmorBindProps> = ({ armor }) => {
             <div>
               <label htmlFor="description">Observação</label>
               <Styles.WeaponExtLarge
-                {...register('description')}
+                {...register("description")}
                 defaultValue=""
               />
             </div>

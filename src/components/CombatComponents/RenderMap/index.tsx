@@ -1,199 +1,199 @@
 /* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState, useEffect, ReactElement } from 'react'
-import { useAuth } from '../../../contexts/AuthContext'
-import { useMenu } from '../../../contexts/MenuContext'
-import { Stage, Layer, Line, Image, Rect } from 'react-konva'
-import useImage from 'use-image'
+import { useState, useEffect, type ReactElement } from "react";
+import { useAuth, useMenu } from "../../../contexts";
+import { Stage, Layer, Line, Image, Rect } from "react-konva";
+import useImage from "use-image";
 
-import { connect, socket } from '../../../services/socket'
-import CharToken from '../CharToken'
-import { Container } from './styles'
-import api from '../../../services/api'
+import { connect, socket } from "../../../services/socket";
+import CharToken from "../CharToken";
+import { Container } from "./styles";
+import api from "../../../services/api";
 import {
-  RenderMapProps,
-  Token,
-  MapData,
-  Line as LineType,
-  StagePos,
-} from './interfaces'
+  type RenderMapProps,
+  type Token,
+  type MapData,
+  type Line as LineType,
+  type StagePos,
+} from "./interfaces";
 
 export default function RenderMap({
   tokens = [],
   allowDrag,
   setTokens,
 }: RenderMapProps) {
-  const { user } = useAuth()
-  const { state: menuState, actions: menuActions } = useMenu()
-  const { fogLevel, eraserSize, fogPersist } = menuState
+  const { user } = useAuth();
+  const { state: menuState, actions: menuActions } = useMenu();
+  const { fogLevel, eraserSize, fogPersist } = menuState;
 
-  const [stagePos, setStagePos] = useState<StagePos>({ x: 0, y: 0 })
-  const [stageScale, setStageScale] = useState<number>(1)
-  const [stageX, setStageX] = useState<number>(0)
-  const [stageY, setStageY] = useState<number>(0)
-  const [lines, setLines] = useState<LineType[]>(fogPersist)
-  const [isDrawing, setIsDrawing] = useState<boolean>(false)
-  const [selectedId, selectShape] = useState<number | null>(null)
-  const [mapData, setMapData] = useState<MapData>({} as MapData)
-  const [myToken, setMyToken] = useState<number>(0)
+  const [stagePos, setStagePos] = useState<StagePos>({ x: 0, y: 0 });
+  const [stageScale, setStageScale] = useState<number>(1);
+  const [stageX, setStageX] = useState<number>(0);
+  const [stageY, setStageY] = useState<number>(0);
+  const [lines, setLines] = useState<LineType[]>(fogPersist);
+  const [isDrawing, setIsDrawing] = useState<boolean>(false);
+  const [selectedId, selectShape] = useState<number | null>(null);
+  const [mapData, setMapData] = useState<MapData>({} as MapData);
+  const [myToken, setMyToken] = useState<number>(0);
 
   // dispatch migrado para menuActions
-  const is_gm = user?.is_gm
-  const grid = 68
+  const is_gm = user?.is_gm;
+  const grid = 68;
   const gridWidth =
-    mapData?.width > mapData?.height ? mapData?.width : mapData?.height
+    mapData?.width > mapData?.height ? mapData?.width : mapData?.height;
 
-  const linesA: ReactElement[] = []
-  const linesB: ReactElement[] = []
+  const linesA: ReactElement[] = [];
+  const linesB: ReactElement[] = [];
 
   for (let i = 0; i < gridWidth / grid; i++) {
     linesA.push(
       <Line
         key={`${i}v`}
         strokeWidth={0.5}
-        stroke={'white'}
+        stroke={"white"}
         opacity={0.4}
         points={[i * grid, 0, i * grid, gridWidth]}
       />
-    )
+    );
 
     linesB.push(
       <Line
         key={`${i}h`}
         strokeWidth={0.5}
-        stroke={'white'}
+        stroke={"white"}
         opacity={0.4}
         points={[0, i * grid, gridWidth, i * grid]}
       />
-    )
+    );
   }
 
   async function getMap() {
-    const response = await api.get<MapData>('maps/1')
-    setMapData(response?.data)
+    const response = await api.get<MapData>("maps/1");
+    setMapData(response?.data);
   }
 
   function handleWheel(e: any) {
-    e.evt.preventDefault()
+    e.evt.preventDefault();
 
-    const scaleBy = 1.08
-    const stage = e.target.getStage()
-    const oldScale = stage.scaleX()
+    const scaleBy = 1.08;
+    const stage = e.target.getStage();
+    const oldScale = stage.scaleX();
     const mousePointTo = {
       x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
       y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale,
-    }
+    };
 
-    const newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy
+    const newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
 
-    setStageScale(newScale)
+    setStageScale(newScale);
     setStageX(
       -(mousePointTo.x - stage.getPointerPosition().x / newScale) * newScale
-    )
+    );
     setStageY(
       -(mousePointTo.y - stage.getPointerPosition().y / newScale) * newScale
-    )
+    );
   }
 
   useEffect(() => {
-    socket.on('map.message', (data: MapData) => {
-      setMapData(data)
+    socket.on("map.message", (data: MapData) => {
+      setMapData(data);
 
-      if (data.portrait !== '') {
-        setStagePos({ x: 0, y: 0 })
+      if (data.portrait !== "") {
+        setStagePos({ x: 0, y: 0 });
       }
-    })
-  }, [mapData])
+    });
+  }, [mapData]);
 
   useEffect(() => {
-    getMap()
-    connect()
+    getMap();
+    connect();
 
     async function getcharToken() {
-      const response = await api.get(`combats/${user?.id}`)
-      setMyToken(response.data.Cod)
+      const response = await api.get(`combats/${user?.id}`);
+      setMyToken(response.data.Cod);
     }
 
-    getcharToken()
-  }, [user?.id]) // eslint-disable-line
+    getcharToken();
+  }, [user?.id]); // eslint-disable-line
 
   function handleMouseDown(e: any) {
     if (e.evt.button === 2 && !allowDrag) {
-      setIsDrawing(true)
+      setIsDrawing(true);
 
-      const pointer = e.target.getStage().getPointerPosition()
+      const pointer = e.target.getStage().getPointerPosition();
 
       const newLines = lines?.concat({
         id: Date.now(),
-        tool: 'eraser',
+        tool: "eraser",
         points: [pointer.x, pointer.y],
-      })
-      setLines(newLines)
+      });
+      setLines(newLines);
     }
   }
 
   function handleMouseUp(e: any) {
-    const clickedOnEmpty = e.target !== e.target.getStage()
+    const clickedOnEmpty = e.target !== e.target.getStage();
     if (clickedOnEmpty) {
-      selectShape(null)
+      selectShape(null);
     }
 
     if (isDrawing) {
-      setIsDrawing(false)
-      socket.emit('line.message', lines)
+      setIsDrawing(false);
+      socket.emit("line.message", lines);
     }
   }
 
   function handleMouseMove(e: any) {
     if (!isDrawing) {
-      return
+      return;
     }
 
     if (!is_gm) {
-      return
+      return;
     }
 
-    const pointer = e.target.getStage().getPointerPosition()
-    const newLines = lines?.slice()
+    const pointer = e.target.getStage().getPointerPosition();
+    const newLines = lines?.slice();
     const lastLine = {
       ...newLines[newLines?.length - 1],
-    }
-    lastLine.size = eraserSize
-    lastLine.points = lastLine?.points.concat([pointer.x, pointer.y])
-    newLines[newLines.length - 1] = lastLine
-    setLines(newLines)
+    };
+    lastLine.size = eraserSize;
+    lastLine.points = lastLine?.points.concat([pointer.x, pointer.y]);
+    newLines[newLines.length - 1] = lastLine;
+    setLines(newLines);
   }
 
   useEffect(() => {
-    socket.on('line.message', (data: LineType[]) => {
-      setLines(data)
-    })
-  }, [lines])
+    socket.on("line.message", (data: LineType[]) => {
+      setLines(data);
+    });
+  }, [lines]);
 
   useEffect(() => {
-    menuActions.setFogPersist(lines)
-  }, [lines, menuActions])
+    menuActions.setFogPersist(lines);
+  }, [lines, menuActions]);
 
-  const [map] = useImage(mapData?.battle || '')
-  const [portrait] = useImage(mapData?.portrait || '')
+  const [map] = useImage(mapData?.battle || "");
+  const [portrait] = useImage(mapData?.portrait || "");
 
   useEffect(() => {
     const handleTokens = (data: Token[]) => {
-      console.log('🔄 Socket.IO: Received token.message event with data:', {
+      console.log("🔄 Socket.IO: Received token.message event with data:", {
         isArray: Array.isArray(data),
         dataLength: data?.length,
         firstToken: data?.[0],
-      })
+      });
 
       if (Array.isArray(data) && setTokens) {
-        setTokens(data)
+        setTokens(data);
       }
-    }
+    };
 
-    socket.on('token.message', handleTokens)
+    socket.on("token.message", handleTokens);
 
-    return () => socket.off('token.message', handleTokens)
-  }, [setTokens])
+    return () => socket.off("token.message", handleTokens);
+  }, [setTokens]);
 
   return (
     <Container>
@@ -206,17 +206,17 @@ export default function RenderMap({
         height={window.innerHeight}
         onWheel={handleWheel}
         draggable={allowDrag}
-        onDragEnd={e => {
+        onDragEnd={(e) => {
           if (allowDrag) {
-            setStageX(e.currentTarget.x())
-            setStageY(e.currentTarget.y())
+            setStageX(e.currentTarget.x());
+            setStageY(e.currentTarget.y());
           }
         }}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
-        onContextMenu={e => {
-          e.evt.preventDefault()
+        onContextMenu={(e) => {
+          e.evt.preventDefault();
         }}
       >
         <Layer>
@@ -239,7 +239,7 @@ export default function RenderMap({
             y={0}
             width={mapData?.width || 1200}
             height={mapData?.height || 800}
-            fill={is_gm ? '#ff0000 ' : '#333'}
+            fill={is_gm ? "#ff0000 " : "#333"}
             opacity={
               mapData?.fog && is_gm
                 ? fogLevel / 100
@@ -249,16 +249,16 @@ export default function RenderMap({
             }
           />
 
-          {lines?.map(line => (
+          {lines?.map((line) => (
             <Line
               x={stagePos.x}
               y={stagePos.y}
               key={line?.id}
               strokeWidth={line?.size}
-              stroke={'black'}
+              stroke={"black"}
               points={line?.points}
               globalCompositeOperation={
-                line?.tool === 'eraser' ? 'destination-out' : 'source-over'
+                line?.tool === "eraser" ? "destination-out" : "source-over"
               }
             />
           ))}
@@ -272,7 +272,7 @@ export default function RenderMap({
         </Layer>
 
         <Layer>
-          {(Array.isArray(tokens) ? tokens : []).map(item => (
+          {(Array.isArray(tokens) ? tokens : []).map((item) => (
             <CharToken
               key={item.id}
               id={item.id}
@@ -284,7 +284,7 @@ export default function RenderMap({
                   : is_gm && !allowDrag && item.id === selectedId
               }
               onSelect={() => {
-                selectShape(item.id)
+                selectShape(item.id);
               }}
               image={item.image}
               width={item.width}
@@ -305,5 +305,5 @@ export default function RenderMap({
         </Layer>
       </Stage>
     </Container>
-  )
+  );
 }

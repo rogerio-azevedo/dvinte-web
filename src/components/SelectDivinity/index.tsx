@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import Select, { SingleValue } from 'react-select'
+import { useEffect, useState } from "react"
+import Select, { type SingleValue } from "react-select"
 
 interface Option {
   value: string
@@ -21,7 +21,7 @@ export default function SelectDivinity({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const data = divinities.map(divinity => ({
+    const data = divinities.map((divinity) => ({
       value: divinity.value,
       label: divinity.label.toUpperCase(),
     }))
@@ -32,18 +32,18 @@ export default function SelectDivinity({
 
   // Encontrar a opção selecionada baseada no value
   const selectedOption =
-    divinityOptions.find(option => option.value === value) || null
+    divinityOptions.find((option) => option.value === value) || null
 
   const customStyles = {
     input: (styles: any) => ({
       ...styles,
-      height: '30px',
-      minHeight: '30px',
+      height: "30px",
+      minHeight: "30px",
     }),
   }
 
   return (
-    <div style={{ width: '220px', marginRight: '15px' }}>
+    <div style={{ width: "220px", marginRight: "15px" }}>
       <Select
         styles={customStyles}
         maxMenuHeight={220}

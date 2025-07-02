@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react'
-import { useForm, Controller } from 'react-hook-form'
-import { Select } from 'antd'
-import type { ColumnsType } from 'antd/es/table'
+import { useEffect, useState } from "react"
+import { useForm, Controller } from "react-hook-form"
+import { Select } from "antd"
+import type { ColumnsType } from "antd/es/table"
 
-import Button from '../../components/Button'
-import { FaPlusCircle } from 'react-icons/fa'
+import Button from "../../components/Button"
+import { FaPlusCircle } from "react-icons/fa"
 
-import api from '../../services/api'
+import api from "../../services/api"
 
-import * as Styles from './styles'
-import ModalWeaponBind from '../../components/Modals/ModalWeaponBind'
+import * as Styles from "./styles"
+import ModalWeaponBind from "../../components/Modals/ModalWeaponBind"
 
 const { Option } = Select
 
@@ -51,21 +51,21 @@ interface WeaponProps {
 }
 
 const defaultValues: Partial<WeaponFormData> = {
-  name: '',
-  dice_s: '',
-  dice_m: '',
-  multiplier_s: '',
-  multiplier_m: '',
-  critical: '',
-  crit_from: '',
-  range: '',
-  price: '',
-  weight: '',
-  type: '',
-  material: '',
-  book: '',
-  version: '',
-  str_bonus: '',
+  name: "",
+  dice_s: "",
+  dice_m: "",
+  multiplier_s: "",
+  multiplier_m: "",
+  critical: "",
+  crit_from: "",
+  range: "",
+  price: "",
+  weight: "",
+  type: "",
+  material: "",
+  book: "",
+  version: "",
+  str_bonus: "",
 }
 
 export default function Weapon() {
@@ -74,17 +74,17 @@ export default function Weapon() {
   })
   const [loading, setLoading] = useState(false)
   const [list, setList] = useState<WeaponProps[]>([])
-  const [showform, setShowform] = useState<'hide' | 'show'>('hide')
+  const [showform, setShowform] = useState<"hide" | "show">("hide")
 
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true)
-        const response = await api.get('/weapons')
+        const response = await api.get("/weapons")
         setList(response.data || [])
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.error('Erro ao carregar armas:', error)
+        console.error("Erro ao carregar armas:", error)
         setList([])
       } finally {
         setLoading(false)
@@ -97,14 +97,14 @@ export default function Weapon() {
   const onSubmit = async (data: WeaponFormData) => {
     try {
       setLoading(true)
-      const response = await api.post('/weapons', data)
+      const response = await api.post("/weapons", data)
       const newList = [response.data, ...list]
       setList(newList)
       reset(defaultValues)
-      setShowform('hide')
+      setShowform("hide")
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('Erro ao salvar arma:', error)
+      console.error("Erro ao salvar arma:", error)
     } finally {
       setLoading(false)
     }
@@ -112,69 +112,69 @@ export default function Weapon() {
 
   const columns: ColumnsType<WeaponProps> = [
     {
-      title: 'Cod',
-      dataIndex: 'id',
-      key: 'id',
+      title: "Cod",
+      dataIndex: "id",
+      key: "id",
       width: 80,
     },
     {
-      title: 'Nome',
-      dataIndex: 'name',
-      key: 'name',
+      title: "Nome",
+      dataIndex: "name",
+      key: "name",
     },
     {
-      title: 'Dano (P)',
-      dataIndex: 'dice_s',
+      title: "Dano (P)",
+      dataIndex: "dice_s",
       render: (_, item) => `${item.multiplier_s}d${item.dice_s}`,
     },
     {
-      title: 'Dano (M)',
-      dataIndex: 'dice_m',
+      title: "Dano (M)",
+      dataIndex: "dice_m",
       render: (_, item) => `${item.multiplier_m}d${item.dice_m}`,
     },
     {
-      title: 'Crítico',
-      dataIndex: 'critical',
+      title: "Crítico",
+      dataIndex: "critical",
       render: (_, item) => `${item.crit_from}-20/x${item.critical}`,
     },
     {
-      title: 'Preço',
-      dataIndex: 'price',
+      title: "Preço",
+      dataIndex: "price",
       render: (_, item) => `${item.price || 0} PO`,
     },
     {
-      title: 'Tipo',
-      dataIndex: 'type',
-      key: 'type',
+      title: "Tipo",
+      dataIndex: "type",
+      key: "type",
     },
     {
-      title: 'Alcance',
-      dataIndex: 'range',
+      title: "Alcance",
+      dataIndex: "range",
       render: (_, item) => `${item.range} m`,
     },
     {
-      title: 'Peso',
-      dataIndex: 'weight',
+      title: "Peso",
+      dataIndex: "weight",
       render: (_, item) => `${item.weight} kg`,
     },
     {
-      title: 'Força',
-      dataIndex: 'str_bonus',
-      key: 'str_bonus',
+      title: "Força",
+      dataIndex: "str_bonus",
+      key: "str_bonus",
     },
     {
-      title: 'Livro',
-      dataIndex: 'book',
-      key: 'book',
+      title: "Livro",
+      dataIndex: "book",
+      key: "book",
     },
     {
-      title: 'Versão',
-      dataIndex: 'version',
-      key: 'version',
+      title: "Versão",
+      dataIndex: "version",
+      key: "version",
     },
     {
-      title: 'Comprar',
-      dataIndex: 'buy',
+      title: "Comprar",
+      dataIndex: "buy",
       render: (_, item) => (
         <ModalWeaponBind weapon={{ ...item, id: String(item.id) }} />
       ),
@@ -182,7 +182,7 @@ export default function Weapon() {
   ]
 
   function handleAdd() {
-    setShowform('show')
+    setShowform("show")
   }
 
   return (
@@ -195,7 +195,7 @@ export default function Weapon() {
             color="#8e0e00"
             size={40}
             onClick={handleAdd}
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "pointer" }}
           />
         </Styles.HeaderContainer>
 
@@ -204,34 +204,34 @@ export default function Weapon() {
             <Styles.InputContainer>
               <div>
                 <label htmlFor="name">Nome</label>
-                <Styles.InputLarge {...register('name', { required: true })} />
+                <Styles.InputLarge {...register("name", { required: true })} />
               </div>
               <div>
                 <label htmlFor="dice_s">Dano (dado) (P)</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('dice_s', { required: true })}
+                  {...register("dice_s", { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="multiplier_s">Qtde Dados (P)</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('multiplier_s', { required: true })}
+                  {...register("multiplier_s", { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="dice_m">Dano (dado) (M)</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('dice_m', { required: true })}
+                  {...register("dice_m", { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="multiplier_m">Qtde Dados (M)</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('multiplier_m', { required: true })}
+                  {...register("multiplier_m", { required: true })}
                 />
               </div>
             </Styles.InputContainer>
@@ -241,14 +241,14 @@ export default function Weapon() {
                 <label htmlFor="crit_from">Crítico Mínimo</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('crit_from', { required: true })}
+                  {...register("crit_from", { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="critical">Crítico Multiplicador</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('critical', { required: true })}
+                  {...register("critical", { required: true })}
                 />
               </div>
               <div>
@@ -256,14 +256,14 @@ export default function Weapon() {
                 <Styles.InputMed
                   type="number"
                   step="0.1"
-                  {...register('range', { required: true })}
+                  {...register("range", { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="price">Preço</label>
                 <Styles.InputMed
                   type="number"
-                  {...register('price', { required: true })}
+                  {...register("price", { required: true })}
                 />
               </div>
               <div>
@@ -271,7 +271,7 @@ export default function Weapon() {
                 <Styles.InputMed
                   type="number"
                   step="0.1"
-                  {...register('weight', { required: true })}
+                  {...register("weight", { required: true })}
                 />
               </div>
               <Styles.SelectContainer>
@@ -286,7 +286,7 @@ export default function Weapon() {
                         {...field}
                         size="large"
                         showSearch
-                        style={{ width: '100%' }}
+                        style={{ width: "100%" }}
                         placeholder="Escolha o Tipo"
                         optionFilterProp="children"
                         filterOption={(input, option) => {
@@ -312,13 +312,13 @@ export default function Weapon() {
               <div>
                 <label htmlFor="material">Material</label>
                 <Styles.InputLarge
-                  {...register('material', { required: true })}
+                  {...register("material", { required: true })}
                 />
               </div>
 
               <div>
                 <label htmlFor="book">Livro</label>
-                <Styles.InputLarge {...register('book', { required: true })} />
+                <Styles.InputLarge {...register("book", { required: true })} />
               </div>
 
               <Styles.SelectContainer>
@@ -333,7 +333,7 @@ export default function Weapon() {
                         {...field}
                         size="large"
                         showSearch
-                        style={{ width: '100%' }}
+                        style={{ width: "100%" }}
                         placeholder="Escolha a Versão"
                         optionFilterProp="children"
                         filterOption={(input, option) => {
@@ -369,7 +369,7 @@ export default function Weapon() {
                         {...field}
                         size="large"
                         showSearch
-                        style={{ width: '100%' }}
+                        style={{ width: "100%" }}
                         placeholder="Escolha o Bônus"
                         optionFilterProp="children"
                         filterOption={(input, option) => {

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import Select, { SingleValue } from 'react-select'
+import { useEffect, useState } from "react"
+import Select, { type SingleValue } from "react-select"
 
 interface Option {
   value: string
@@ -21,7 +21,7 @@ export default function SelectMonsterSubType({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const data = monsterSubTypes.map(subType => ({
+    const data = monsterSubTypes.map((subType) => ({
       value: subType.value,
       label: subType.label.toUpperCase(),
     }))
@@ -33,13 +33,13 @@ export default function SelectMonsterSubType({
   const customStyles = {
     input: (styles: any) => ({
       ...styles,
-      height: '30px',
-      minHeight: '30px',
+      height: "30px",
+      minHeight: "30px",
     }),
   }
 
   return (
-    <div style={{ width: '220px', marginRight: '15px' }}>
+    <div style={{ width: "220px", marginRight: "15px" }}>
       <Select
         styles={customStyles}
         maxMenuHeight={220}

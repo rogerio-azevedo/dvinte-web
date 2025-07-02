@@ -1,16 +1,16 @@
 /* eslint-disable no-console */
 
-import React from 'react'
-import { useAuth } from '../../../contexts/AuthContext'
-import api from '../../../services/api'
+import React from "react";
+import { useAuth } from "../../../contexts";
+import api from "../../../services/api";
 
-import * as Styles from './styles'
+import * as Styles from "./styles";
 
 interface SavingsProps {
-  fortitude?: number
-  reflex?: number
-  will?: number
-  strength?: number
+  fortitude?: number;
+  reflex?: number;
+  will?: number;
+  strength?: number;
 }
 
 const Savings: React.FC<SavingsProps> = ({
@@ -19,84 +19,84 @@ const Savings: React.FC<SavingsProps> = ({
   will = 0,
   strength = 0,
 }) => {
-  const { user } = useAuth()
-  const from = user?.id
+  const { user } = useAuth();
+  const from = user?.id;
 
   const handleFortitude = async (): Promise<void> => {
     try {
-      const dice = Math.floor(Math.random() * 20) + 1
-      const fortitudeTest = fortitude + dice
-      const rolled = `Rolou teste de Fortitude d20: ${dice} + ${fortitude} de fortitude, com resultado: ${fortitudeTest}`
+      const dice = Math.floor(Math.random() * 20) + 1;
+      const fortitudeTest = fortitude + dice;
+      const rolled = `Rolou teste de Fortitude d20: ${dice} + ${fortitude} de fortitude, com resultado: ${fortitudeTest}`;
 
-      await api.post('combats', {
+      await api.post("combats", {
         id: from,
         user_id: user?.id,
         user: user?.name,
         message: rolled,
         result: fortitudeTest,
         type: 5,
-      })
+      });
     } catch (error) {
-      console.error('Erro ao realizar teste de Fortitude:', error)
+      console.error("Erro ao realizar teste de Fortitude:", error);
     }
-  }
+  };
 
   const handleReflex = async (): Promise<void> => {
     try {
-      const dice = Math.floor(Math.random() * 20) + 1
-      const reflexTest = reflex + dice
-      const rolled = `Rolou teste de Reflexos d20: ${dice} + ${reflex} de reflexos, com resultado: ${reflexTest}`
+      const dice = Math.floor(Math.random() * 20) + 1;
+      const reflexTest = reflex + dice;
+      const rolled = `Rolou teste de Reflexos d20: ${dice} + ${reflex} de reflexos, com resultado: ${reflexTest}`;
 
-      await api.post('combats', {
+      await api.post("combats", {
         id: from,
         user_id: user?.id,
         user: user?.name,
         message: rolled,
         result: reflexTest,
         type: 6,
-      })
+      });
     } catch (error) {
-      console.error('Erro ao realizar teste de Reflexos:', error)
+      console.error("Erro ao realizar teste de Reflexos:", error);
     }
-  }
+  };
 
   const handleWill = async (): Promise<void> => {
     try {
-      const dice = Math.floor(Math.random() * 20) + 1
-      const willTest = will + dice
-      const rolled = `Rolou teste de Vontade d20: ${dice} + ${will} de vontade, com resultado: ${willTest}`
+      const dice = Math.floor(Math.random() * 20) + 1;
+      const willTest = will + dice;
+      const rolled = `Rolou teste de Vontade d20: ${dice} + ${will} de vontade, com resultado: ${willTest}`;
 
-      await api.post('combats', {
+      await api.post("combats", {
         id: from,
         user_id: user?.id,
         user: user?.name,
         message: rolled,
         result: willTest,
         type: 7,
-      })
+      });
     } catch (error) {
-      console.error('Erro ao realizar teste de Vontade:', error)
+      console.error("Erro ao realizar teste de Vontade:", error);
     }
-  }
+  };
 
   const handleStrength = async (): Promise<void> => {
     try {
-      const dice = Math.floor(Math.random() * 20) + 1
-      const strTest = strength + dice
-      const rolled = `Rolou teste de Base contra Base d20: ${dice} + ${strength} de Base + Mod de Força, com resultado: ${strTest}`
+      const dice = Math.floor(Math.random() * 20) + 1;
+      const strTest = strength + dice;
+      const rolled = `Rolou teste de Base contra Base d20: ${dice} + ${strength} de Base + Mod de Força, com resultado: ${strTest}`;
 
-      await api.post('combats', {
+      await api.post("combats", {
         id: from,
         user_id: user?.id,
         user: user?.name,
         message: rolled,
         result: strTest,
         type: 10,
-      })
+      });
     } catch (error) {
-      console.error('Erro ao realizar teste de Base:', error)
+      console.error("Erro ao realizar teste de Base:", error);
     }
-  }
+  };
 
   return (
     <Styles.Container>
@@ -133,7 +133,7 @@ const Savings: React.FC<SavingsProps> = ({
         </Styles.SavesContainer>
       </Styles.MainContainer>
     </Styles.Container>
-  )
-}
+  );
+};
 
-export default Savings
+export default Savings;

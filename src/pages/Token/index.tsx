@@ -1,75 +1,76 @@
 /* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
-import { Table } from 'antd'
-import { toast } from 'react-toastify'
+import { useState, useEffect } from "react";
+import { useAuth } from "../../contexts";
+import { Table } from "antd";
+import { toast } from "react-toastify";
 
-import api from '../../services/api'
+import api from "../../services/api";
 
-import TokenInput from '../../components/TokenInput'
-import * as Styles from './styles'
+import TokenInput from "../../components/TokenInput";
+import * as Styles from "./styles";
 
 interface TokenProps {
-  id: number
-  url: string
-  name: string
+  id: number;
+  url: string;
+  name: string;
 }
 
 interface EnabledTokens {
-  [key: number]: boolean
+  [key: number]: boolean;
 }
 
 interface Combat {
-  Cod: number
+  Cod: number;
 }
 
 interface CharacterToken {
-  x: number
-  y: number
-  width: number
-  height: number
-  rotation: number
-  character_id: number
-  token_id: number
-  enabled: boolean
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  character_id: number;
+  token_id: number;
+  enabled: boolean;
 }
 
 const Token: React.FC = () => {
-  const { user } = useAuth()
-  const id = user?.id
+  const { user } = useAuth();
+  const id = user?.id;
 
-  const [tokens, setTokens] = useState<TokenProps[]>([])
-  const [loading, setLoading] = useState(false)
-  const [enabledTokens, setEnabledTokens] = useState<EnabledTokens>({})
+  const [tokens, setTokens] = useState<TokenProps[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [enabledTokens, setEnabledTokens] = useState<EnabledTokens>({});
 
   useEffect(() => {
     async function loadTokens() {
       try {
-        setLoading(true)
-        console.log('Fazendo requisição para tokens...')
-        const response = await api.get<TokenProps[]>('/tokens')
-        console.log('Resposta recebida:', response.data)
+        setLoading(true);
+        console.log("Fazendo requisição para tokens...");
+        const response = await api.get<TokenProps[]>("/tokens");
+        console.log("Resposta recebida:", response.data);
 
-        setTokens(response.data)
+        setTokens(response.data);
       } catch (error) {
-        console.error('Erro ao carregar tokens:', error)
-        toast.error('Erro ao carregar tokens!')
+        console.error("Erro ao carregar tokens:", error);
+        toast.error("Erro ao carregar tokens!");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    loadTokens()
-  }, [])
+    loadTokens();
+  }, []);
 
   const handleCreateToken = async (tokenId: number) => {
     try {
-      console.log('Criando token com ID:', tokenId)
-      console.log('User ID:', id)
+      console.log("Criando token com ID:", tokenId);
+      console.log("User ID:", id);
 
-      const response = await api.get<Combat>(`combats/${id}`)
-      const { data } = response
+      const response = await api.get<Combat>(`combats/${id}`);
+      const { data } = response;
 
       const newToken: CharacterToken = {
         x: 250,
@@ -80,16 +81,16 @@ const Token: React.FC = () => {
         character_id: data.Cod,
         token_id: tokenId,
         enabled: enabledTokens[tokenId] || false,
-      }
+      };
 
-      console.log('Criando character token:', newToken)
-      await api.post('chartokens', newToken)
-      toast.success('Token adicionado com sucesso!')
+      console.log("Criando character token:", newToken);
+      await api.post("chartokens", newToken);
+      toast.success("Token adicionado com sucesso!");
     } catch (error) {
-      console.error('Erro ao criar token:', error)
-      toast.error('Erro ao adicionar token!')
+      console.error("Erro ao criar token:", error);
+      toast.error("Erro ao adicionar token!");
     }
-  }
+  };
 
   return (
     <Styles.Container>
@@ -101,9 +102,9 @@ const Token: React.FC = () => {
           dataSource={tokens}
           columns={[
             {
-              title: 'Token',
-              dataIndex: 'url',
-              key: 'url',
+              title: "Token",
+              dataIndex: "url",
+              key: "url",
               render: (url: string) => (
                 <Styles.Portrait>
                   <img alt="Token" src={url} />
@@ -111,25 +112,25 @@ const Token: React.FC = () => {
               ),
             },
             {
-              title: 'Cod',
-              dataIndex: 'id',
-              key: 'id',
+              title: "Cod",
+              dataIndex: "id",
+              key: "id",
             },
             {
-              title: 'Nome',
-              dataIndex: 'name',
-              key: 'name',
+              title: "Nome",
+              dataIndex: "name",
+              key: "name",
             },
             {
-              title: 'Habilitado',
-              dataIndex: 'enabled',
-              key: 'enabled',
+              title: "Habilitado",
+              dataIndex: "enabled",
+              key: "enabled",
               render: (_: any, record: TokenProps) => (
                 <input
                   type="checkbox"
                   checked={enabledTokens[record.id] || false}
-                  onChange={e =>
-                    setEnabledTokens(prev => ({
+                  onChange={(e) =>
+                    setEnabledTokens((prev) => ({
                       ...prev,
                       [record.id]: e.target.checked,
                     }))
@@ -138,8 +139,8 @@ const Token: React.FC = () => {
               ),
             },
             {
-              title: 'Adicionar',
-              key: 'action',
+              title: "Adicionar",
+              key: "action",
               render: (_: any, record: TokenProps) => (
                 <button
                   type="button"
@@ -155,7 +156,7 @@ const Token: React.FC = () => {
         />
       </Styles.TableContainer>
     </Styles.Container>
-  )
-}
+  );
+};
 
-export default Token
+export default Token;

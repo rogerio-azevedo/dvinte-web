@@ -1,11 +1,33 @@
-import React from 'react'
+import React from "react"
 import {
   Container,
   InputResitContainer,
   DefenseMainLabel,
   InputDefense,
-} from './styles'
-import { Armor } from '../../types/armor'
+} from "./styles"
+
+interface Armor {
+  id: number
+  name?: string
+  type: number
+  bonus: number
+  defense: number
+  dexterity: number
+  penalty?: number
+  displacement_m?: number
+  displacement_s?: number
+  weight?: number
+  price?: number
+}
+
+export const ArmorType = {
+  Armor: 1,
+  Shield: 2,
+  Natural: 3,
+  Others: 5,
+} as const
+
+export type ArmorType = (typeof ArmorType)[keyof typeof ArmorType]
 
 interface CharCaProps {
   armors: Armor[]
@@ -16,7 +38,7 @@ const CharCa: React.FC<CharCaProps> = ({ armors, dextMod }) => {
   const calculateArmorTypeTotal = (type: number): number => {
     return (
       armors
-        ?.filter(t => t.type === type)
+        ?.filter((t) => t.type === type)
         ?.reduce((acc, val) => {
           return acc + (val.bonus + val.defense)
         }, 0) || 0
@@ -30,7 +52,7 @@ const CharCa: React.FC<CharCaProps> = ({ armors, dextMod }) => {
   const outros = calculateArmorTypeTotal(5) // Outros
 
   const maxDext = Math.min(
-    ...armors?.filter(t => t.dexterity > 0).map(item => item.dexterity)
+    ...armors?.filter((t) => t.dexterity > 0).map((item) => item.dexterity)
   )
 
   const calcDext = (value: number): number => {

@@ -1,115 +1,115 @@
 /* eslint-disable no-console */
-import React, { useState, useEffect } from 'react'
-import { useAuth } from '../../../contexts/AuthContext'
-import api from '../../../services/api'
-import { socket, connect, emit } from '../../../services/socket'
+import { useState, useEffect } from "react";
+import { useAuth } from "../../../contexts";
+import api from "../../../services/api";
+import { socket, connect, emit } from "../../../services/socket";
 
-import * as Styles from './styles'
+import * as Styles from "./styles";
 
 interface DamageItem {
-  user: string
-  damage: number
+  user: string;
+  damage: number;
 }
 
 interface Message {
-  id: number
-  user_id: number
-  user: string
-  message: string
-  result: number
-  type: number
-  isCrit: string
+  id: number;
+  user_id: number;
+  user: string;
+  message: string;
+  result: number;
+  type: number;
+  isCrit: string;
 }
 
-type DamageType = 'session' | 'combat' | 'reload' | undefined
+type DamageType = "session" | "combat" | "reload" | undefined;
 
 export default function DamagesCounter() {
-  const { user } = useAuth()
-  const [damages, setDamages] = useState<DamageItem[]>([])
+  const { user } = useAuth();
+  const [damages, setDamages] = useState<DamageItem[]>([]);
 
   async function loadDamage(type?: DamageType): Promise<void> {
     try {
-      const response = await api.get('/damages', {
+      const response = await api.get("/damages", {
         params: {
           type: type,
         },
-      })
+      });
 
       const damagesData: DamageItem[] = Array.isArray(response.data)
         ? response.data
-        : []
-      setDamages(damagesData)
+        : [];
+      setDamages(damagesData);
     } catch (error) {
-      console.error('[DamagesCounter] Erro ao carregar danos:', error)
-      setDamages([])
+      console.error("[DamagesCounter] Erro ao carregar danos:", error);
+      setDamages([]);
     }
   }
 
   async function handleStartSession(): Promise<void> {
     try {
       const message: Message = {
-        id: user?.id,
-        user_id: user?.id,
-        user: user?.name,
-        message: 'Iniciou uma nova aventura',
+        id: user?.id || 0,
+        user_id: user?.id || 0,
+        user: user?.name || "",
+        message: "Iniciou uma nova aventura",
         result: 0,
         type: 0,
-        isCrit: 'false',
-      }
+        isCrit: "false",
+      };
 
-      emit('chat.message', message)
-      await loadDamage('session')
+      emit("chat.message", message);
+      await loadDamage("session");
     } catch (err) {
-      console.error('[DamagesCounter] Erro ao iniciar sessão:', err)
+      console.error("[DamagesCounter] Erro ao iniciar sessão:", err);
     }
   }
 
   async function handleStartCombat(): Promise<void> {
     try {
       const message: Message = {
-        id: user?.id,
-        user_id: user?.id,
-        user: user?.name,
-        message: 'Iniciou um novo combate',
+        id: user?.id || 0,
+        user_id: user?.id || 0,
+        user: user?.name || "",
+        message: "Iniciou um novo combate",
         result: 0,
         type: 8,
-        isCrit: 'false',
-      }
+        isCrit: "false",
+      };
 
-      emit('chat.message', message)
-      await loadDamage('combat')
+      emit("chat.message", message);
+      await loadDamage("combat");
     } catch (err) {
-      console.error('[DamagesCounter] Erro ao iniciar combate:', err)
+      console.error("[DamagesCounter] Erro ao iniciar combate:", err);
     }
   }
 
   useEffect(() => {
-    loadDamage()
+    loadDamage();
 
     // Escuta mensagens do chat
     const handleChatMessage = (message: Message): void => {
       // Se for uma mensagem de início de sessão ou combate, atualiza a lista
       if (message.type === 0) {
-        loadDamage('session')
+        loadDamage("session");
       } else if (message.type === 8) {
-        loadDamage('combat')
+        loadDamage("combat");
       } else if (message.type === 4) {
         // Se for dano, recarrega a lista atual
-        loadDamage()
+        loadDamage();
       }
-    }
+    };
 
-    socket.on('chat.message', handleChatMessage)
+    socket.on("chat.message", handleChatMessage);
 
     // Conecta o websocket se ainda não estiver conectado
     if (!socket.connected) {
-      connect()
+      connect();
     }
 
     return () => {
-      socket.off('chat.message', handleChatMessage)
-    }
-  }, [])
+      socket.off("chat.message", handleChatMessage);
+    };
+  }, []);
 
   return (
     <Styles.Container>
@@ -118,13 +118,13 @@ export default function DamagesCounter() {
       </Styles.HeaderContainer>
 
       <Styles.ButtonsContainer>
-        <Styles.Button type="button" onClick={() => loadDamage('reload')}>
+        <Styles.Button type="button" onClick={() => loadDamage("reload")}>
           Recarregar
         </Styles.Button>
-        <Styles.Button type="button" onClick={() => loadDamage('session')}>
+        <Styles.Button type="button" onClick={() => loadDamage("session")}>
           Aventura
         </Styles.Button>
-        <Styles.Button type="button" onClick={() => loadDamage('combat')}>
+        <Styles.Button type="button" onClick={() => loadDamage("combat")}>
           Combate
         </Styles.Button>
       </Styles.ButtonsContainer>
@@ -152,5 +152,5 @@ export default function DamagesCounter() {
         </Styles.ButtonLarge>
       </Styles.ResetButtonsContainer>
     </Styles.Container>
-  )
+  );
 }

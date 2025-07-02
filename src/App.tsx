@@ -1,21 +1,21 @@
-import React from 'react'
-import { ToastContainer } from 'react-toastify'
-import { BrowserRouter } from 'react-router'
-import { ThemeProvider } from 'styled-components'
+import React from "react";
+import { ToastContainer } from "react-toastify";
+import { BrowserRouter } from "react-router";
+import { ThemeProvider } from "styled-components";
 
-import './config/ReactotronConfig'
+import Routes from "./routes";
 
-import Routes from './routes'
+import {
+  AuthProvider,
+  MenuProvider,
+  DicesProvider,
+  CharacterCreationProvider,
+  CombatProvider,
+} from "./contexts";
 
-import { AuthProvider } from './contexts/AuthContext'
-import { MenuProvider } from './contexts/MenuContext'
-import { DicesProvider } from './contexts/DicesContext'
-import { CharacterCreationProvider } from './contexts/CharacterCreationContext'
-import { CombatProvider } from './contexts/CombatContext'
-
-import GlobalStyle from './styles/global'
-import theme from './styles/theme'
-import NavigationHandler from './components/NavigationHandler'
+import GlobalStyle from "./styles/global";
+import theme from "./styles/theme";
+import NavigationHandler from "./components/NavigationHandler";
 
 const App: React.FC = () => {
   return (
@@ -37,7 +37,7 @@ const App: React.FC = () => {
         </DicesProvider>
       </MenuProvider>
     </AuthProvider>
-  )
-}
+  );
+};
 
-export default App
+export default App;

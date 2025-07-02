@@ -1,44 +1,44 @@
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router'
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router";
 // import api from '../../../services/api'
 
-import logoBlack from '../../assets/logo_black.svg'
+import logoBlack from "../../assets/logo_black.svg";
 //import logoRed from '~/assets/logo_red.svg'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from "../../contexts";
 
-import { Navigation, Container, Dropmenu, Logo } from './styles'
+import { Navigation, Container, Dropmenu, Logo } from "./styles";
 
 export default function TopNav() {
   // const [link, setLink] = useState('')
-  const { user } = useAuth()
-  const gm = user?.is_gm
-  const container = React.createRef<HTMLDivElement>()
-  const [cad, setCad] = useState(false)
-  const [cha, setCha] = useState(false)
-  const [mon, setMon] = useState(false)
+  const { user } = useAuth();
+  const gm = user?.is_gm;
+  const container = React.createRef<HTMLDivElement>();
+  const [cad, setCad] = useState(false);
+  const [cha, setCha] = useState(false);
+  const [mon, setMon] = useState(false);
 
   function handleChaClick() {
-    setCha(!cha)
-    setCad(false)
-    setMon(false)
+    setCha(!cha);
+    setCad(false);
+    setMon(false);
   }
 
   function handleCadClick() {
-    setCad(!cad)
-    setCha(false)
-    setMon(false)
+    setCad(!cad);
+    setCha(false);
+    setMon(false);
   }
 
   function handleMonClick() {
-    setMon(!mon)
-    setCad(false)
-    setCha(false)
+    setMon(!mon);
+    setCad(false);
+    setCha(false);
   }
 
   function handleRemoveClick() {
-    setMon(false)
-    setCad(false)
-    setCha(false)
+    setMon(false);
+    setCad(false);
+    setCha(false);
   }
 
   function handleClickOutside(event: MouseEvent) {
@@ -46,18 +46,18 @@ export default function TopNav() {
       container.current &&
       !container.current.contains(event.target as Node)
     ) {
-      setMon(false)
-      setCad(false)
-      setCha(false)
+      setMon(false);
+      setCad(false);
+      setCha(false);
     }
   }
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Navigation>
@@ -212,5 +212,5 @@ export default function TopNav() {
         </ul>
       </Container>
     </Navigation>
-  )
+  );
 }

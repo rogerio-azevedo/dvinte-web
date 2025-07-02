@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
-import React, { useRef, useEffect } from 'react'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+import React, { useRef, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 import * as THREE from 'three'
@@ -44,7 +46,7 @@ const MyDices: React.FC = () => {
     (state: RootState) => state.dices
   )
 
-  // const [roll, setRoll] = useState<boolean>(diceRoll)
+  const [roll, setRoll] = useState<boolean>(diceRoll)
   const mount = useRef<HTMLDivElement>(null)
   const controls = useRef<Controls | null>(null)
 
@@ -64,8 +66,6 @@ const MyDices: React.FC = () => {
   const dice_color = '#200122'
   const ambient_light_color = 0xf0f5fb
   const spot_light_color = 0xefdfd5
-
-  // const [diceShow, setDiceShow] = useState(false)
 
   const dice_box = (): (() => void) => {
     scene = new THREE.Scene()
@@ -315,7 +315,7 @@ const MyDices: React.FC = () => {
   }
 
   useEffect(() => {
-    // setRoll(false)
+    setRoll(false)
     const cleanup = dice_box()
 
     return cleanup

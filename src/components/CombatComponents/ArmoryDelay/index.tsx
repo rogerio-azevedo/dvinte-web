@@ -5,7 +5,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
-import { generateRandomNumber } from '../../../services/random'
 
 import SelectWeapon from '../../SelectWeapon'
 import SelectCharacter from '../../SelectCharacter'
@@ -34,6 +33,37 @@ export default function Armory({ loadChar }: ArmoryProps) {
   const [characterWeapons, setCharacterWeapons] = useState<any[]>([])
   const [loadingCharacters, setLoadingCharacters] = useState(false)
   const [loadingWeapons, setLoadingWeapons] = useState(false)
+
+  // Função auxiliar para gerar números aleatórios via backend (sem animação)
+  const generateSecureRandomNumber = async (
+    min: number,
+    max: number
+  ): Promise<number> => {
+    try {
+      const diceType =
+        max === 4
+          ? 'd4'
+          : max === 6
+          ? 'd6'
+          : max === 8
+          ? 'd8'
+          : max === 10
+          ? 'd10'
+          : max === 12
+          ? 'd12'
+          : 'd20'
+      const response = await api.post('/dice/roll', {
+        diceType,
+        diceMult: 1,
+        diceSides: max,
+        characterId: selectedCharacter?.id,
+      })
+      return response.data.data.diceResult[0]
+    } catch (error) {
+      console.warn('⚠️ Fallback: usando Math.random devido a erro:', error)
+      return Math.floor(Math.random() * (max - min + 1)) + min
+    }
+  }
 
   // Carregar personagens do usuário
   const loadUserCharacters = useCallback(async () => {
@@ -171,7 +201,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
     const critFrom = wep.crit_from_mod > 0 ? wep.crit_from_mod : wep.crit_from
     const name = wep.nickname?.trim() ? wep.nickname : wep.name
 
-    const dice = await generateRandomNumber(1, 20)
+    const dice = await generateSecureRandomNumber(1, 20)
 
     // Pequeno delay para garantir que o estado anterior foi limpo
     await new Promise(resolve => setTimeout(resolve, 100))
@@ -264,11 +294,11 @@ export default function Armory({ loadChar }: ArmoryProps) {
     const name = wep.nickname?.trim() ? wep.nickname : wep.name
     const extraDamage = wep.damage || 0
     const element =
-      wep.element > 0 ? await generateRandomNumber(1, wep.element) : 0
+      wep.element > 0 ? await generateSecureRandomNumber(1, wep.element) : 0
 
     const dices = []
     for (let i = 0; i < multi; i++) {
-      const roll = await generateRandomNumber(1, Number(dice))
+      const roll = await generateSecureRandomNumber(1, Number(dice))
       dices.push(roll)
     }
 
@@ -345,12 +375,12 @@ export default function Armory({ loadChar }: ArmoryProps) {
     const name = wep.nickname?.trim() ? wep.nickname : wep.name
     const extraDamage = wep.damage || 0
     const element =
-      wep.element > 0 ? await generateRandomNumber(1, wep.element) : 0
+      wep.element > 0 ? await generateSecureRandomNumber(1, wep.element) : 0
     const critMult = wep.crit_mod > 0 ? wep.crit_mod : wep.critical
 
     const dices = []
     for (let i = 0; i < multi * critMult; i++) {
-      const roll = await generateRandomNumber(1, Number(dice))
+      const roll = await generateSecureRandomNumber(1, Number(dice))
       dices.push(roll)
     }
 

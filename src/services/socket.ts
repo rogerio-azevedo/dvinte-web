@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 type EventCallback = (data?: any) => void
 
@@ -12,11 +13,11 @@ const getSocketURL = (): string => {
   if (apiUrl) {
     // Converter HTTP para WS
     return (
-      apiUrl.replace("http://", "ws://").replace("https://", "wss://") + "/ws"
+      apiUrl.replace('http://', 'ws://').replace('https://', 'wss://') + '/ws'
     )
   }
   // Fallback para desenvolvimento local
-  return "ws://localhost:9600/ws"
+  return 'ws://localhost:9600/ws'
 }
 
 const SOCKET_URL = getSocketURL()
@@ -31,12 +32,12 @@ class WebSocketService {
 
   connect(): void {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      console.log("[WS] Already connected")
+      console.log('[WS] Already connected')
       return
     }
 
     if (this.connecting) {
-      console.log("[WS] Connection already in progress")
+      console.log('[WS] Connection already in progress')
       return
     }
 
@@ -50,39 +51,39 @@ class WebSocketService {
       this.ws.onopen = () => {
         this.connected = true
         this.connecting = false
-        console.log("[WS] Connect => A new connection has been established")
-        console.log("[WS] WebSocket connected")
+        console.log('[WS] Connect => A new connection has been established')
+        console.log('[WS] WebSocket connected')
 
         // Trigger connect listeners
-        this.emit("connect")
+        this.emit('connect')
       }
 
       this.ws.onmessage = (event: MessageEvent) => {
         try {
           const data: SocketEventData = JSON.parse(event.data)
-          console.log("[WS] Message received:", data)
+          console.log('[WS] Message received:', data)
 
           // Emit the event to listeners
           if (data.event) {
             this.emit(data.event, data.data)
           }
         } catch (error) {
-          console.error("[WS] Error parsing message:", error)
+          console.error('[WS] Error parsing message:', error)
         }
       }
 
       this.ws.onclose = (event: CloseEvent) => {
         this.connected = false
         this.connecting = false
-        console.log("[WS] Disconnected:", event.reason || "Unknown reason")
+        console.log('[WS] Disconnected:', event.reason || 'Unknown reason')
 
         // Trigger disconnect listeners
-        this.emit("disconnect", event.reason || "Connection closed")
+        this.emit('disconnect', event.reason || 'Connection closed')
 
         // Auto-reconnect
         if (this.shouldReconnect) {
           setTimeout(() => {
-            console.log("[WS] Attempting to reconnect...")
+            console.log('[WS] Attempting to reconnect...')
             this.connect()
           }, this.reconnectInterval)
         }
@@ -90,13 +91,13 @@ class WebSocketService {
 
       this.ws.onerror = (error: Event) => {
         this.connecting = false
-        console.error("[WS] Connection error:", error)
-        this.emit("connect_error", error)
+        console.error('[WS] Connection error:', error)
+        this.emit('connect_error', error)
       }
     } catch (error) {
       this.connecting = false
-      console.error("[WS] Failed to create WebSocket:", error)
-      this.emit("connect_error", error)
+      console.error('[WS] Failed to create WebSocket:', error)
+      this.emit('connect_error', error)
     }
   }
 
@@ -115,7 +116,7 @@ class WebSocketService {
       const message = JSON.stringify({ event, data })
       this.ws.send(message)
     } else {
-      console.warn("[WS] WebSocket não conectado. Tentando conectar...")
+      console.warn('[WS] WebSocket não conectado. Tentando conectar...')
       this.connect()
       // Retry após conexão
       setTimeout(() => {
@@ -149,7 +150,7 @@ class WebSocketService {
   // Função interna para emitir eventos para listeners
   private emit(event: string, data?: any): void {
     if (this.listeners.has(event)) {
-      this.listeners.get(event)!.forEach((callback) => {
+      this.listeners.get(event)!.forEach(callback => {
         try {
           callback(data)
         } catch (error) {
@@ -192,7 +193,7 @@ const socket: SocketObject = {
   get connected(): boolean {
     return socketService.isConnected
   },
-  id: "websocket-client", // Compatibilidade
+  id: 'websocket-client', // Compatibilidade
   on,
   off,
   emit,

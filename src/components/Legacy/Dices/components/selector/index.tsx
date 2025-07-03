@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react'
+import { useState, type ChangeEvent } from 'react'
 
 import * as CntFld from './styled'
 

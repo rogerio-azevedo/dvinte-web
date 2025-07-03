@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 
@@ -55,15 +55,10 @@ interface FormData {
   is_ativo: boolean
 }
 
-interface SelectOption {
-  value: string
-  label: string
-}
-
 export default function MonsterCreate() {
   const [size, setSize] = useState<string>()
-  const [type, setType] = useState<string>()
-  const [subType, setSubType] = useState<string>()
+  // const [type, setType] = useState<string>()
+  // const [subType, setSubType] = useState<string>()
   const [alignment, setAlignment] = useState<string>()
 
   const [attacks, setAttacks] = useState<Attack[]>([])
@@ -116,12 +111,12 @@ export default function MonsterCreate() {
 
   function handleType(value: string | null) {
     setValue('type', value || '')
-    setType(value || undefined)
+    // setType(value || undefined)
   }
 
   function handleSubType(value: string | null) {
     setValue('subType', value || '')
-    setSubType(value || undefined)
+    // setSubType(value || undefined)
   }
 
   function handleAlignment(value: string | null) {
@@ -404,7 +399,7 @@ export default function MonsterCreate() {
               <div>
                 <label htmlFor="alignment">Alinhamento</label>
                 <SelectAlignment
-                  value={alignment}
+                  value={alignment || ''}
                   changeAlignment={handleAlignment}
                 />
               </div>

@@ -1,17 +1,19 @@
 /* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { useEffect, useState } from "react"
-import { useForm, Controller } from "react-hook-form"
-import { Select } from "antd"
-import type { ColumnsType } from "antd/es/table"
+import { useEffect, useState } from 'react'
+import { useForm, Controller } from 'react-hook-form'
+import { Select } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
 
-import Button from "../../components/Button"
-import { FaPlusCircle } from "react-icons/fa"
-import ModalEquipmentBind from "../../components/Modals/ModalEquipmentBind"
+import Button from '../../components/Button'
+import { FaPlusCircle } from 'react-icons/fa'
+import ModalEquipmentBind from '../../components/Modals/ModalEquipmentBind'
 
-import api from "../../services/api"
+import api from '../../services/api'
 
-import * as Styles from "./styles"
+import * as Styles from './styles'
 
 interface FormData {
   name: string
@@ -48,20 +50,20 @@ export default function Equipment() {
   const { handleSubmit, register, reset, control } = useForm<FormData>()
   const [loading, setLoading] = useState(false)
   const [list, setList] = useState<Equipment[]>([])
-  const [showform, setShowform] = useState("hide")
+  const [showform, setShowform] = useState('hide')
 
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true)
-        const response = await api.get("equipments")
+        const response = await api.get('equipments')
         const equipments = (response.data || []).map((item: any) => ({
           ...item,
           id: String(item.id),
         }))
         setList(equipments)
       } catch (error) {
-        console.error("Erro ao carregar equipamentos:", error)
+        console.error('Erro ao carregar equipamentos:', error)
         setList([])
       } finally {
         setLoading(false)
@@ -74,7 +76,7 @@ export default function Equipment() {
   const onSubmit = async (data: FormData) => {
     try {
       setLoading(true)
-      const response = await api.post("equipments", data)
+      const response = await api.post('equipments', data)
       const newEquipment = {
         ...response.data,
         id: String(response.data.id),
@@ -82,9 +84,9 @@ export default function Equipment() {
       const newList = [newEquipment, ...list]
       setList(newList)
       reset()
-      setShowform("hide")
+      setShowform('hide')
     } catch (error) {
-      console.error("Erro ao salvar equipamento:", error)
+      console.error('Erro ao salvar equipamento:', error)
     } finally {
       setLoading(false)
     }
@@ -92,76 +94,76 @@ export default function Equipment() {
 
   const columns: ColumnsType<Equipment> = [
     {
-      title: "Cod",
-      dataIndex: "id",
-      key: "id",
+      title: 'Cod',
+      dataIndex: 'id',
+      key: 'id',
     },
     {
-      title: "Nome",
-      dataIndex: "name",
-      key: "name",
+      title: 'Nome',
+      dataIndex: 'name',
+      key: 'name',
     },
     {
-      title: "Força",
-      dataIndex: "str_temp",
-      key: "str_temp",
+      title: 'Força',
+      dataIndex: 'str_temp',
+      key: 'str_temp',
     },
     {
-      title: "Destreza",
-      dataIndex: "dex_temp",
-      key: "dex_temp",
+      title: 'Destreza',
+      dataIndex: 'dex_temp',
+      key: 'dex_temp',
     },
     {
-      title: "Constituição",
-      dataIndex: "con_temp",
-      key: "con_temp",
+      title: 'Constituição',
+      dataIndex: 'con_temp',
+      key: 'con_temp',
     },
     {
-      title: "Inteligência",
-      dataIndex: "int_temp",
-      key: "int_temp",
+      title: 'Inteligência',
+      dataIndex: 'int_temp',
+      key: 'int_temp',
     },
     {
-      title: "Sabedoria",
-      dataIndex: "wis_temp",
-      key: "wis_temp",
+      title: 'Sabedoria',
+      dataIndex: 'wis_temp',
+      key: 'wis_temp',
     },
     {
-      title: "Carisma",
-      dataIndex: "cha_temp",
-      key: "cha_temp",
+      title: 'Carisma',
+      dataIndex: 'cha_temp',
+      key: 'cha_temp',
     },
     {
-      title: "Preço",
-      dataIndex: "price",
-      render: (text, item) => `${item.price} PO`,
-    },
-
-    {
-      title: "Peso",
-      dataIndex: "weight",
-      render: (text, item) => `${item.weight} kg`,
+      title: 'Preço',
+      dataIndex: 'price',
+      render: (_, item) => `${item.price} PO`,
     },
 
     {
-      title: "Livro",
-      dataIndex: "book",
-      render: (text, item) => `${item.book}`,
+      title: 'Peso',
+      dataIndex: 'weight',
+      render: (_, item) => `${item.weight} kg`,
+    },
+
+    {
+      title: 'Livro',
+      dataIndex: 'book',
+      render: (_, item) => `${item.book}`,
     },
     {
-      title: "Versão",
-      dataIndex: "version",
-      render: (text, item) => `${item.version}`,
+      title: 'Versão',
+      dataIndex: 'version',
+      render: (_, item) => `${item.version}`,
     },
     {
-      title: "Comprar",
-      dataIndex: "buy",
-      render: (text, item) => <ModalEquipmentBind equipment={item} />,
+      title: 'Comprar',
+      dataIndex: 'buy',
+      render: (_, item) => <ModalEquipmentBind equipment={item} />,
     },
   ]
 
   function handleAdd() {
-    setShowform("show")
+    setShowform('show')
   }
 
   return (
@@ -174,7 +176,7 @@ export default function Equipment() {
             color="#8e0e00"
             size={40}
             onClick={handleAdd}
-            cursor={"pointer"}
+            cursor={'pointer'}
           />
         </Styles.HeaderContainer>
 
@@ -183,43 +185,43 @@ export default function Equipment() {
             <Styles.InputContainer>
               <div>
                 <label htmlFor="name">Nome</label>
-                <Styles.InputLarge {...register("name", { required: true })} />
+                <Styles.InputLarge {...register('name', { required: true })} />
               </div>
               <div>
                 <label htmlFor="str_temp">Força</label>
                 <Styles.InputShort
-                  {...register("str_temp", { required: true })}
+                  {...register('str_temp', { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="dex_temp">Destreza</label>
                 <Styles.InputShort
-                  {...register("dex_temp", { required: true })}
+                  {...register('dex_temp', { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="con_temp">Constituição</label>
                 <Styles.InputShort
-                  {...register("con_temp", { required: true })}
+                  {...register('con_temp', { required: true })}
                 />
               </div>
 
               <div>
                 <label htmlFor="int_temp">Inteligência</label>
                 <Styles.InputShort
-                  {...register("int_temp", { required: true })}
+                  {...register('int_temp', { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="wis_temp">Sabedoria</label>
                 <Styles.InputShort
-                  {...register("wis_temp", { required: true })}
+                  {...register('wis_temp', { required: true })}
                 />
               </div>
               <div>
                 <label htmlFor="cha_temp">Carisma</label>
                 <Styles.InputShort
-                  {...register("cha_temp", { required: true })}
+                  {...register('cha_temp', { required: true })}
                 />
               </div>
             </Styles.InputContainer>
@@ -227,15 +229,15 @@ export default function Equipment() {
             <Styles.InputContainer>
               <div>
                 <label htmlFor="price">Preço</label>
-                <Styles.InputMed {...register("price", { required: true })} />
+                <Styles.InputMed {...register('price', { required: true })} />
               </div>
               <div>
                 <label htmlFor="weight">Peso</label>
-                <Styles.InputMed {...register("weight", { required: true })} />
+                <Styles.InputMed {...register('weight', { required: true })} />
               </div>
               <div>
                 <label htmlFor="book">Livro</label>
-                <Styles.InputLarge {...register("book", { required: true })} />
+                <Styles.InputLarge {...register('book', { required: true })} />
               </div>
               <Styles.SelectContainer>
                 <label htmlFor="version">Versão</label>
@@ -247,9 +249,9 @@ export default function Equipment() {
                     render={({ field }) => (
                       <Styles.SelectFormated
                         {...field}
-                        size={"large"}
+                        size={'large'}
                         showSearch
-                        style={{ width: "100%" }}
+                        style={{ width: '100%' }}
                         placeholder="Escolha a Versão"
                         optionFilterProp="children"
                         filterOption={(input, option) =>

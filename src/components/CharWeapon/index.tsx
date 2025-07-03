@@ -1,4 +1,5 @@
-import React from 'react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { FaTimes } from 'react-icons/fa'
 import api from '../../services/api'
 

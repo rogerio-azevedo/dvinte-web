@@ -2,47 +2,48 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect, useCallback } from "react";
-import { toast } from "react-toastify";
-import api from "../../../services/api";
+import { useState, useEffect, useCallback } from 'react'
+import { toast } from 'react-toastify'
+import api from '../../../services/api'
+import { generateRandomNumber } from '../../../services/random'
 
-import SelectWeapon from "../../SelectWeapon";
-import SelectCharacter from "../../SelectCharacter";
-import { useDices } from "../../../hooks/useDices";
-import { useAuth } from "../../../contexts";
+import SelectWeapon from '../../SelectWeapon'
+import SelectCharacter from '../../SelectCharacter'
+import { useDices } from '../../../hooks/useDices'
+import { useAuth } from '../../../contexts'
 
 import {
   type APICharacter,
   type ArmoryProps,
   type Character,
-} from "./interfaces";
+} from './interfaces'
 
-import * as Styles from "./styles";
+import * as Styles from './styles'
 
 export default function Armory({ loadChar }: ArmoryProps) {
-  const { setDiceData } = useDices();
+  const { setDiceData } = useDices()
 
-  const { user } = useAuth();
-  const from = user?.id;
+  const { user } = useAuth()
+  const from = user?.id
 
-  const [weapon, setWeapon] = useState<number | undefined>();
+  const [weapon, setWeapon] = useState<number | undefined>()
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null
-  );
-  const [userCharacters, setUserCharacters] = useState<Character[]>([]);
-  const [characterWeapons, setCharacterWeapons] = useState<any[]>([]);
-  const [loadingCharacters, setLoadingCharacters] = useState(false);
-  const [loadingWeapons, setLoadingWeapons] = useState(false);
+  )
+  const [userCharacters, setUserCharacters] = useState<Character[]>([])
+  const [characterWeapons, setCharacterWeapons] = useState<any[]>([])
+  const [loadingCharacters, setLoadingCharacters] = useState(false)
+  const [loadingWeapons, setLoadingWeapons] = useState(false)
 
   // Carregar personagens do usuário
   const loadUserCharacters = useCallback(async () => {
-    if (loadingCharacters) return;
+    if (loadingCharacters) return
 
-    setLoadingCharacters(true);
+    setLoadingCharacters(true)
     try {
-      const response = await api.get(`/characters/user/${user?.id}`);
+      const response = await api.get(`/characters/user/${user?.id}`)
 
-      const characters = Array.isArray(response.data) ? response.data : [];
+      const characters = Array.isArray(response.data) ? response.data : []
 
       // Mapeia os campos da API para o formato esperado
       const mappedCharacters = characters.map((char: APICharacter) => ({
@@ -55,78 +56,78 @@ export default function Armory({ loadChar }: ArmoryProps) {
         DexMod: char.DexMod,
         DexModTemp: char.DexModTemp,
         Weapon: char.Weapon,
-      }));
+      }))
 
       // Filtra apenas personagens válidos
       const validCharacters = mappedCharacters.filter(
-        (char) => char && char.id && char.name
-      );
+        char => char && char.id && char.name
+      )
 
-      setUserCharacters(validCharacters);
+      setUserCharacters(validCharacters)
 
       // Se tiver apenas um personagem válido, seleciona automaticamente
       if (validCharacters.length === 1) {
-        setSelectedCharacter(validCharacters[0]);
+        setSelectedCharacter(validCharacters[0])
       }
     } catch (error) {
-      console.error("❌ Erro ao carregar personagens:", error);
-      toast.error("Erro ao carregar seus personagens");
-      setUserCharacters([]);
+      console.error('❌ Erro ao carregar personagens:', error)
+      toast.error('Erro ao carregar seus personagens')
+      setUserCharacters([])
     } finally {
-      setLoadingCharacters(false);
+      setLoadingCharacters(false)
     }
-  }, [user?.id]);
+  }, [user?.id])
 
   // Carregar armas do personagem selecionado
   const loadCharacterWeapons = useCallback(async (charId: number) => {
-    if (loadingWeapons) return;
+    if (loadingWeapons) return
 
-    setLoadingWeapons(true);
+    setLoadingWeapons(true)
     try {
-      const response = await api.get(`characters/${charId}`);
-      const charData = response.data;
-      setCharacterWeapons(charData?.Weapon || []);
+      const response = await api.get(`characters/${charId}`)
+      const charData = response.data
+      setCharacterWeapons(charData?.Weapon || [])
     } catch (error) {
-      console.error("❌ Erro ao carregar armas do personagem:", error);
-      toast.error("Erro ao carregar armas do personagem");
-      setCharacterWeapons([]);
+      console.error('❌ Erro ao carregar armas do personagem:', error)
+      toast.error('Erro ao carregar armas do personagem')
+      setCharacterWeapons([])
     } finally {
-      setLoadingWeapons(false);
+      setLoadingWeapons(false)
     }
-  }, []);
+  }, [])
 
   // Carregar personagens ao montar o componente
   useEffect(() => {
-    loadUserCharacters();
-  }, [loadUserCharacters]);
+    loadUserCharacters()
+  }, [loadUserCharacters])
 
   // Carregar armas quando um personagem for selecionado
   useEffect(() => {
     if (selectedCharacter?.id) {
-      loadCharacterWeapons(selectedCharacter.id);
+      loadCharacterWeapons(selectedCharacter.id)
     }
-  }, [selectedCharacter, loadCharacterWeapons]);
+  }, [selectedCharacter, loadCharacterWeapons])
 
   const handleCharacterChange = (value: string | null) => {
     if (!value) {
-      setSelectedCharacter(null);
-      setWeapon(undefined);
-      return;
+      setSelectedCharacter(null)
+      setWeapon(undefined)
+      return
     }
 
     const selected = userCharacters.find(
-      (char) => char && char.id && String(char.id) === value
-    );
-    setSelectedCharacter(selected || null);
-    setWeapon(undefined); // Reseta a arma selecionada ao trocar de personagem
-  };
+      char => char && char.id && String(char.id) === value
+    )
+    setSelectedCharacter(selected || null)
+    setWeapon(undefined) // Reseta a arma selecionada ao trocar de personagem
+  }
 
   // Renderização condicional do seletor de personagens
   const renderCharacterSelector = () => {
     // Filtra apenas personagens válidos com id
     const validCharacters = userCharacters.filter(
-      (char) => char && char.id && char.name
-    );
+      char => char && char.id && char.name
+    )
 
     return (
       <Styles.WeaponContainer>
@@ -135,7 +136,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
           <p>Carregando personagens...</p>
         ) : (
           <SelectCharacter
-            characters={validCharacters.map((char) => ({
+            characters={validCharacters.map(char => ({
               value: String(char.id), // Garante que o id seja convertido para string
               label: char.name,
             }))}
@@ -143,8 +144,8 @@ export default function Armory({ loadChar }: ArmoryProps) {
           />
         )}
       </Styles.WeaponContainer>
-    );
-  };
+    )
+  }
 
   async function handleAttack() {
     setDiceData({
@@ -154,27 +155,26 @@ export default function Armory({ loadChar }: ArmoryProps) {
       diceResult: null,
       diceShow: false,
       diceRoll: false,
-    });
+    })
 
     if (!weapon || !selectedCharacter) {
       toast.error(
-        "Escolha um personagem e uma arma antes de realizar o ataque."
-      );
-      return;
+        'Escolha um personagem e uma arma antes de realizar o ataque.'
+      )
+      return
     }
 
-    const wep = characterWeapons.find((w: any) => w.id === weapon);
-    if (!wep) return;
+    const wep = characterWeapons.find((w: any) => w.id === weapon)
+    if (!wep) return
 
-    const extraHit = wep.hit || 0;
-    const critFrom = wep.crit_from_mod > 0 ? wep.crit_from_mod : wep.crit_from;
+    const extraHit = wep.hit || 0
+    const critFrom = wep.crit_from_mod > 0 ? wep.crit_from_mod : wep.crit_from
+    const name = wep.nickname?.trim() ? wep.nickname : wep.name
 
-    const name = wep.nickname?.trim() ? wep.nickname : wep.name;
-
-    const dice = Math.floor(Math.random() * 20) + 1;
+    const dice = await generateRandomNumber(1, 20)
 
     // Pequeno delay para garantir que o estado anterior foi limpo
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 100))
 
     setDiceData({
       diceType: `d${20}`,
@@ -183,37 +183,35 @@ export default function Armory({ loadChar }: ArmoryProps) {
       diceResult: [dice],
       diceShow: true,
       diceRoll: true,
-    });
+    })
 
-    let isCrit = "";
+    let isCrit = ''
 
     if (dice >= critFrom) {
-      isCrit = "HIT";
+      isCrit = 'HIT'
     } else if (dice === 1) {
-      isCrit = "FAIL";
+      isCrit = 'FAIL'
     } else {
-      isCrit = "NORMAL";
+      isCrit = 'NORMAL'
     }
 
-    const StrMod =
-      selectedCharacter.StrModTemp ?? selectedCharacter.StrMod ?? 0;
-    const DexMod =
-      selectedCharacter.DexModTemp ?? selectedCharacter.DexMod ?? 0;
-    const mod = wep.range > 3 ? DexMod : StrMod;
-    const base = (selectedCharacter.BaseAttack ?? 0) + mod;
-    const attack = base + dice + extraHit;
+    const StrMod = selectedCharacter.StrModTemp ?? selectedCharacter.StrMod ?? 0
+    const DexMod = selectedCharacter.DexModTemp ?? selectedCharacter.DexMod ?? 0
+    const mod = wep.range > 3 ? DexMod : StrMod
+    const base = (selectedCharacter.BaseAttack ?? 0) + mod
+    const attack = base + dice + extraHit
 
-    let rolled = "";
-    if (isCrit === "HIT") {
-      rolled = `ACERTO CRÍTICO com ${name} => d20: ${dice} + ${base} de base + ${extraHit} de bônus, com resultado: ${attack}`;
-    } else if (isCrit === "FAIL") {
-      rolled = `ERRO CRÍTICO com ${name} => d20: ${dice} + ${base} de base + ${extraHit} de bônus, com resultado: ${attack}`;
+    let rolled = ''
+    if (isCrit === 'HIT') {
+      rolled = `ACERTO CRÍTICO com ${name} => d20: ${dice} + ${base} de base + ${extraHit} de bônus, com resultado: ${attack}`
+    } else if (isCrit === 'FAIL') {
+      rolled = `ERRO CRÍTICO com ${name} => d20: ${dice} + ${base} de base + ${extraHit} de bônus, com resultado: ${attack}`
     } else {
-      rolled = `ATACOU com ${name} => d20: ${dice} + ${base} de base + ${extraHit} de bônus, com resultado: ${attack}`;
+      rolled = `ATACOU com ${name} => d20: ${dice} + ${base} de base + ${extraHit} de bônus, com resultado: ${attack}`
     }
 
     try {
-      await api.post("combats", {
+      await api.post('combats', {
         id: from,
         user_id: user?.id,
         user: user?.name,
@@ -221,11 +219,11 @@ export default function Armory({ loadChar }: ArmoryProps) {
         result: attack,
         type: 3,
         isCrit: isCrit,
-      });
-      loadChar();
+      })
+      loadChar()
     } catch (error) {
-      console.error("❌ Erro ao enviar ataque:", error);
-      toast.error("Erro ao enviar ataque");
+      console.error('❌ Erro ao enviar ataque:', error)
+      toast.error('Erro ao enviar ataque')
     }
   }
 
@@ -237,48 +235,47 @@ export default function Armory({ loadChar }: ArmoryProps) {
       diceResult: null,
       diceShow: false,
       diceRoll: false,
-    });
+    })
 
     if (!weapon || !selectedCharacter) {
-      toast.error("Escolha um personagem e uma arma antes de realizar o dano.");
-      return;
+      toast.error('Escolha um personagem e uma arma antes de realizar o dano.')
+      return
     }
 
-    const wep = characterWeapons.find((w: any) => w.id === weapon);
-    if (!wep) return;
+    const wep = characterWeapons.find((w: any) => w.id === weapon)
+    if (!wep) return
 
-    const size = selectedCharacter.Size;
+    const size = selectedCharacter.Size
 
-    let mod = 0;
-    let modType = "";
+    let mod = 0
+    let modType = ''
 
     if (wep.dex_damage === true) {
-      mod = selectedCharacter.DexModTemp ?? selectedCharacter.DexMod ?? 0;
-      modType = "de mod de Destreza";
+      mod = selectedCharacter.DexModTemp ?? selectedCharacter.DexMod ?? 0
+      modType = 'de mod de Destreza'
     } else {
-      mod = selectedCharacter.StrModTemp ?? selectedCharacter.StrMod ?? 0;
-      modType = "de mod de Força";
+      mod = selectedCharacter.StrModTemp ?? selectedCharacter.StrMod ?? 0
+      modType = 'de mod de Força'
     }
 
-    const exMod = Math.floor(wep.str_bonus * mod);
-    const dice = size === "MÉDIO" ? wep.dice_m : wep.dice_s;
-    const multi = size === "MÉDIO" ? wep.multiplier_m : wep.multiplier_s;
-    const name = wep.nickname?.trim() ? wep.nickname : wep.name;
-    const extraDamage = wep.damage || 0;
+    const exMod = Math.floor(wep.str_bonus * mod)
+    const dice = size === 'MÉDIO' ? wep.dice_m : wep.dice_s
+    const multi = size === 'MÉDIO' ? wep.multiplier_m : wep.multiplier_s
+    const name = wep.nickname?.trim() ? wep.nickname : wep.name
+    const extraDamage = wep.damage || 0
     const element =
-      wep.element > 0 ? Math.floor(Math.random() * wep.element) + 1 : 0;
+      wep.element > 0 ? await generateRandomNumber(1, wep.element) : 0
 
-    const dices = [];
-    const random = () => Math.floor(Math.random() * Number(dice)) + 1;
-
+    const dices = []
     for (let i = 0; i < multi; i++) {
-      dices.push(random());
+      const roll = await generateRandomNumber(1, Number(dice))
+      dices.push(roll)
     }
 
-    const result = dices.reduce((a, b) => a + b, 0);
+    const result = dices.reduce((a, b) => a + b, 0)
 
     // Pequeno delay para garantir que o estado anterior foi limpo
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 100))
 
     setDiceData({
       diceType: `d${dice}`,
@@ -287,25 +284,25 @@ export default function Armory({ loadChar }: ArmoryProps) {
       diceResult: dices,
       diceShow: true,
       diceRoll: true,
-    });
+    })
 
-    const totalDamage = result + extraDamage + exMod + element;
+    const totalDamage = result + extraDamage + exMod + element
 
-    const rolled = `CAUSOU DANO com ${name} => ${multi} x d${dice}: ${result} + ${exMod} ${modType} + ${extraDamage} de bônus da arma + ${element} bônus de elemento. Com resultado: ${totalDamage}`;
+    const rolled = `CAUSOU DANO com ${name} => ${multi} x d${dice}: ${result} + ${exMod} ${modType} + ${extraDamage} de bônus da arma + ${element} bônus de elemento. Com resultado: ${totalDamage}`
 
     try {
-      await api.post("combats", {
+      await api.post('combats', {
         id: from,
         user_id: user?.id,
         user: user?.name,
         message: rolled,
         result: totalDamage,
         type: 4,
-      });
-      loadChar();
+      })
+      loadChar()
     } catch (error) {
-      console.error("❌ Erro ao enviar dano:", error);
-      toast.error("Erro ao enviar dano");
+      console.error('❌ Erro ao enviar dano:', error)
+      toast.error('Erro ao enviar dano')
     }
   }
 
@@ -317,51 +314,50 @@ export default function Armory({ loadChar }: ArmoryProps) {
       diceResult: null,
       diceShow: false,
       diceRoll: false,
-    });
+    })
 
     if (!weapon || !selectedCharacter) {
       toast.error(
-        "Escolha um personagem e uma arma antes de realizar o dano crítico."
-      );
-      return;
+        'Escolha um personagem e uma arma antes de realizar o dano crítico.'
+      )
+      return
     }
 
-    const wep = characterWeapons.find((w: any) => w.id === weapon);
-    if (!wep) return;
+    const wep = characterWeapons.find((w: any) => w.id === weapon)
+    if (!wep) return
 
-    const size = selectedCharacter.Size;
+    const size = selectedCharacter.Size
 
-    let mod = 0;
-    let modType = "";
+    let mod = 0
+    let modType = ''
 
     if (wep.dex_damage === true) {
-      mod = selectedCharacter.DexModTemp ?? selectedCharacter.DexMod ?? 0;
-      modType = "de mod de Destreza";
+      mod = selectedCharacter.DexModTemp ?? selectedCharacter.DexMod ?? 0
+      modType = 'de mod de Destreza'
     } else {
-      mod = selectedCharacter.StrModTemp ?? selectedCharacter.StrMod ?? 0;
-      modType = "de mod de Força";
+      mod = selectedCharacter.StrModTemp ?? selectedCharacter.StrMod ?? 0
+      modType = 'de mod de Força'
     }
 
-    const exMod = Math.floor(wep.str_bonus * mod);
-    const dice = size === "MÉDIO" ? wep.dice_m : wep.dice_s;
-    const multi = size === "MÉDIO" ? wep.multiplier_m : wep.multiplier_s;
-    const name = wep.nickname?.trim() ? wep.nickname : wep.name;
-    const extraDamage = wep.damage || 0;
+    const exMod = Math.floor(wep.str_bonus * mod)
+    const dice = size === 'MÉDIO' ? wep.dice_m : wep.dice_s
+    const multi = size === 'MÉDIO' ? wep.multiplier_m : wep.multiplier_s
+    const name = wep.nickname?.trim() ? wep.nickname : wep.name
+    const extraDamage = wep.damage || 0
     const element =
-      wep.element > 0 ? Math.floor(Math.random() * wep.element) + 1 : 0;
-    const critMult = wep.crit_mod > 0 ? wep.crit_mod : wep.critical;
+      wep.element > 0 ? await generateRandomNumber(1, wep.element) : 0
+    const critMult = wep.crit_mod > 0 ? wep.crit_mod : wep.critical
 
-    const dices = [];
-    const random = () => Math.floor(Math.random() * Number(dice)) + 1;
-
+    const dices = []
     for (let i = 0; i < multi * critMult; i++) {
-      dices.push(random());
+      const roll = await generateRandomNumber(1, Number(dice))
+      dices.push(roll)
     }
 
-    const result = dices.reduce((a, b) => a + b, 0);
+    const result = dices.reduce((a, b) => a + b, 0)
 
     // Pequeno delay para garantir que o estado anterior foi limpo
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 100))
 
     setDiceData({
       diceType: `d${dice}`,
@@ -370,31 +366,31 @@ export default function Armory({ loadChar }: ArmoryProps) {
       diceResult: dices,
       diceShow: true,
       diceRoll: true,
-    });
+    })
 
     const totalDamage =
-      result + extraDamage * critMult + exMod * critMult + element;
+      result + extraDamage * critMult + exMod * critMult + element
 
     const rolled = `CAUSOU DANO CRÍTICO com ${name} => ${
       multi * critMult
     } x d${dice}: ${result} + ${exMod * critMult} ${modType} + ${
       extraDamage * critMult
-    } de bônus da arma + ${element} bônus de elemento. Com resultado: ${totalDamage}`;
+    } de bônus da arma + ${element} bônus de elemento. Com resultado: ${totalDamage}`
 
     try {
-      await api.post("combats", {
+      await api.post('combats', {
         id: from,
         user_id: user?.id,
         user: user?.name,
         message: rolled,
         result: totalDamage,
         type: 4,
-        isCrit: "HIT",
-      });
-      loadChar();
+        isCrit: 'HIT',
+      })
+      loadChar()
     } catch (error) {
-      console.error("❌ Erro ao enviar dano crítico:", error);
-      toast.error("Erro ao enviar dano crítico");
+      console.error('❌ Erro ao enviar dano crítico:', error)
+      toast.error('Erro ao enviar dano crítico')
     }
   }
 
@@ -412,7 +408,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
         ) : characterWeapons && characterWeapons.length > 0 ? (
           <SelectWeapon
             weapons={characterWeapons}
-            changeWeapon={(option) => setWeapon(option?.value)}
+            changeWeapon={option => setWeapon(option?.value)}
           />
         ) : (
           <p>Nenhuma arma encontrada para este personagem</p>
@@ -431,5 +427,5 @@ export default function Armory({ loadChar }: ArmoryProps) {
         </button>
       </Styles.AttackContainer>
     </Styles.ArmoryContainer>
-  );
+  )
 }

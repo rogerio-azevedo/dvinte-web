@@ -1,4 +1,4 @@
-export default function getModifier(mod) {
+export default function getModifier(mod: number): number {
   let textMod = 0
 
   if (Number(mod) > 10) {

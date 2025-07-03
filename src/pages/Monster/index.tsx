@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react"
-import { Link } from "react-router"
-import { Table } from "antd"
-import type { ColumnsType } from "antd/es/table"
-import api from "../../services/api"
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router'
+import { Table } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
+import api from '../../services/api'
 
-import { Container, TableContainer, Portrait } from "./styles"
+import { Container, TableContainer, Portrait } from './styles'
 
 interface MonsterProps {
   id: number
@@ -24,7 +24,7 @@ export default function Monster() {
 
   async function loadChar() {
     setLoading(true)
-    const response = await api.get("monsters")
+    const response = await api.get('monsters')
     const result = response.data
     setList(result)
     setLoading(false)
@@ -36,8 +36,8 @@ export default function Monster() {
 
   const columns: ColumnsType<MonsterProps> = [
     {
-      title: "Portrait",
-      dataIndex: "monster_url",
+      title: 'Portrait',
+      dataIndex: 'monster_url',
       render: (monster_url: string) => (
         <Portrait>
           <img alt={monster_url} src={monster_url} />
@@ -45,50 +45,49 @@ export default function Monster() {
       ),
     },
     {
-      title: "Cod",
-      dataIndex: "id",
-      key: "id",
+      title: 'Cod',
+      dataIndex: 'id',
+      key: 'id',
     },
     {
-      title: "Nome",
-      dataIndex: "name",
-      key: "name",
+      title: 'Nome',
+      dataIndex: 'name',
+      key: 'name',
     },
     {
-      title: "Desafio",
-      dataIndex: "challenge",
-      key: "challenge",
+      title: 'Desafio',
+      dataIndex: 'challenge',
+      key: 'challenge',
     },
     {
-      title: "Defesa",
-      dataIndex: "ca",
-      key: "ca",
+      title: 'Defesa',
+      dataIndex: 'ca',
+      key: 'ca',
     },
     {
-      title: "Tipo",
-      dataIndex: "type",
-      key: "type",
+      title: 'Tipo',
+      dataIndex: 'type',
+      key: 'type',
     },
     {
-      title: "Sub Tipo",
-      dataIndex: "sub_type",
-      render: (text: string | null, item: MonsterProps) =>
-        item.sub_type || "NENHUM",
+      title: 'Sub Tipo',
+      dataIndex: 'sub_type',
+      render: (_, item: MonsterProps) => item.sub_type || 'NENHUM',
     },
     {
-      title: "Tamanho",
-      dataIndex: "size",
-      key: "size",
+      title: 'Tamanho',
+      dataIndex: 'size',
+      key: 'size',
     },
     {
-      title: "Alinhamento",
-      dataIndex: "alignment",
-      key: "alignment",
+      title: 'Alinhamento',
+      dataIndex: 'alignment',
+      key: 'alignment',
     },
     {
-      title: "Ação",
-      dataIndex: "ver",
-      render: (text: string, item: MonsterProps) => (
+      title: 'Ação',
+      dataIndex: 'ver',
+      render: (_, item: MonsterProps) => (
         <Link to={`/monsterview/${item.id}`}>Ver</Link>
       ),
     },

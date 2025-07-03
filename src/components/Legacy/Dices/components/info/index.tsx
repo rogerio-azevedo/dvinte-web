@@ -1,5 +1,3 @@
-import React from 'react'
-
 import * as CntFld from './styled'
 
 const Info = () => (

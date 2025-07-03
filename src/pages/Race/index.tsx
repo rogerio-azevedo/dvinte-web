@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import api from '../../services/api'
 
@@ -20,6 +20,7 @@ const Race: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<RaceData>()
   const [list, setList] = useState<RaceItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -35,18 +36,13 @@ const Race: React.FC = () => {
     loadList()
   }, [])
 
-  const onSubmit = async (
-    data: RaceData,
-    e: React.BaseSyntheticEvent
-  ): Promise<void> => {
+  const onSubmit = async (data: RaceData): Promise<void> => {
     try {
       setLoading(true)
       const response = await api.post('races', data)
-
       const newList = [response.data, ...list]
-
       setList(newList)
-      e.target.reset()
+      reset()
     } catch (error) {
       console.error('Erro ao salvar raça:', error)
     } finally {
@@ -61,7 +57,6 @@ const Race: React.FC = () => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <FormContainer>
           <input
-            name="name"
             {...register('name', { required: true })}
             placeholder="Informe a Raça"
           />

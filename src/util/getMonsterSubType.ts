@@ -1,4 +1,4 @@
-export default function getMonsterSubType(type) {
+export default function getMonsterSubType(type: number): string {
   let text = ''
 
   switch (type) {

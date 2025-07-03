@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-import React, { useState, useEffect } from 'react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
 import { connect, socket } from '../../../services/socket'

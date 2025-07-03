@@ -5,13 +5,13 @@ interface FormContainerProps {
   showform: 'hide' | 'show'
 }
 
-interface InputShortProps {
-  readOnly?: boolean
-}
+// interface InputShortProps {
+//   readOnly?: boolean
+// }
 
-interface InputLargeProps {
-  readOnly?: boolean
-}
+// interface InputLargeProps {
+//   readOnly?: boolean
+// }
 
 export const Container = styled.div`
   display: flex;

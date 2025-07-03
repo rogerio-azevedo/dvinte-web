@@ -1,14 +1,14 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from 'react'
 
-import { useDices } from "../../../hooks/useDices";
-import * as THREE from "three";
-import * as CANNON from "cannon";
-import Stats from "stats.js";
+import { useDices } from '../../../hooks/useDices'
+import * as THREE from 'three'
+import * as CANNON from 'cannon'
+import Stats from 'stats.js'
 
-import { Container } from "./styles";
+import { Container } from './styles'
 
 import {
   DiceManager,
@@ -18,83 +18,83 @@ import {
   DiceD10,
   DiceD12,
   DiceD20,
-} from "./dice";
+} from './dice'
 
 export default function MyDices() {
   const {
     state: { diceMult, diceResult, diceRoll, diceSides, diceType },
-  } = useDices();
+  } = useDices()
 
-  const [roll, setRoll] = useState(diceRoll);
-  const mount = useRef<any>(null);
-  const controls = useRef<any>(null);
-  const sceneInitialized = useRef(false);
+  const [roll, setRoll] = useState(diceRoll)
+  const mount = useRef<any>(null)
+  const controls = useRef<any>(null)
+  const sceneInitialized = useRef(false)
 
-  let diceT: any = {};
+  let diceT: any = {}
 
-  let width = window.innerWidth * 0.8;
-  let height = window.innerHeight * 0.8;
-  let frameId: any;
+  let width = window.innerWidth * 0.8
+  let height = window.innerHeight * 0.8
+  let frameId: any
 
-  const dice: any = [];
-  let scene: any;
-  let camera: any;
-  let renderer: any;
-  let world: any;
-  let stats: any;
-  let barrier: any;
+  const dice: any = []
+  let scene: any
+  let camera: any
+  let renderer: any
+  let world: any
+  let stats: any
+  let barrier: any
 
-  const dice_color = "#200122";
-  const ambient_light_color = 0xf0f5fb;
-  const spot_light_color = 0xefdfd5;
+  const dice_color = '#200122'
+  const ambient_light_color = 0xf0f5fb
+  const spot_light_color = 0xefdfd5
 
   const dice_box = () => {
-    scene = new THREE.Scene();
-    world = new CANNON.World();
+    scene = new THREE.Scene()
+    world = new CANNON.World()
 
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap;
-    renderer.setSize(width, height);
-    renderer.setClearColor(0xffffff, 0);
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFShadowMap
+    renderer.setSize(width, height)
+    renderer.setClearColor(0xffffff, 0)
 
-    camera = new THREE.PerspectiveCamera(18, width / height, 1, 10000);
-    camera.position.set(10, 80, 40);
-    camera.lookAt(new THREE.Vector3(10, 40, 40));
-    camera.position.z = 1;
-    camera.position.x = -1;
+    camera = new THREE.PerspectiveCamera(18, width / height, 1, 10000)
+    camera.position.set(10, 80, 40)
+    camera.lookAt(new THREE.Vector3(10, 40, 40))
+    camera.position.z = 1
+    camera.position.x = -1
 
-    const ambient = new THREE.AmbientLight(ambient_light_color, 0.8);
-    scene.add(ambient);
+    const ambient = new THREE.AmbientLight(ambient_light_color, 0.8)
+    scene.add(ambient)
 
-    const directionalLight = new THREE.DirectionalLight(spot_light_color, 1.2);
-    directionalLight.position.x = -1000;
-    directionalLight.position.y = 1000;
-    directionalLight.position.z = 1000;
-    scene.add(directionalLight);
+    const directionalLight = new THREE.DirectionalLight(spot_light_color, 1.2)
+    directionalLight.position.x = -1000
+    directionalLight.position.y = 1000
+    directionalLight.position.z = 1000
+    scene.add(directionalLight)
 
-    const light = new THREE.SpotLight(spot_light_color, 0.4);
-    light.position.y = 100;
-    light.target.position.set(0, 0, 0);
-    light.castShadow = true;
-    light.shadow.camera.near = 50;
-    light.shadow.camera.far = 110;
-    light.shadow.mapSize.width = 1024;
-    light.shadow.mapSize.height = 1024;
-    scene.add(light);
+    const light = new THREE.SpotLight(spot_light_color, 0.4)
+    light.position.y = 100
+    light.target.position.set(0, 0, 0)
+    light.castShadow = true
+    light.shadow.camera.near = 50
+    light.shadow.camera.far = 110
+    light.shadow.mapSize.width = 1024
+    light.shadow.mapSize.height = 1024
+    scene.add(light)
 
-    stats = new Stats();
+    stats = new Stats()
 
     // FLOOR
     const floorMaterial = new THREE.MeshPhongMaterial({
       // color: '#00aa00',
       // side: THREE.DoubleSide,
-    });
-    const floorGeometry = new THREE.PlaneGeometry(48, 25, 30);
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.receiveShadow = true;
-    floor.rotation.x = Math.PI / 2;
-    scene.add(floor);
+    })
+    const floorGeometry = new THREE.PlaneGeometry(48, 25, 30)
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial)
+    floor.receiveShadow = true
+    floor.rotation.x = Math.PI / 2
+    scene.add(floor)
 
     // let desk = new THREE.Mesh()
     // new THREE.PlaneGeometry(width, height * 2, 1, 1)
@@ -103,24 +103,24 @@ export default function MyDices() {
 
     //this.renderer.render(this.scene, this.camera)
 
-    world.gravity.set(0, -9.82 * 20, 0);
-    world.broadphase = new CANNON.NaiveBroadphase();
-    world.solver.iterations = 16;
+    world.gravity.set(0, -9.82 * 20, 0)
+    world.broadphase = new CANNON.NaiveBroadphase()
+    world.solver.iterations = 16
 
-    DiceManager.setWorld(world);
+    DiceManager.setWorld(world)
 
     //Floor
     const floorBody = new CANNON.Body({
       mass: 0,
       shape: new CANNON.Plane(),
       material: DiceManager.floorBodyMaterial,
-    });
+    })
 
     floorBody.quaternion.setFromAxisAngle(
       new CANNON.Vec3(1, 0, 0),
       -Math.PI / 2
-    );
-    world.add(floorBody);
+    )
+    world.add(floorBody)
 
     //Walls
 
@@ -128,10 +128,10 @@ export default function MyDices() {
       mass: 0,
       shape: new CANNON.Plane(),
       material: DiceManager.barrierBodyMaterial,
-    });
-    barrier.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
-    barrier.position.set(500 * 0.93, 0, 0);
-    world.add(barrier);
+    })
+    barrier.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2)
+    barrier.position.set(500 * 0.93, 0, 0)
+    world.add(barrier)
 
     // barrier = new CANNON.Body({
     //   mass: 0,
@@ -147,163 +147,177 @@ export default function MyDices() {
       mass: 0,
       shape: new CANNON.Plane(),
       material: DiceManager.barrierBodyMaterial,
-    });
-    barrier.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
-    barrier.position.set(1, width, 0);
-    world.add(barrier);
+    })
+    barrier.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2)
+    barrier.position.set(1, width, 0)
+    world.add(barrier)
 
     for (let i = 0; i < (diceMult ?? 0); i++) {
       // eslint-disable-next-line
       switch (diceType) {
-        case "d4":
-          diceT = new DiceD4({ size: 1.4, backColor: dice_color });
-          break;
-        case "d6":
-          diceT = new DiceD6({ size: 1.4, backColor: dice_color });
-          break;
-        case "d8":
-          diceT = new DiceD8({ size: 1.4, backColor: dice_color });
-          break;
-        case "d10":
-          diceT = new DiceD10({ size: 1.4, backColor: dice_color });
-          break;
-        case "d12":
-          diceT = new DiceD12({ size: 1.4, backColor: dice_color });
-          break;
-        case "d20":
-          diceT = new DiceD20({ size: 1.4, backColor: dice_color });
-          break;
+        case 'd4':
+          diceT = new DiceD4({ size: 1.4, backColor: dice_color })
+          break
+        case 'd6':
+          diceT = new DiceD6({ size: 1.4, backColor: dice_color })
+          break
+        case 'd8':
+          diceT = new DiceD8({ size: 1.4, backColor: dice_color })
+          break
+        case 'd10':
+          diceT = new DiceD10({ size: 1.4, backColor: dice_color })
+          break
+        case 'd12':
+          diceT = new DiceD12({ size: 1.4, backColor: dice_color })
+          break
+        case 'd20':
+          diceT = new DiceD20({ size: 1.4, backColor: dice_color })
+          break
       }
-      const die = diceT;
-      scene.add(die.getObject());
-      dice.push(die);
+      const die = diceT
+      scene.add(die.getObject())
+      dice.push(die)
     }
 
     const renderScene = () => {
-      renderer.render(scene, camera);
-    };
+      renderer.render(scene, camera)
+    }
 
     const handleResize = () => {
-      width = mount.current.clientWidth;
-      height = mount.current.clientHeight;
-      renderer.setSize(width, height);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      renderScene();
-    };
+      width = mount.current.clientWidth
+      height = mount.current.clientHeight
+      renderer.setSize(width, height)
+      camera.aspect = width / height
+      camera.updateProjectionMatrix()
+      renderScene()
+    }
 
     const animate = () => {
-      renderScene();
-      updatePhysics();
-      update();
-      frameId = window.requestAnimationFrame(animate);
-    };
+      renderScene()
+      updatePhysics()
+      update()
+      frameId = window.requestAnimationFrame(animate)
+    }
 
     function updatePhysics() {
-      world.step(1.0 / 60.0);
+      world.step(1.0 / 60.0)
 
       for (const i in dice) {
-        dice[i].updateMeshFromBody();
+        dice[i].updateMeshFromBody()
       }
     }
 
     function update() {
-      stats.update();
-      controls.current.stop();
+      stats.update()
+      controls.current.stop()
     }
 
     const start = () => {
       if (!frameId) {
-        frameId = requestAnimationFrame(animate);
+        frameId = requestAnimationFrame(animate)
       }
-    };
+    }
 
     const stop = () => {
-      cancelAnimationFrame(frameId);
-      frameId = null;
-    };
+      cancelAnimationFrame(frameId)
+      frameId = null
+    }
 
-    mount.current.appendChild(renderer.domElement);
-    window.addEventListener("resize", handleResize);
-    start();
+    mount.current.appendChild(renderer.domElement)
+    window.addEventListener('resize', handleResize)
+    start()
 
-    controls.current = { start, stop };
+    controls.current = { start, stop }
 
     return () => {
-      stop();
-      window.removeEventListener("resize", handleResize);
-      mount.current.removeChild(renderer.domElement);
+      stop()
+      window.removeEventListener('resize', handleResize)
+      mount.current.removeChild(renderer.domElement)
 
-      scene.remove(dice);
+      scene.remove(dice)
       // Properly dispose geometries and materials for each die
       dice.forEach((die: any) => {
         if (die.getObject) {
-          const obj = die.getObject();
-          if (obj.geometry) obj.geometry.dispose();
+          const obj = die.getObject()
+          if (obj.geometry) obj.geometry.dispose()
           if (obj.material) {
             if (Array.isArray(obj.material)) {
-              obj.material.forEach((mat: any) => mat.dispose && mat.dispose());
+              obj.material.forEach((mat: any) => mat.dispose && mat.dispose())
             } else if (obj.material.dispose) {
-              obj.material.dispose();
+              obj.material.dispose()
             }
           }
         }
-      });
+      })
 
-      sceneInitialized.current = false;
-    };
-  };
+      sceneInitialized.current = false
+    }
+  }
 
   function randomDiceThrow() {
-    const diceValues: any = [];
+    const diceValues: any = []
 
     for (let i = 0; i < dice.length; i++) {
-      const yRand = Math.floor(Math.random() * (diceSides ?? 6)) + 1;
-      dice[i].getObject().position.x = -35 - (i % 3) * 1.5;
-      dice[i].getObject().position.y = 2 + Math.floor(i / 3) * 1.5;
-      dice[i].getObject().position.z = -15 + (i % 3) * 1.5;
+      const yRand = Math.floor(Math.random() * (diceSides ?? 6)) + 1
+      dice[i].getObject().position.x = -35 - (i % 3) * 1.5
+      dice[i].getObject().position.y = 2 + Math.floor(i / 3) * 1.5
+      dice[i].getObject().position.z = -15 + (i % 3) * 1.5
       dice[i].getObject().quaternion.x =
-        ((Math.random() * 90 - 45) * Math.PI) / 180;
+        ((Math.random() * 90 - 45) * Math.PI) / 180
       dice[i].getObject().quaternion.z =
-        ((Math.random() * 90 - 45) * Math.PI) / 180;
-      dice[i].updateBodyFromMesh();
-      const rand = Math.random() * 5;
-      dice[i].getObject().body.velocity.set(45 + rand, 40 + yRand, 15 + rand);
+        ((Math.random() * 90 - 45) * Math.PI) / 180
+      dice[i].updateBodyFromMesh()
+      const rand = Math.random() * 5
+      dice[i].getObject().body.velocity.set(45 + rand, 40 + yRand, 15 + rand)
       dice[i]
         .getObject()
         .body.angularVelocity.set(
           30 * Math.random() - 10,
           30 * Math.random() - 10,
           30 * Math.random() - 10
-        );
+        )
 
-      diceValues.push({ dice: dice[i], value: diceResult?.[i] ?? null });
+      console.log('🎲 Preparando dado', i + 1, ':', {
+        targetValue: diceResult?.[i],
+        currentUpValue: dice[i].getUpsideValue() + 1,
+        type: diceType,
+      })
+
+      diceValues.push({ dice: dice[i], value: diceResult?.[i] ?? null })
     }
 
-    DiceManager.prepareValues(diceValues);
+    console.log(
+      '🎲 Valores finais dos dados:',
+      diceValues.map((dv: any) => ({
+        targetValue: dv.value,
+        currentUpValue: dv.dice.getUpsideValue() + 1,
+      }))
+    )
+
+    DiceManager.prepareValues(diceValues)
   }
 
   useEffect(() => {
-    console.log("diceResult", diceResult);
-  }, [diceResult]);
+    console.log('diceResult', diceResult)
+  }, [diceResult])
 
   useEffect(() => {
     if (!sceneInitialized.current) {
-      setRoll(false);
-      dice_box();
-      sceneInitialized.current = true;
+      setRoll(false)
+      dice_box()
+      sceneInitialized.current = true
     }
-  }, []); // eslint-disable-line
+  }, []) // eslint-disable-line
 
   useEffect(() => {
     if (!DiceManager.throwRunning) {
-      randomDiceThrow();
+      randomDiceThrow()
     }
-  }, [roll]); // eslint-disable-line
+  }, [roll]) // eslint-disable-line
 
   // const handleThrow = () => {
   //   randomDiceThrow()
   // }
 
-  return React.createElement(Container, { ref: mount });
+  return React.createElement(Container, { ref: mount })
 }

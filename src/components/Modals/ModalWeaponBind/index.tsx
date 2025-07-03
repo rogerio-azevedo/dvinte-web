@@ -1,18 +1,18 @@
 /* eslint-disable no-console */
 
-import React, { useState, useEffect } from "react"
-import Modal from "react-modal"
-import { FaTimes } from "react-icons/fa"
-import { FaRegMoneyBillAlt } from "react-icons/fa"
-import { useForm, type SubmitHandler } from "react-hook-form"
-import { toast } from "react-toastify"
-import { Switch } from "antd"
+import React, { useState, useEffect } from 'react'
+import Modal from 'react-modal'
+import { FaTimes } from 'react-icons/fa'
+import { FaRegMoneyBillAlt } from 'react-icons/fa'
+import { useForm, type SubmitHandler } from 'react-hook-form'
+import { toast } from 'react-toastify'
+import { Switch } from 'antd'
 
-import api from "../../../services/api"
+import api from '../../../services/api'
 
-import SelectCharacter from "../../SelectCharacter"
+import SelectCharacter from '../../SelectCharacter'
 
-import * as Styles from "./styles"
+import * as Styles from './styles'
 
 interface Character {
   id: number
@@ -42,18 +42,18 @@ interface FormData {
 
 const customStyles = {
   content: {
-    width: "750px",
-    height: "550px",
-    top: "45%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)",
+    width: '750px',
+    height: '550px',
+    top: '45%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
   },
 }
 
-Modal.setAppElement("#root")
+Modal.setAppElement('#root')
 
 const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
   const { handleSubmit, register, setValue } = useForm<FormData>()
@@ -62,18 +62,18 @@ const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
   const [characters, setCharacters] = useState<
     { value: string; label: string }[]
   >([])
-  const [loadingCharacters, setLoadingCharacters] = useState(false)
+  // const [loadingCharacters, setLoadingCharacters] = useState(false)
 
   useEffect(() => {
-    register("character")
-    register("dex_damage", { value: false })
-    register("weapon", { value: selectedWeapon?.id })
+    register('character')
+    register('dex_damage', { value: false })
+    register('weapon', { value: selectedWeapon?.id })
   }, [register, selectedWeapon])
 
   async function loadCharacters() {
     try {
-      setLoadingCharacters(true)
-      const response = await api.get("/characters")
+      // setLoadingCharacters(true)
+      const response = await api.get('/characters')
       const charactersData = response.data || []
 
       const characterOptions = charactersData.map((char: Character) => ({
@@ -83,9 +83,10 @@ const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
 
       setCharacters(characterOptions)
     } catch (error) {
-      toast.error("Erro ao carregar personagens")
+      console.error('Error loading characters:', error)
+      toast.error('Erro ao carregar personagens')
     } finally {
-      setLoadingCharacters(false)
+      // setLoadingCharacters(false)
     }
   }
 
@@ -101,18 +102,18 @@ const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
           crit_from_mod: Number(data.crit_from_mod || 0),
           dex_damage: Boolean(data.dex_damage),
           price: Number(data.price || 0),
-          nickname: data.nickname || "",
-          description: data.description || "",
+          nickname: data.nickname || '',
+          description: data.description || '',
         }
 
-        console.log("Sending weapon data:", weaponData)
+        console.log('Sending weapon data:', weaponData)
         await api.post(`/characters/${data.character}/weapons`, weaponData)
         e?.target.reset()
-        toast.success("Arma vinculada com sucesso!")
+        toast.success('Arma vinculada com sucesso!')
         setIsOpen(false)
       } catch (error) {
-        console.error("Error saving weapon:", error)
-        toast.error("Erro ao vincular arma ao personagem")
+        console.error('Error saving weapon:', error)
+        toast.error('Erro ao vincular arma ao personagem')
       }
     }
     saveData()
@@ -175,14 +176,14 @@ const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
             <div>
               <label htmlFor="price">Preço</label>
               <Styles.WeaponMed
-                {...register("price")}
+                {...register('price')}
                 type="number"
                 defaultValue={0}
               />
             </div>
             <div>
               <label htmlFor="nickname">Apelido</label>
-              <Styles.WeaponLarge {...register("nickname")} defaultValue="" />
+              <Styles.WeaponLarge {...register('nickname')} defaultValue="" />
             </div>
           </Styles.InputContainer>
 
@@ -190,7 +191,7 @@ const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
             <div>
               <label htmlFor="hit">Acerto Extra</label>
               <Styles.WeaponMed
-                {...register("hit")}
+                {...register('hit')}
                 type="number"
                 defaultValue={0}
               />
@@ -198,7 +199,7 @@ const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
             <div>
               <label htmlFor="damage">Dano Extra</label>
               <Styles.WeaponMed
-                {...register("damage")}
+                {...register('damage')}
                 type="number"
                 defaultValue={0}
               />
@@ -207,7 +208,7 @@ const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
             <div>
               <label htmlFor="element">Elemento (dado)</label>
               <Styles.WeaponMed
-                {...register("element")}
+                {...register('element')}
                 type="number"
                 defaultValue={0}
               />
@@ -215,10 +216,10 @@ const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
 
             <div>
               <label htmlFor="dex_damage">Dex (dano)</label>
-              <div style={{ marginTop: "18px" }}>
+              <div style={{ marginTop: '18px' }}>
                 <Switch
                   defaultChecked={false}
-                  onChange={(checked) => setValue("dex_damage", checked)}
+                  onChange={checked => setValue('dex_damage', checked)}
                 />
               </div>
             </div>
@@ -227,7 +228,7 @@ const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
             <div>
               <label htmlFor="crit_from_mod">Crítico Mínimo</label>
               <Styles.WeaponMed
-                {...register("crit_from_mod")}
+                {...register('crit_from_mod')}
                 type="number"
                 defaultValue={0}
               />
@@ -235,18 +236,18 @@ const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
             <div>
               <label htmlFor="crit_mod">Crit Multiplicador</label>
               <Styles.WeaponMed
-                {...register("crit_mod")}
+                {...register('crit_mod')}
                 type="number"
                 defaultValue={0}
               />
             </div>
             <div>
-              <label style={{ color: "#fff" }} htmlFor="character">
+              <label style={{ color: '#fff' }} htmlFor="character">
                 .
               </label>
               <SelectCharacter
                 characters={characters}
-                changeCharacter={(e) => setValue("character", e || "")}
+                changeCharacter={e => setValue('character', e || '')}
               />
             </div>
           </Styles.InputContainer>
@@ -255,7 +256,7 @@ const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
             <div>
               <label htmlFor="description">Observação</label>
               <Styles.WeaponExtLarge
-                {...register("description")}
+                {...register('description')}
                 defaultValue=""
               />
             </div>

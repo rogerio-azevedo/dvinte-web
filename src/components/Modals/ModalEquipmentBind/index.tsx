@@ -1,17 +1,17 @@
 /* eslint-disable no-console */
 
-import React, { useState, useEffect } from "react"
-import Modal from "react-modal"
-import { FaTimes } from "react-icons/fa"
-import { FaRegMoneyBillAlt } from "react-icons/fa"
-import { useForm, type SubmitHandler } from "react-hook-form"
-import { toast } from "react-toastify"
+import React, { useState, useEffect } from 'react'
+import Modal from 'react-modal'
+import { FaTimes } from 'react-icons/fa'
+import { FaRegMoneyBillAlt } from 'react-icons/fa'
+import { useForm, type SubmitHandler } from 'react-hook-form'
+import { toast } from 'react-toastify'
 
-import api from "../../../services/api"
+import api from '../../../services/api'
 
-import SelectCharacter from "../../SelectCharacter"
+import SelectCharacter from '../../SelectCharacter'
 
-import * as Styles from "./styles"
+import * as Styles from './styles'
 
 interface Character {
   id: number
@@ -33,18 +33,18 @@ interface FormData {
 
 const customStyles = {
   content: {
-    width: "750px",
-    height: "550px",
-    top: "45%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)",
+    width: '750px',
+    height: '550px',
+    top: '45%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
   },
 }
 
-Modal.setAppElement("#root")
+Modal.setAppElement('#root')
 
 const ModalEquipmentBind: React.FC<ModalEquipmentBindProps> = ({
   equipment,
@@ -55,17 +55,17 @@ const ModalEquipmentBind: React.FC<ModalEquipmentBindProps> = ({
   const [characters, setCharacters] = useState<
     { value: string; label: string }[]
   >([])
-  const [loadingCharacters, setLoadingCharacters] = useState(false)
+  // const [loadingCharacters, setLoadingCharacters] = useState(false)
 
   useEffect(() => {
-    register("character")
-    register("equipment", { value: selectedEquipment?.id })
+    register('character')
+    register('equipment', { value: selectedEquipment?.id })
   }, [register, selectedEquipment])
 
   async function loadCharacters() {
     try {
-      setLoadingCharacters(true)
-      const response = await api.get("/characters")
+      // setLoadingCharacters(true)
+      const response = await api.get('/characters')
       const charactersData = response.data || []
 
       const characterOptions = charactersData.map((char: Character) => ({
@@ -75,9 +75,10 @@ const ModalEquipmentBind: React.FC<ModalEquipmentBindProps> = ({
 
       setCharacters(characterOptions)
     } catch (error) {
-      toast.error("Erro ao carregar personagens")
+      console.error('Error loading characters:', error)
+      toast.error('Erro ao carregar personagens')
     } finally {
-      setLoadingCharacters(false)
+      // setLoadingCharacters(false)
     }
   }
 
@@ -86,20 +87,20 @@ const ModalEquipmentBind: React.FC<ModalEquipmentBindProps> = ({
       try {
         const equipmentData = {
           equipment: data.equipment,
-          description: data.description || "",
+          description: data.description || '',
         }
 
-        console.log("Sending equipment data:", equipmentData)
+        console.log('Sending equipment data:', equipmentData)
         await api.post(
           `/characters/${data.character}/equipments`,
           equipmentData
         )
         e?.target.reset()
-        toast.success("Equipamento vinculado com sucesso!")
+        toast.success('Equipamento vinculado com sucesso!')
         setIsOpen(false)
       } catch (error) {
-        console.error("Error saving equipment:", error)
-        toast.error("Erro ao vincular equipamento ao personagem")
+        console.error('Error saving equipment:', error)
+        toast.error('Erro ao vincular equipamento ao personagem')
       }
     }
     saveData()
@@ -160,12 +161,12 @@ const ModalEquipmentBind: React.FC<ModalEquipmentBindProps> = ({
 
           <Styles.InputContainer>
             <div>
-              <label style={{ color: "#fff" }} htmlFor="character">
+              <label style={{ color: '#fff' }} htmlFor="character">
                 .
               </label>
               <SelectCharacter
                 characters={characters}
-                changeCharacter={(e) => setValue("character", e || "")}
+                changeCharacter={e => setValue('character', e || '')}
               />
             </div>
           </Styles.InputContainer>
@@ -174,7 +175,7 @@ const ModalEquipmentBind: React.FC<ModalEquipmentBindProps> = ({
             <div>
               <label htmlFor="description">Observação</label>
               <Styles.WeaponExtLarge
-                {...register("description")}
+                {...register('description')}
                 defaultValue=""
               />
             </div>

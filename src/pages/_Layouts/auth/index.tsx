@@ -1,14 +1,9 @@
-import React from 'react'
-import { Wrapper, Content } from './styles'
+import { Outlet } from 'react-router-dom'
 
-interface AuthLayoutProps {
-  children: React.ReactNode;
-}
-
-export default function AuthLayout({ children }: AuthLayoutProps) {
+export default function AuthLayout() {
   return (
-    <Wrapper>
-      <Content>{children}</Content>
-    </Wrapper>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+      <Outlet />
+    </div>
   )
 }

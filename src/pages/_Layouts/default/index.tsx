@@ -1,17 +1,15 @@
-import React from 'react'
+import { Outlet } from 'react-router-dom'
 import Header from '../../../components/Header'
 
-import { Wrapper, PageContainer } from './styles'
-
-interface DefaultLayoutProps {
-  children: React.ReactNode
-}
-
-export default function DefaultLayout({ children }: DefaultLayoutProps) {
+export default function DefaultLayout() {
   return (
-    <Wrapper>
+    <div className="min-h-screen flex flex-col bg-gray-20">
       <Header />
-      <PageContainer>{children}</PageContainer>
-    </Wrapper>
+      <main className="flex-1 flex flex-col">
+        <div className="w-full max-w-[1600px] mx-auto lg:px-0 px-4 flex-1 flex flex-col">
+          <Outlet />
+        </div>
+      </main>
+    </div>
   )
 }

@@ -1,21 +1,21 @@
-import styled from "styled-components"
-import { type StyledProps } from "./interfaces"
+import styled from 'styled-components'
+import { type StyledProps } from './interfaces'
 
 export const Container = styled.div`
   display: flex;
   flex-direction: row;
   align-items: stretch;
   width: 100%;
-  height: calc(100vh - 51px); /* Altura total menos a altura do header */
+  height: calc(100vh - 51px);
   max-width: 2000px;
   margin: 0 auto;
   gap: 16px;
   padding: 16px;
-  overflow: hidden; /* Previne scroll no container principal */
+  overflow: hidden;
 `
 
 export const MapContainer = styled.div<StyledProps>`
-  display: ${(props) => (props.show ? "flex" : "none")};
+  display: ${props => (props.show ? 'flex' : 'none')};
   position: relative;
   flex: 1;
   min-width: 0;
@@ -65,7 +65,7 @@ export const DiceRollerContainer = styled.div<StyledProps>`
 `
 
 export const ToolsContainer = styled.div<StyledProps>`
-  display: ${(props) => (props.show ? "flex" : "none")};
+  display: ${props => (props.show ? 'flex' : 'none')};
   width: 450px;
   flex-direction: column;
   height: 100%;

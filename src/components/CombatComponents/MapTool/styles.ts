@@ -139,7 +139,7 @@ export const InputShort = styled.input`
 `
 
 export const RangeInput = styled.input`
-  width: 200px;
+  width: 150px;
   height: 6px;
   border-radius: 5px;
   background: #ddd;

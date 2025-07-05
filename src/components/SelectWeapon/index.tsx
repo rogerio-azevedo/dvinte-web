@@ -1,5 +1,5 @@
-import { useMemo } from "react"
-import Select, { type StylesConfig } from "react-select"
+import { useMemo } from 'react'
+import Select, { type StylesConfig } from 'react-select'
 
 interface Weapon {
   id: number
@@ -23,7 +23,7 @@ export default function SelectWeapon({
 }: SelectWeaponProps) {
   const weaponOptions = useMemo(
     () =>
-      weapons.map((weapon) => ({
+      weapons.map(weapon => ({
         value: weapon.id,
         label: weapon.nickname?.trim()
           ? weapon.nickname.toUpperCase()
@@ -33,33 +33,33 @@ export default function SelectWeapon({
   )
 
   const customStyles: StylesConfig<Option, false> = {
-    input: (styles) => ({
+    input: styles => ({
       ...styles,
-      height: "30px",
-      minHeight: "30px",
+      height: '30px',
+      minHeight: '30px',
     }),
-    control: (styles) => ({
+    control: styles => ({
       ...styles,
-      backgroundColor: "white",
-      borderColor: "#ddd",
-      "&:hover": {
-        borderColor: "#999",
+      backgroundColor: 'white',
+      borderColor: '#ddd',
+      '&:hover': {
+        borderColor: '#999',
       },
     }),
     option: (styles, { isFocused, isSelected }) => ({
       ...styles,
       backgroundColor: isSelected
-        ? "#6f0000"
+        ? '#6f0000'
         : isFocused
-        ? "rgba(111, 0, 0, 0.1)"
-        : "white",
-      color: isSelected ? "white" : "#333",
-      cursor: "pointer",
+        ? 'rgba(111, 0, 0, 0.1)'
+        : 'white',
+      color: isSelected ? 'white' : '#333',
+      cursor: 'pointer',
     }),
   }
 
   return (
-    <div style={{ width: "320px" }}>
+    <div className="w-72">
       <Select<Option>
         styles={customStyles}
         maxMenuHeight={220}

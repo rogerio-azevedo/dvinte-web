@@ -224,7 +224,7 @@ export default function MonsterDetail() {
           <legend>Armas</legend>
           <div>
             <ul>
-              {monster?.attacks.map(item => (
+              {(monster?.attacks ?? []).map(item => (
                 <li key={`${item.name}-${item.dice}-${item.damage}`}>
                   <div>
                     <label htmlFor="inputResist">Nome</label>

@@ -1,11 +1,11 @@
 import styled from 'styled-components'
 
 interface MessageProps {
-  from?: 0 | 1;
+  from?: 0 | 1
 }
 
 interface MessageStyleProps extends MessageProps {
-  crit?: 'HIT' | 'FAIL' | 'NORMAL';
+  crit?: 'HIT' | 'FAIL' | 'NORMAL'
 }
 
 export const ChatContainer = styled.div`
@@ -25,37 +25,25 @@ export const ChatHistory = styled.div`
   height: 100%;
 `
 
-export const MessageData =
-  styled.div <
-  MessageProps >
-  `
+export const MessageData = styled.div<MessageProps>`
   margin-bottom: 15px;
   text-align: ${props => (props.from ? 'right' : 'left')};
 `
 
-export const MessageDateTime =
-  styled.span <
-  MessageProps >
-  `
+export const MessageDateTime = styled.span<MessageProps>`
   color: #999;
   padding-left: 6px;
   font-size: 12px;
 `
 
-export const MessageDataName =
-  styled.span <
-  MessageProps >
-  `
+export const MessageDataName = styled.span<MessageProps>`
   color: #000;
   padding-left: 6px;
   font-size: 14px;
   float: ${props => (props.from ? 'right' : 'left')};
 `
 
-export const Message =
-  styled.div <
-  MessageStyleProps >
-  `
+export const Message = styled.div<MessageStyleProps>`
   padding: 8px 12px;
   line-height: 26px;
   font-size: 14px;
@@ -89,20 +77,14 @@ export const Message =
   }
 `
 
-export const MessageContainer =
-  styled.div <
-  MessageProps >
-  `
+export const MessageContainer = styled.div<MessageProps>`
   display: flex;
   flex-direction: column;
   display: inline-block;
   text-align: ${props => (props.from ? 'right' : 'left')};
 `
 
-export const ListMessage =
-  styled.li <
-  MessageProps >
-  `
+export const ListMessage = styled.li<MessageProps>`
   list-style: none;
   text-align: ${props => (props.from ? 'right' : 'left')};
 
@@ -117,7 +99,7 @@ export const ListMessage =
 `
 
 export const FormMessage = styled.form`
-  background: #8e0e00;
+  background: #fff;
   padding: 8px;
   display: flex;
   flex-direction: flex-end;

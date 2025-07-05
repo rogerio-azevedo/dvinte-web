@@ -33,7 +33,6 @@ export default function CharacterList() {
       const result = response.data || []
       setList(result)
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('🚨 Erro ao carregar personagens:', error)
       setList([])
     } finally {
@@ -43,7 +42,7 @@ export default function CharacterList() {
 
   useEffect(() => {
     loadChar()
-  }, []) // eslint-disable-line
+  }, [])
 
   function getPortraitUrl(portrait: string | undefined): string {
     if (!portrait) {
@@ -128,7 +127,7 @@ export default function CharacterList() {
       title: 'Ação',
       key: 'action',
       width: 100,
-      render: (_: any, item: Character) => (
+      render: (_, item: Character) => (
         <Link to={`/characterview/${item.id}`}>Ver</Link>
       ),
     },

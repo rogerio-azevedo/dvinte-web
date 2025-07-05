@@ -28,10 +28,6 @@ export const MapContainer = styled.div<MapContainerProps>`
   width: ${props => (props.show ? '80%' : '100%')};
   height: 100%;
   overflow: auto;
-
-  -webkit-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
-  -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
-  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
 `
 
 export const ArmoryContainer = styled.div`
@@ -41,10 +37,6 @@ export const ArmoryContainer = styled.div`
   flex-direction: column;
   height: 180px;
   width: 100%;
-
-  -webkit-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
-  -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
-  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.6);
 
   h2 {
     margin-top: 20px;

@@ -14,6 +14,7 @@ import api from '../../services/api'
 
 // import SelectCharacter from '~/components/SelectCharacter'
 import * as Styles from './styles'
+import { Container, TableContainer } from './styles'
 
 interface Character {
   id: number
@@ -67,7 +68,6 @@ export default function GmTools() {
   // const profile = useSelector(state => state.user.profile)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [health, setHealth] = useState<number>(0)
   const [monsterHealth, setMonsterHealth] = useState<number>(0)
   const [list, setList] = useState<Character[]>([])
   const [monsters, setMonsters] = useState<Monster[]>([])
@@ -87,6 +87,9 @@ export default function GmTools() {
       })),
     }))
 
+    console.log('Characters:', response.data)
+    console.log('Monsters:', newMonsters)
+
     setList(response.data)
     setMonsters(newMonsters)
     setLoading(false)
@@ -94,7 +97,7 @@ export default function GmTools() {
 
   useEffect(() => {
     loadChar()
-  }, [health, monsterHealth]) // eslint-disable-line
+  }, [monsterHealth]) // eslint-disable-line
 
   async function handleInitiative(monsterId: number) {
     const monster = await monsters.filter(
@@ -252,20 +255,6 @@ export default function GmTools() {
     })
   }
 
-  async function handleHealth(char: number) {
-    await api.put(
-      '/healthnow',
-      { newHealth: health },
-      {
-        params: {
-          id: char,
-        },
-      }
-    )
-
-    setHealth(0)
-  }
-
   async function handleMonsterHealth(monster: number) {
     await api.put(
       '/monsterhealthnow',
@@ -278,13 +267,6 @@ export default function GmTools() {
     )
 
     setMonsterHealth(0)
-  }
-
-  const handleHealthChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value)
-    if (!isNaN(value)) {
-      setHealth(value)
-    }
   }
 
   const handleMonsterHealthChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -325,23 +307,25 @@ export default function GmTools() {
       render: (_, item) =>
         `${
           10 +
-          item.armor +
-          item.shield +
-          item.natural +
-          item.deflex +
-          item.others +
-          (item.dexMod <= item.maxDex ? item.dexMod : item.maxDex)
+          (item.armor ?? 0) +
+          (item.shield ?? 0) +
+          (item.natural ?? 0) +
+          (item.deflex ?? 0) +
+          (item.others ?? 0) +
+          ((item.dexMod ?? 0) <= (item.maxDex ?? 0)
+            ? item.dexMod ?? 0
+            : item.maxDex ?? 0)
         }`,
     },
     {
       title: 'Melee',
       dataIndex: 'melee',
-      render: (_, item) => `${item.baseAttack + item.strMod}`,
+      render: (_, item) => `${(item.baseAttack ?? 0) + (item.strMod ?? 0)}`,
     },
     {
       title: 'Range',
       dataIndex: 'range',
-      render: (_, item) => `${item.baseAttack + item.dexMod}`,
+      render: (_, item) => `${(item.baseAttack ?? 0) + (item.dexMod ?? 0)}`,
     },
     {
       title: 'Vida',
@@ -364,9 +348,9 @@ export default function GmTools() {
       render: () => (
         <input
           ref={inputRef}
-          onFocus={() => setHealth(0)}
-          value={health}
-          onChange={handleHealthChange}
+          onFocus={() => setMonsterHealth(0)}
+          value={monsterHealth}
+          onChange={handleMonsterHealthChange}
           type="number"
         />
       ),
@@ -375,7 +359,7 @@ export default function GmTools() {
       title: 'Salvar',
       dataIndex: 'Salvar',
       render: (_, item) => (
-        <button onClick={() => handleHealth(item.id)}>Salvar</button>
+        <button onClick={() => handleMonsterHealth(item.id)}>Salvar</button>
       ),
     },
     {
@@ -424,9 +408,10 @@ export default function GmTools() {
     {
       title: 'Portrait',
       dataIndex: 'monster_url',
-      render: monster_url => (
+      key: 'monster_url',
+      render: (url: string, record: Monster) => (
         <Styles.Portrait>
-          <img alt={monster_url} src={monster_url} />
+          <img alt={record.name} src={url} />
         </Styles.Portrait>
       ),
     },
@@ -460,7 +445,6 @@ export default function GmTools() {
       dataIndex: 'health_now',
       key: 'health_now',
     },
-
     {
       title: 'Init',
       dataIndex: 'Init',
@@ -486,7 +470,6 @@ export default function GmTools() {
         </div>
       ),
     },
-
     {
       title: 'Attack',
       dataIndex: 'Attack',
@@ -536,31 +519,43 @@ export default function GmTools() {
   ]
 
   return (
-    <Styles.Container $loading={loading}>
+    <Container $loading={!loading}>
       <h2>GM Tools</h2>
-      <Styles.Tables>
-        <Styles.TableContainer>
-          <Table<Character>
-            rowKey="id"
-            dataSource={list}
-            columns={columns}
-            components={{
-              table: props => <Styles.MyTable {...props} rowKey="id" />,
-            }}
-          />
-        </Styles.TableContainer>
+      <TableContainer>
+        <Table
+          rowKey="id"
+          dataSource={list}
+          columns={columns}
+          loading={loading}
+          size="small"
+          scroll={{ x: 400 }}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} de ${total} personagens`,
+          }}
+        />
+      </TableContainer>
 
-        <Styles.TableContainer>
-          <Table<Monster>
-            rowKey="id"
-            dataSource={monsters}
-            columns={monsterColumns}
-            components={{
-              table: props => <Styles.MyTable {...props} rowKey="id" />,
-            }}
-          />
-        </Styles.TableContainer>
-      </Styles.Tables>
-    </Styles.Container>
+      <TableContainer>
+        <Table
+          rowKey="id"
+          dataSource={monsters}
+          columns={monsterColumns}
+          loading={loading}
+          size="small"
+          scroll={{ x: 400 }}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} de ${total} monstros`,
+          }}
+        />
+      </TableContainer>
+    </Container>
   )
 }

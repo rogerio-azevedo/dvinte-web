@@ -1,1 +1,41 @@
 @import "tailwindcss";
+
+html, body, #root {
+    height: 100%;
+    min-height: 100%;
+    width: 100%;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font: 14px 'Roboto', sans-serif;      
+  }
+
+/* Customização da scrollbar */
+@layer utilities {
+  .scrollbar-custom {
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+  
+    &::-webkit-scrollbar-track {
+      background: color-mix(in oklab, black 10%, transparent);
+      border-radius: 4px;
+    }
+  
+    &::-webkit-scrollbar-thumb {
+      background: color-mix(in oklab, black 30%, transparent);
+      border-radius: 4px;
+    }
+  
+    &::-webkit-scrollbar-thumb:hover {
+      background: color-mix(in oklab, black 40%, transparent);
+    }
+  
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, black 30%, transparent) color-mix(in oklab, black 10%, transparent);
+  }
+}

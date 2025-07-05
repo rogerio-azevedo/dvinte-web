@@ -10,6 +10,7 @@ import SelectWeapon from '../../SelectWeapon'
 import SelectCharacter from '../../SelectCharacter'
 import { useDices } from '../../../hooks/useDices'
 import { useAuth } from '../../../contexts'
+import { generateSecureRandomNumber } from './genRandomNumber'
 
 import {
   type APICharacter,
@@ -33,37 +34,6 @@ export default function Armory({ loadChar }: ArmoryProps) {
   const [characterWeapons, setCharacterWeapons] = useState<any[]>([])
   const [loadingCharacters, setLoadingCharacters] = useState(false)
   const [loadingWeapons, setLoadingWeapons] = useState(false)
-
-  // Função auxiliar para gerar números aleatórios via backend (sem animação)
-  const generateSecureRandomNumber = async (
-    min: number,
-    max: number
-  ): Promise<number> => {
-    try {
-      const diceType =
-        max === 4
-          ? 'd4'
-          : max === 6
-          ? 'd6'
-          : max === 8
-          ? 'd8'
-          : max === 10
-          ? 'd10'
-          : max === 12
-          ? 'd12'
-          : 'd20'
-      const response = await api.post('/dice/roll', {
-        diceType,
-        diceMult: 1,
-        diceSides: max,
-        characterId: selectedCharacter?.id,
-      })
-      return response.data.data.diceResult[0]
-    } catch (error) {
-      console.warn('⚠️ Fallback: usando Math.random devido a erro:', error)
-      return Math.floor(Math.random() * (max - min + 1)) + min
-    }
-  }
 
   // Carregar personagens do usuário
   const loadUserCharacters = useCallback(async () => {
@@ -95,7 +65,8 @@ export default function Armory({ loadChar }: ArmoryProps) {
 
       setUserCharacters(validCharacters)
 
-      // Se tiver apenas um personagem válido, seleciona automaticamente
+      console.log(validCharacters)
+
       if (validCharacters.length === 1) {
         setSelectedCharacter(validCharacters[0])
       }
@@ -108,7 +79,6 @@ export default function Armory({ loadChar }: ArmoryProps) {
     }
   }, [user?.id])
 
-  // Carregar armas do personagem selecionado
   const loadCharacterWeapons = useCallback(async (charId: number) => {
     if (loadingWeapons) return
 
@@ -126,12 +96,10 @@ export default function Armory({ loadChar }: ArmoryProps) {
     }
   }, [])
 
-  // Carregar personagens ao montar o componente
   useEffect(() => {
     loadUserCharacters()
   }, [loadUserCharacters])
 
-  // Carregar armas quando um personagem for selecionado
   useEffect(() => {
     if (selectedCharacter?.id) {
       loadCharacterWeapons(selectedCharacter.id)
@@ -149,25 +117,20 @@ export default function Armory({ loadChar }: ArmoryProps) {
       char => char && char.id && String(char.id) === value
     )
     setSelectedCharacter(selected || null)
-    setWeapon(undefined) // Reseta a arma selecionada ao trocar de personagem
+    setWeapon(undefined)
   }
 
-  // Renderização condicional do seletor de personagens
   const renderCharacterSelector = () => {
-    // Filtra apenas personagens válidos com id
     const validCharacters = userCharacters.filter(
       char => char && char.id && char.name
     )
 
     return (
       <Styles.WeaponContainer>
-        <label>Personagem:</label>
-        {loadingCharacters ? (
-          <p>Carregando personagens...</p>
-        ) : (
+        {userCharacters.length > 1 && (
           <SelectCharacter
             characters={validCharacters.map(char => ({
-              value: String(char.id), // Garante que o id seja convertido para string
+              value: String(char.id),
               label: char.name,
             }))}
             changeCharacter={handleCharacterChange}
@@ -201,7 +164,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
     const critFrom = wep.crit_from_mod > 0 ? wep.crit_from_mod : wep.crit_from
     const name = wep.nickname?.trim() ? wep.nickname : wep.name
 
-    const dice = await generateSecureRandomNumber(1, 20)
+    const dice = await generateSecureRandomNumber(1, 20, user?.id, user?.name)
 
     // Pequeno delay para garantir que o estado anterior foi limpo
     await new Promise(resolve => setTimeout(resolve, 100))
@@ -294,11 +257,17 @@ export default function Armory({ loadChar }: ArmoryProps) {
     const name = wep.nickname?.trim() ? wep.nickname : wep.name
     const extraDamage = wep.damage || 0
     const element =
-      wep.element > 0 ? await generateSecureRandomNumber(1, wep.element) : 0
+      wep.element > 0
+        ? await generateSecureRandomNumber(1, wep.element, selectedCharacter.id)
+        : 0
 
     const dices = []
     for (let i = 0; i < multi; i++) {
-      const roll = await generateSecureRandomNumber(1, Number(dice))
+      const roll = await generateSecureRandomNumber(
+        1,
+        Number(dice),
+        selectedCharacter.id
+      )
       dices.push(roll)
     }
 
@@ -375,12 +344,18 @@ export default function Armory({ loadChar }: ArmoryProps) {
     const name = wep.nickname?.trim() ? wep.nickname : wep.name
     const extraDamage = wep.damage || 0
     const element =
-      wep.element > 0 ? await generateSecureRandomNumber(1, wep.element) : 0
+      wep.element > 0
+        ? await generateSecureRandomNumber(1, wep.element, selectedCharacter.id)
+        : 0
     const critMult = wep.crit_mod > 0 ? wep.crit_mod : wep.critical
 
     const dices = []
     for (let i = 0; i < multi * critMult; i++) {
-      const roll = await generateSecureRandomNumber(1, Number(dice))
+      const roll = await generateSecureRandomNumber(
+        1,
+        Number(dice),
+        selectedCharacter.id
+      )
       dices.push(roll)
     }
 
@@ -425,14 +400,14 @@ export default function Armory({ loadChar }: ArmoryProps) {
   }
 
   return (
-    <Styles.ArmoryContainer>
-      <h2>Painel de Ataque</h2>
+    <div className="flex justify-center items-center flex-col h-52 w-full">
+      <h2 className="text-center my-2">Painel de Ataque</h2>
 
       {/* Seletor de personagem */}
       {renderCharacterSelector()}
 
       {/* Seletor de armas */}
-      <Styles.WeaponContainer>
+      <div>
         {loadingWeapons ? (
           <p>Carregando armas...</p>
         ) : characterWeapons && characterWeapons.length > 0 ? (
@@ -440,10 +415,10 @@ export default function Armory({ loadChar }: ArmoryProps) {
             weapons={characterWeapons}
             changeWeapon={option => setWeapon(option?.value)}
           />
-        ) : (
-          <p>Nenhuma arma encontrada para este personagem</p>
-        )}
-      </Styles.WeaponContainer>
+        ) : !loadingWeapons ? (
+          <p>Nenhuma arma encontrada.</p>
+        ) : null}
+      </div>
 
       <Styles.AttackContainer>
         <button type="button" onClick={handleAttack}>
@@ -456,6 +431,6 @@ export default function Armory({ loadChar }: ArmoryProps) {
           Dano Crítico
         </button>
       </Styles.AttackContainer>
-    </Styles.ArmoryContainer>
+    </div>
   )
 }

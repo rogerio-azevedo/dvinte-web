@@ -1,360 +1,116 @@
-import { useState, useEffect } from "react";
-import { toast } from "react-toastify";
-import ReactTooltip from "react-tooltip";
-import { Link } from "react-router";
+import { useState, useEffect } from 'react'
 
-import api from "../../services/api";
-import { connect } from "../../services/socket";
-import * as Styles from "./styles";
+import { connect } from '../../services/socket'
 import {
   type Character,
   type CharStatusData,
   type WeaponItem,
-} from "./interfaces";
+} from './interfaces'
 
-import { type Token } from "../../components/CombatComponents/RenderMap/interfaces";
+import { type Token } from '../../components/CombatComponents/RenderMap/interfaces'
 
-import {
-  FaComments,
-  FaUserClock,
-  FaDiceD20,
-  FaExpandArrowsAlt,
-  FaRunning,
-} from "react-icons/fa/";
-
-import {
-  GiSwordBrandish,
-  GiSwordsEmblem,
-  GiBloodySword,
-  GiTreasureMap,
-  GiBrain,
-} from "react-icons/gi";
-
-import Chat from "../../components/CombatComponents/Chat";
-import Savins from "../../components/CombatComponents/Savings";
-import ArmoryDelay from "../../components/CombatComponents/ArmoryDelay";
-import Initiatives from "../../components/CombatComponents/Initiatives";
-import DamagesCounter from "../../components/CombatComponents/DamagesCounter";
-import CharStatusComponent from "../../components/CombatComponents/CharStatus";
-import LogBoard from "../../components/CombatComponents/LogBoard";
-import MapTool from "../../components/CombatComponents/MapTool";
-import RenderMap from "../../components/CombatComponents/RenderMap";
-import ScrollContainer from "react-indiana-drag-scroll";
-import MyDices from "../../components/CombatComponents/MyDices";
-import { useDices } from "../../hooks/useDices";
-import { useAuth } from "../../contexts";
+import RenderMap from '../../components/CombatComponents/RenderMap'
+import ScrollContainer from 'react-indiana-drag-scroll'
+import MyDices from '../../components/CombatComponents/MyDices'
+import { useDices } from '../../hooks/useDices'
+import { useAuth } from '../../contexts'
+import { getTokens } from './getTokens'
+import { getCharacter } from './getCharacters'
+import PlayMenuBar from './PlayMenuBar'
+import { MENU, type MenuType } from './PlayMenuBar'
+import ActiveMenuPanel from './ActiveMenuPanel'
+import GenericDices from '../../components/CombatComponents/GenericDices'
 
 export default function Play() {
   const {
     state: { diceShow },
-  } = useDices();
+  } = useDices()
 
-  const { user } = useAuth();
+  const { user } = useAuth()
 
-  const [allowDrag, setAllowDrag] = useState(false);
-  const [menu, setMenu] = useState("attack");
-
-  const [charInit, setCharInit] = useState<number>();
-  const [character, setCharacter] = useState<Character>();
-  const [tokens, setTokens] = useState<Token[]>([]);
-  const [fortitude, setFortitude] = useState<number>();
-  const [reflex, setReflex] = useState<number>();
-  const [will, setWill] = useState<number>();
-  const [strength, setStrength] = useState<number>();
-  const [maxDex, setMaxDex] = useState<number>();
-  const [weapons, setWeapons] = useState<WeaponItem[]>();
-  const [charStatus, setCharStatus] = useState<CharStatusData>();
-  // const dispatch = useDispatch()
-
-  const clickListener = (event: MouseEvent) => {
-    if (
-      event.target instanceof HTMLElement &&
-      event.target.tagName === "CANVAS"
-    ) {
-      // dispatch(
-      //   diceDataRequest({
-      //     diceShow: false,
-      //   })
-      // )
-    }
-  };
+  const [allowDrag, setAllowDrag] = useState(false)
+  const [menu, setMenu] = useState<MenuType>(MENU.ATTACK)
+  const [charInit, setCharInit] = useState<number>()
+  const [character, setCharacter] = useState<Character>()
+  const [tokens, setTokens] = useState<Token[]>([])
+  const [fortitude, setFortitude] = useState<number>()
+  const [reflex, setReflex] = useState<number>()
+  const [will, setWill] = useState<number>()
+  const [strength, setStrength] = useState<number>()
+  // const [maxDex, setMaxDex] = useState<number>()
+  const [weapons, setWeapons] = useState<WeaponItem[]>()
+  const [charStatus, setCharStatus] = useState<CharStatusData>()
 
   useEffect(() => {
-    document.addEventListener("click", clickListener);
-    return () => {
-      document.removeEventListener("click", clickListener);
-    };
-  }, []); // eslint-disable-line
+    connect()
+    if (user) {
+      getCharacter(user).then(data => {
+        if (!data) return
+        setCharacter(data.char)
+        // setMaxDex(data.maxDext)
+        setWeapons(data.weapons)
+        setCharInit(data.charInit)
+        setFortitude(data.fortitude)
+        setReflex(data.reflex)
+        setWill(data.will)
+        setStrength(data.strength)
+        setCharStatus(data.charStatus)
+      })
 
-  async function calcDext(dexMod: number): Promise<number> {
-    let dextBonus = 0;
-
-    if (maxDex !== undefined && dexMod <= maxDex) {
-      dextBonus = dexMod;
-    } else if (!maxDex || maxDex === 0) {
-      dextBonus = dexMod;
-    } else {
-      dextBonus = maxDex;
+      getTokens().then(tokens => setTokens(tokens ?? []))
     }
+  }, [user])
 
-    return dextBonus;
-  }
-
-  async function GetTokens() {
-    try {
-      const response = await api.get<Token[]>("/chartokens");
-      setTokens(response.data);
-    } catch (e) {
-      console.error("Erro ao carregar as Tokens dos Personagens:", e);
-      toast.error("Houve um problema ao carregar as Tokens dos Personagens!");
-    }
-  }
-
-  async function getCharacter() {
-    try {
-      const response = await api.get<Character>(`combats/${user?.id}`);
-      const char = response.data;
-      setCharacter(char);
-
-      const StrMod = char.StrModTemp ? char.StrModTemp : char.StrMod;
-      const ConMod = char.ConModTemp ? char.ConModTemp : char.ConMod;
-      const DexMod = char.DexModTemp ? char.DexModTemp : char.DexMod;
-      const WisMod = char.WisModTemp ? char.WisModTemp : char.WisMod;
-
-      const shield = char?.Armor.filter((t) => t.type === 2).reduce(
-        (acc, val) => {
-          return acc + (val.bonus + val.defense);
-        },
-        0
-      );
-
-      const armor = char?.Armor.filter((t) => t.type === 1).reduce(
-        (acc, val) => {
-          return acc + (val.bonus + val.defense);
-        },
-        0
-      );
-
-      const natural = char?.Armor.filter((t) => t.type === 3).reduce(
-        (acc, val) => {
-          return acc + (val.bonus + val.defense);
-        },
-        0
-      );
-
-      const outros = char?.Armor.filter((t) => t.type === 5).reduce(
-        (acc, val) => {
-          return acc + (val.bonus + val.defense);
-        },
-        0
-      );
-
-      const maxDext = char?.Armor.reduce(
-        (min, p) => (p?.dexterity < min ? p?.dexterity : min),
-        char?.Armor[0]?.dexterity
-      );
-
-      setMaxDex(maxDext);
-      setWeapons(char?.Weapon);
-
-      const bonusDext = await calcDext(DexMod);
-      const ca = 10 + shield + armor + bonusDext + natural + outros;
-
-      setCharInit(DexMod);
-      setFortitude(char.Fortitude + ConMod);
-      setReflex(char.Reflex + DexMod);
-      setWill(char.Will + WisMod);
-      setStrength(char.BaseAttack + StrMod);
-
-      setCharStatus({
-        fortitude: char.Fortitude + ConMod,
-        reflex: char.Reflex + DexMod,
-        will: char.Will + WisMod,
-        charInit: DexMod,
-        melee: char.BaseAttack + StrMod,
-        ranged: char.BaseAttack + DexMod,
-        totalCa: ca,
-        health: char.Health,
-        healthNow: char.HealthNow,
-      });
-    } catch (e) {
-      console.error("Erro ao carregar os dados dos personagens:", e);
-      toast.error("Houve um problema ao carregar os dados dos personagens!");
-    }
-  }
-
-  useEffect(() => {
-    // dispatch(
-    //   diceDataRequest({
-    //     diceShow: false,
-    //     diceRoll: false,
-    //   })
-    // )
-
-    connect();
-    getCharacter();
-    GetTokens();
-  }, []); // eslint-disable-line
-
-  function handleMenu(tipo: string) {
-    setMenu(tipo);
+  function handleMenu(type: MenuType) {
+    setMenu(type)
   }
 
   function handleDragable() {
-    setAllowDrag(!allowDrag);
+    setAllowDrag(!allowDrag)
   }
 
   return (
-    <Styles.Container>
-      <Styles.MapContainer show={1}>
-        <ScrollContainer vertical={allowDrag} horizontal={allowDrag}>
-          {diceShow && <MyDices />}
-          <RenderMap
-            tokens={tokens}
+    <div className="flex w-full h-full justify-center items-center">
+      <div className="flex flex-row align-stretch w-full  auto gap-16px overflow-hidden gap-4 px-2 h-[calc(100vh-65px)]">
+        <div
+          className={`relative flex-1 min-w-0 h-full overflow-hidden bg-white rounded-lg shadow-[0px_0px_4px_0px_rgba(0,0,0,0.6)] scrollbar-custom`}
+        >
+          <GenericDices />
+          <ScrollContainer vertical={allowDrag} horizontal={allowDrag}>
+            {diceShow && <MyDices />}
+
+            <RenderMap
+              tokens={tokens}
+              allowDrag={allowDrag}
+              setTokens={setTokens}
+            />
+          </ScrollContainer>
+        </div>
+
+        <div className="flex flex-col w-96 shadow-[0px_0px_4px_0px_rgba(0,0,0,0.6)] rounded-lg px-2 pt-2 h-full">
+          <PlayMenuBar
             allowDrag={allowDrag}
-            setTokens={setTokens}
+            handleDragable={handleDragable}
+            handleMenu={handleMenu}
+            user={user}
+            menu={menu}
           />
-        </ScrollContainer>
-      </Styles.MapContainer>
 
-      <Styles.ToolsContainer show={1}>
-        <Styles.IconContainer>
-          <ReactTooltip />
-
-          {allowDrag ? (
-            <div data-tip="Movimentar Mapa">
-              <FaExpandArrowsAlt
-                size={25}
-                color="#8e0e00"
-                cursor="pointer"
-                onClick={handleDragable}
-              />
-            </div>
-          ) : (
-            <div data-tip="Movimentar Token">
-              <FaRunning
-                size={25}
-                color="#8e0e00"
-                cursor="pointer"
-                onClick={handleDragable}
-              />
-            </div>
-          )}
-
-          <div data-tip="Atacar">
-            <GiSwordBrandish
-              size={25}
-              color="#8e0e00"
-              cursor="pointer"
-              onClick={() => handleMenu("attack")}
-            />
-          </div>
-
-          <div data-tip="Bate Papo">
-            <FaComments
-              size={28}
-              color="#8e0e00"
-              cursor="pointer"
-              onClick={() => handleMenu("chat")}
-            />
-          </div>
-
-          <div data-tip="Testes e Dados">
-            <FaDiceD20
-              size={25}
-              color="#8e0e00"
-              cursor="pointer"
-              onClick={() => handleMenu("saves")}
-            />
-          </div>
-
-          <div data-tip="Medidor de Dano">
-            <GiBloodySword
-              size={30}
-              color="#8e0e00"
-              cursor="pointer"
-              onClick={() => handleMenu("damage")}
-            />
-          </div>
-
-          <div data-tip="Iniciativas">
-            <FaUserClock
-              size={30}
-              color="#8e0e00"
-              cursor="pointer"
-              onClick={() => handleMenu("init")}
-            />
-          </div>
-
-          <div data-tip="Status do Personagem">
-            <GiSwordsEmblem
-              size={28}
-              color="#8e0e00"
-              cursor="pointer"
-              onClick={() => handleMenu("status")}
-            />
-          </div>
-
-          {user?.is_gm && (
-            <div data-tip="Mapas">
-              <GiTreasureMap
-                size={28}
-                color="#8e0e00"
-                cursor="pointer"
-                onClick={() => handleMenu("config")}
-              />
-            </div>
-          )}
-          {user?.is_gm && (
-            <div data-tip="GM Tools">
-              <Link to="/gmtools">
-                <GiBrain size={28} color="#8e0e00" cursor="pointer" />
-              </Link>
-            </div>
-          )}
-        </Styles.IconContainer>
-
-        {menu === "chat" ? (
-          <Chat />
-        ) : menu === "init" ? (
-          <Initiatives
-            profile={user || undefined}
-            from={user?.id}
+          <ActiveMenuPanel
+            menu={menu}
+            user={user}
             charInit={charInit}
+            character={character}
+            weapons={weapons}
+            getCharacter={getCharacter}
+            fortitude={fortitude}
+            reflex={reflex}
+            will={will}
+            strength={strength}
+            charStatus={charStatus}
           />
-        ) : menu === "attack" ? (
-          <Styles.AttackContainer>
-            <ArmoryDelay
-              character={character}
-              weapons={weapons || []}
-              loadChar={getCharacter}
-            />
-            <h2>Painel Logs</h2>
-            <LogBoard />
-          </Styles.AttackContainer>
-        ) : menu === "damage" ? (
-          <DamagesCounter />
-        ) : menu === "status" ? (
-          <CharStatusComponent
-            charStatus={charStatus || ({} as CharStatusData)}
-          />
-        ) : menu === "saves" ? (
-          <Styles.SavesConteiner>
-            <Styles.ButtonsContainer>
-              <Savins
-                fortitude={fortitude}
-                reflex={reflex}
-                will={will}
-                strength={strength}
-              />
-            </Styles.ButtonsContainer>
-            <h2>Painel Logs</h2>
-            <LogBoard />
-          </Styles.SavesConteiner>
-        ) : (
-          <MapTool />
-        )}
-      </Styles.ToolsContainer>
-    </Styles.Container>
-  );
+        </div>
+      </div>
+    </div>
+  )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 
@@ -12,48 +12,54 @@ import SelectMonsterSubType from '../../components/SelectMonsterSubType'
 import SelectAlignment from '../../components/SelectAlignment'
 
 import api from '../../services/api'
+import type { Attack, FormData } from './interfaces'
 
-interface Attack {
-  name: string
-  dice: string
-  multiplier: string
-  critical: string
-  crit_from: string
-  range: string
-  hit: string
-  damage: string
-}
+// Arrays estáticos para tamanhos, tipos e subtipos (agora com value/label)
+const SIZES = [
+  { value: 'Minúsculo', label: 'Minúsculo' },
+  { value: 'Diminuto', label: 'Diminuto' },
+  { value: 'Miúdo', label: 'Miúdo' },
+  { value: 'Pequeno', label: 'Pequeno' },
+  { value: 'Médio', label: 'Médio' },
+  { value: 'Grande', label: 'Grande' },
+  { value: 'Enorme', label: 'Enorme' },
+  { value: 'Imenso', label: 'Imenso' },
+  { value: 'Colossal', label: 'Colossal' },
+]
 
-interface FormData {
-  name: string
-  type: string
-  subType: string
-  size: string
-  alignment: string
-  health: string
-  initiative: string
-  displacement: string
-  ca: string
-  defense: string
-  grab: string
-  challenge: string
-  attack_special: string
-  special_qualities: string
-  fort: string
-  reflex: string
-  will: string
-  skills: string
-  feats: string
-  monster_url: string
-  strength: string
-  dexterity: string
-  constitution: string
-  intelligence: string
-  wisdom: string
-  charisma: string
-  notes: string
-  is_ativo: boolean
-}
+const MONSTER_TYPES = [
+  { value: 'Aberração', label: 'Aberração' },
+  { value: 'Animal', label: 'Animal' },
+  { value: 'Construto', label: 'Construto' },
+  { value: 'Dragão', label: 'Dragão' },
+  { value: 'Fada', label: 'Fada' },
+  { value: 'Humanoide', label: 'Humanoide' },
+  { value: 'Monstruosidade', label: 'Monstruosidade' },
+  { value: 'Morto-vivo', label: 'Morto-vivo' },
+  { value: 'Planta', label: 'Planta' },
+  { value: 'Verme', label: 'Verme' },
+  { value: 'Outros', label: 'Outros' },
+]
+
+const MONSTER_SUBTYPES = [
+  { value: 'Aquático', label: 'Aquático' },
+  { value: 'Voador', label: 'Voador' },
+  { value: 'Subterrâneo', label: 'Subterrâneo' },
+  { value: 'Metamorfo', label: 'Metamorfo' },
+  { value: 'Outros', label: 'Outros' },
+]
+
+const ALIGNMENTS = [
+  { value: 'Leal/Bom', label: 'Leal e Bom' },
+  { value: 'Neutro/Bom', label: 'Neutro e Bom' },
+  { value: 'Caótico/Bom', label: 'Caótico e Bom' },
+  { value: 'Leal/Neutro', label: 'Leal e Neutro' },
+  { value: 'Neutro/Neutro', label: 'Neutro' },
+  { value: 'Caótico/Neutro', label: 'Caótico e Neutro' },
+  { value: 'Leal/Mau', label: 'Leal e Mau' },
+  { value: 'Neutro/Mau', label: 'Neutro e Mau' },
+  { value: 'Caótico/Mau', label: 'Caótico e Mau' },
+]
 
 export default function MonsterCreate() {
   const [size, setSize] = useState<string>()
@@ -76,55 +82,79 @@ export default function MonsterCreate() {
     handleSubmit,
     formState: { errors },
     setValue,
+    reset,
   } = useForm<FormData>({
     defaultValues: {
       is_ativo: true,
     },
   })
 
-  useEffect(() => {
-    register('type')
-    register('subType')
-    register('size')
-    register('alignment')
-    register('is_ativo')
-  }, [register])
+  const onSubmit = async (data: FormData) => {
+    try {
+      const newMonster = {
+        data,
+        attacks,
+      }
 
-  const onSubmit = (data: FormData) => {
-    const newMonster = {
-      data,
-      attacks,
-    }
-
-    async function saveData() {
       await api.post('monsters', newMonster)
+      toast.success('Monstro criado com sucesso!')
+
+      // Limpar formulário após sucesso
+      reset()
+      setAttacks([])
+      setSize(undefined)
+      setAlignment(undefined)
+
+      // Limpar campos de ataque
+      setName('')
+      setDice('')
+      setMultiplier('')
+      setCritical('')
+      setCrit_from('')
+      setRange('')
+      setHit('')
+      setDamage('')
+    } catch (error) {
+      console.error('Erro ao criar monstro:', error)
+      toast.error(
+        'Erro ao criar monstro. Verifique os dados e tente novamente.'
+      )
     }
-    saveData()
-
-    toast.success('Monstro criado com sucesso!')
   }
 
-  function handleSize(value: string | null) {
-    setValue('size', value || '')
-    setSize(value || undefined)
-  }
+  const handleSize = useCallback(
+    (value: string | null) => {
+      setValue('size', value || '')
+      setSize(value || undefined)
+    },
+    [setValue]
+  )
 
-  function handleType(value: string | null) {
-    setValue('type', value || '')
-    // setType(value || undefined)
-  }
+  const handleType = useCallback(
+    (value: string | null) => {
+      setValue('type', value || '')
+      // setType(value || undefined)
+    },
+    [setValue]
+  )
 
-  function handleSubType(value: string | null) {
-    setValue('subType', value || '')
-    // setSubType(value || undefined)
-  }
+  const handleSubType = useCallback(
+    (value: string | null) => {
+      setValue('subType', value || '')
+      // setSubType(value || undefined)
+    },
+    [setValue]
+  )
 
-  function handleAlignment(value: string | null) {
-    setValue('alignment', value || '')
-    setAlignment(value || undefined)
-  }
+  const handleAlignment = useCallback(
+    (value: string | null) => {
+      setValue('alignment', value || '')
+      setAlignment(value || undefined)
+    },
+    [setValue]
+  )
 
-  function handleAddAttack() {
+  const handleAddAttack = useCallback(() => {
     const attack = {
       name,
       dice,
@@ -135,13 +165,22 @@ export default function MonsterCreate() {
       hit,
       damage,
     }
-    setAttacks([...attacks, attack])
-  }
+    setAttacks(prev => [...prev, attack])
 
-  function handleRemove(item: Attack) {
-    const newAttacks = attacks.filter(c => c.name !== item.name)
-    setAttacks(newAttacks)
-  }
+    // Limpar campos após adicionar
+    setName('')
+    setDice('')
+    setMultiplier('')
+    setCritical('')
+    setCrit_from('')
+    setRange('')
+    setHit('')
+    setDamage('')
+  }, [name, dice, multiplier, critical, crit_from, range, hit, damage])
+
+  const handleRemove = useCallback((item: Attack) => {
+    setAttacks(prev => prev.filter(c => c.name !== item.name))
+  }, [])
 
   return (
     <Styles.Container>
@@ -162,17 +201,27 @@ export default function MonsterCreate() {
               </div>
               <div>
                 <Styles.LabelSelect htmlFor="size">Tamanho</Styles.LabelSelect>
-                <SelectSize value={size} changeSize={handleSize} />
+                <SelectSize
+                  value={size}
+                  changeSize={handleSize}
+                  sizes={SIZES}
+                />
               </div>
               <div>
                 <Styles.LabelSelect htmlFor="type">Tipo</Styles.LabelSelect>
-                <SelectMonsterType changeMonsterType={handleType} />
+                <SelectMonsterType
+                  changeMonsterType={handleType}
+                  monsterTypes={MONSTER_TYPES}
+                />
               </div>
               <div>
                 <Styles.LabelSelect htmlFor="subType">
                   Sub Tipo
                 </Styles.LabelSelect>
-                <SelectMonsterSubType changeMonsterSubType={handleSubType} />
+                <SelectMonsterSubType
+                  changeMonsterSubType={handleSubType}
+                  monsterSubTypes={MONSTER_SUBTYPES}
+                />
               </div>
             </Styles.InputContainer>
             <Styles.InputContainer>
@@ -401,6 +450,7 @@ export default function MonsterCreate() {
                 <SelectAlignment
                   value={alignment || ''}
                   changeAlignment={handleAlignment}
+                  alignments={ALIGNMENTS}
                 />
               </div>
               <div>

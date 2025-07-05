@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react"
-import Select, { type ActionMeta, type SingleValue } from "react-select"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { useEffect, useState } from 'react'
+import Select from 'react-select'
 
 interface Option {
   value: string
@@ -21,7 +23,7 @@ export default function SelectSize({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const data = sizes.map((size) => ({
+    const data = sizes.map(size => ({
       value: size.value,
       label: size.label.toUpperCase(),
     }))
@@ -33,22 +35,19 @@ export default function SelectSize({
   const customStyles = {
     input: (styles: any) => ({
       ...styles,
-      height: "30px",
-      minHeight: "30px",
+      height: '30px',
+      minHeight: '30px',
     }),
   }
 
   return (
-    <div style={{ width: "220px", marginRight: "15px" }}>
+    <div style={{ width: '220px', marginRight: '15px' }}>
       <Select
-        value={sizeOptions.find((option) => option.value === value)}
+        value={sizeOptions.find(option => option.value === value)}
         styles={customStyles}
         maxMenuHeight={220}
         placeholder="ESCOLHA O TAMANHO"
-        onChange={(
-          newValue: SingleValue<Option>,
-          _actionMeta: ActionMeta<Option>
-        ) => changeSize(newValue ? newValue.value : null)}
+        onChange={newValue => changeSize(newValue ? newValue.value : null)}
         isLoading={loading}
         options={sizeOptions}
         isClearable

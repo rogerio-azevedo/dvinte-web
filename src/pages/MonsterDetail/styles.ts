@@ -4,7 +4,9 @@ interface ContainerProps {
   loading?: boolean
 }
 
-export const Container = styled.div<ContainerProps>`
+export const Container = styled.div.withConfig({
+  shouldForwardProp: prop => prop !== 'loading',
+})<ContainerProps>`
   display: flex;
   flex-direction: column;
   align-items: center;

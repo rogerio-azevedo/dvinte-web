@@ -85,16 +85,11 @@ export default function Initiatives({
       })
 
       // Post para a iniciativa
-      const response = await api.post('initiatives', {
+      await api.post('initiatives', {
         user_id: Number(profile.id),
         user: String(profile.name),
         initiative: Number(initTotal),
       })
-
-      // Atualiza localmente também para feedback imediato
-      if (response.data) {
-        setInitiatives(prev => [...prev, response.data])
-      }
     } catch (error: any) {
       console.error('Erro ao rolar iniciativa:', error)
       if (error.response) {
@@ -108,6 +103,7 @@ export default function Initiatives({
 
   useEffect(() => {
     const handleNewInit = (newInitiative: Initiative): void => {
+      console.log('[SOCKET] Evento init.message recebido:', newInitiative)
       console.log('Nova iniciativa recebida:', newInitiative)
       setInitiatives(prevInitiatives => {
         // Verifica se a iniciativa já existe para evitar duplicatas
@@ -122,11 +118,13 @@ export default function Initiatives({
     }
 
     const handleClearInit = (): void => {
+      console.log('[SOCKET] Evento init.clear recebido')
       console.log('Limpando iniciativas via socket')
       setInitiatives([])
     }
 
     const handleDeleteInit = (data: SocketInitiativeData): void => {
+      console.log('[SOCKET] Evento init.delete recebido:', data)
       console.log('Removendo iniciativa:', data)
       if (data.id) {
         setInitiatives(prev => prev.filter(init => init._id !== data.id))

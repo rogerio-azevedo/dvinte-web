@@ -34,6 +34,7 @@ import CharPreview from '../pages/CharacterCreate/CharPreview'
 import Equipment from '../pages/Equipment'
 import Play from '../pages/Play'
 import MyDices from '../components/CombatComponents/MyDices'
+import AssetsPage from '../pages/Assets'
 
 export default function AppRoutes() {
   return (
@@ -78,6 +79,7 @@ export default function AppRoutes() {
           <Route path="/charattributes" element={<CharAttributes />} />
           <Route path="/charpreview" element={<CharPreview />} />
           <Route path="/mydices" element={<MyDices />} />
+          <Route path="/assets" element={<AssetsPage />} />
         </Route>
       </Route>
     </Routes>

@@ -183,7 +183,7 @@ export default function GenericDices() {
   const dec = () => setMultiplier(m => Math.max(m - 1, 1))
 
   return (
-    <div className="absolute top-4 left-4 z-20 select-none">
+    <div className="absolute top-4 left-4 z-10 select-none pointer-events-auto">
       <div
         className={`
           bg-white/10
@@ -194,12 +194,13 @@ export default function GenericDices() {
           transition-all duration-300
           overflow-hidden
           flex flex-col
+          pointer-events-auto
           ${isOpen ? 'w-[340px] h-auto' : 'w-20 h-16'}
         `}
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/5 transition"
+          className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/5 transition pointer-events-auto"
           onClick={() => setIsOpen(o => !o)}
         >
           <div className="flex items-center gap-2">
@@ -225,7 +226,7 @@ export default function GenericDices() {
 
         {/* Conteúdo */}
         {isOpen && (
-          <div className="flex flex-col gap-5 px-4 pb-4 pt-2 animate-fade-in">
+          <div className="flex flex-col gap-5 px-4 pb-4 pt-2 animate-fade-in pointer-events-auto">
             {/* Seleção de Dados */}
             <div className="grid grid-cols-4 gap-2">
               {DICE_TYPES.map(dice => (

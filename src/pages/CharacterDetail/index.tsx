@@ -11,123 +11,14 @@ import CharEquipment from '../../components/CharEquipment'
 import CharCa from '../../components/CharCa'
 import CharResist from '../../components/CharResist'
 
-import * as Styles from './styles'
-
-// Interfaces dos componentes filhos
-interface CharacterClass {
-  id: number
-  name: string
-  level: number
-}
-
-interface Armor {
-  id: number
-  type: number
-  bonus: number
-  defense: number
-  dexterity: number
-  name: string
-  penalty: number
-  displacement_m: number
-  displacement_s: number
-  weight: number
-  price: number
-}
-
-interface Weapon {
-  id: number
-  name: string
-  damage: string
-  critical: string
-  range: number
-  type: string
-  weight: number
-}
-
-interface Equipment {
-  id: number
-  name: string
-  quantity: number
-  str_temp: number
-  dex_temp: number
-  con_temp: number
-  int_temp: number
-  wis_temp: number
-  cha_temp: number
-  weight: number
-  price: number
-  CharacterEquipment?: {
-    id: number
-    description: string
-  }
-}
-
-interface Character {
-  id: number
-  Name: string
-  User: string
-  Race: string
-  Alig: string
-  Age: number
-  Gender: string
-  Size: string
-  Divin: string
-  Height: string
-  Weight: string
-  Eye: string
-  Hair: string
-  Skin: string
-  Portrait: string
-  Level: number
-  Exp: number
-  Health: number
-  HealthNow: number
-  BaseAttack: number
-  Str: number
-  StrMod: number
-  StrTemp: number
-  StrModTemp: number
-  Dex: number
-  DexMod: number
-  DexTemp: number
-  DexModTemp: number
-  Con: number
-  ConMod: number
-  ConTemp: number
-  ConModTemp: number
-  Int: number
-  IntMod: number
-  IntTemp: number
-  IntModTemp: number
-  Wis: number
-  WisMod: number
-  WisTemp: number
-  WisModTemp: number
-  Cha: number
-  ChaMod: number
-  ChaTemp: number
-  ChaModTemp: number
-  Cod: number
-  Classes: CharacterClass[]
-  Armor: Armor[]
-  Weapon: Weapon[]
-  Equipment: Equipment[]
-  Fortitude: number
-  Reflex: number
-  Will: number
-}
-
-interface Resistance {
-  Fortitude: number
-  Reflex: number
-  Will: number
-  ConMod: number
-  DexMod: number
-  WisMod: number
-  ConModTemp?: number
-  DexModTemp?: number
-  WisModTemp?: number
-}
+import type {
+  Character,
+  CharacterClass,
+  Armor,
+  Weapon,
+  Equipment,
+  Resistance,
+} from './interfaces'
 
 export default function CharacterDetail() {
   const { id } = useParams<{ id: string }>()
@@ -168,7 +59,6 @@ export default function CharacterDetail() {
         WisModTemp: data.WisModTemp,
       })
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Erro ao carregar personagem:', error)
     } finally {
       setLoading(false)
@@ -177,248 +67,417 @@ export default function CharacterDetail() {
 
   useEffect(() => {
     loadChar()
-    // loadChar é uma função que não muda entre renderizações
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <Styles.Container $loading={loading}>
-      <Styles.HeaderContainer>
-        <legend>Dados Básicos</legend>
-        <div>
-          <Styles.Portrait>
-            <img src={char?.Portrait} alt={char?.Name || ''} />
-          </Styles.Portrait>
-
-          <Styles.BaseContainer>
-            <Styles.LineContaniner>
-              <div>
-                <Styles.InputLarge readOnly defaultValue={char?.Name} />
-                <label htmlFor="CharName">Nome do Personagem</label>
-              </div>
-
-              <div>
-                <Styles.InputLarge readOnly defaultValue={char?.User} />
-                <label htmlFor="CharName">Nome do Jogador</label>
-              </div>
-
-              <div>
-                <Styles.InputLarge readOnly defaultValue={char?.Race} />
-                <label htmlFor="CharRace">Raça</label>
-              </div>
-              <div>
-                <Styles.InputLarge readOnly defaultValue={char?.Alig} />
-                <label htmlFor="CharAlignment">Tendência</label>
-              </div>
-            </Styles.LineContaniner>
-
-            <Styles.LineContaniner>
-              <div>
-                <Styles.InputShort readOnly defaultValue={char?.Age} />
-                <label htmlFor="CharAge">Idade</label>
-              </div>
-
-              <div>
-                <Styles.InputMed readOnly defaultValue={char?.Gender} />
-                <label htmlFor="CharGender">Sexo</label>
-              </div>
-              <div>
-                <Styles.InputMed readOnly defaultValue={char?.Size} />
-                <label htmlFor="CharSize">Tamanho</label>
-              </div>
-              <div>
-                <Styles.InputLarge readOnly defaultValue={char?.Divin} />
-                <label htmlFor="CharDivinity">Divindade</label>
-              </div>
-            </Styles.LineContaniner>
-
-            <Styles.LineContaniner>
-              <div>
-                <Styles.InputShort defaultValue={char?.Height} />
-                <label htmlFor="CharHeight">Altura</label>
-              </div>
-              <div>
-                <Styles.InputShort readOnly defaultValue={char?.Weight} />
-                <label htmlFor="CharWeight">Peso</label>
-              </div>
-              <div>
-                <Styles.InputMed readOnly defaultValue={char?.Eye} />
-                <label htmlFor="CharEye">Olhos</label>
-              </div>
-              <div>
-                <Styles.InputMed readOnly defaultValue={char?.Hair} />
-                <label htmlFor="CharHair">Cabelos</label>
-              </div>
-              <div>
-                <Styles.InputMed readOnly defaultValue={char?.Skin} />
-                <label htmlFor="CharSkin">Pele</label>
-              </div>
-            </Styles.LineContaniner>
-          </Styles.BaseContainer>
-        </div>
-      </Styles.HeaderContainer>
-
-      <Styles.StatsContainer>
-        <Styles.AttributesContainer>
-          <legend>Atributos</legend>
-          <div>
-            <Styles.AttrLabel1 readOnly defaultValue="FOR" />
-            <div>
-              <label htmlFor="inputResist">valor</label>
-              <input readOnly defaultValue={char?.Str} />
-            </div>
-            <div>
-              <label htmlFor="inputResist">mod</label>
-              <input readOnly defaultValue={char?.StrMod} />
-            </div>
-            <div>
-              <label htmlFor="inputResist">v.temp</label>
-              <input readOnly defaultValue={char?.StrTemp} />
-            </div>
-            <div>
-              <label htmlFor="inputResist">m.temp</label>
-              <input readOnly defaultValue={char?.StrModTemp} />
-            </div>
+    <div
+      className={`flex flex-col items-center w-full justify-center ${
+        loading ? 'opacity-60' : 'opacity-100'
+      }`}
+    >
+      {/* Header */}
+      <fieldset className="mt-4 border border-[#6f0000] rounded shadow-md w-[1240px]">
+        <legend className="text-[18px] font-semibold ml-5 w-[160px] text-[#6f0000] bg-white shadow px-2 py-1 rounded">
+          Dados Básicos
+        </legend>
+        <div className="flex flex-row items-center justify-around w-[1200px] rounded p-1">
+          <div className="h-[160px] w-[130px] mr-4 ml-2">
+            <img
+              src={char?.Portrait}
+              alt={char?.Name || ''}
+              className="w-full h-[160px] object-cover rounded-[6%] bg-[#eee] shadow"
+            />
           </div>
-
-          <div>
-            <Styles.AttrLabel readOnly defaultValue="DES" />
-            <div>
-              <input readOnly defaultValue={char?.Dex} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.DexMod} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.DexTemp} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.DexModTemp} />
-            </div>
-          </div>
-
-          <div>
-            <Styles.AttrLabel readOnly defaultValue="CON" />
-            <div>
-              <input readOnly defaultValue={char?.Con} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.ConMod} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.ConTemp} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.ConModTemp} />
-            </div>
-          </div>
-
-          <div>
-            <Styles.AttrLabel readOnly defaultValue="INT" />
-            <div>
-              <input readOnly defaultValue={char?.Int} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.IntMod} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.IntTemp} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.IntModTemp} />
-            </div>
-          </div>
-
-          <div>
-            <Styles.AttrLabel readOnly defaultValue="SAB" />
-            <div>
-              <input readOnly defaultValue={char?.Wis} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.WisMod} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.WisTemp} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.WisModTemp} />
-            </div>
-          </div>
-
-          <div>
-            <Styles.AttrLabel readOnly defaultValue="CAR" />
-            <div>
-              <input readOnly defaultValue={char?.Cha} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.ChaMod} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.ChaTemp} />
-            </div>
-            <div>
-              <input readOnly defaultValue={char?.ChaModTemp} />
-            </div>
-          </div>
-        </Styles.AttributesContainer>
-
-        <Styles.HealthClassContainer>
-          <legend>Classes e Level</legend>
-          <Styles.HealthContainer>
-            <div>
-              <div>
-                <Styles.InputMini readOnly defaultValue={char?.Level} />
-                <label htmlFor="CharLevel">Level</label>
-              </div>
-              <div>
-                <Styles.InputMini readOnly defaultValue={char?.Exp} />
-                <label htmlFor="charExp">Experiência</label>
-              </div>
-            </div>
-            <div>
-              <div>
-                <Styles.InputMini readOnly defaultValue={char?.Health} />
-                <label htmlFor="charHealth">PV</label>
-              </div>
-              <div>
-                <Styles.InputMini readOnly defaultValue={char?.HealthNow} />
-                <label htmlFor="charHealth">PV Atual</label>
-              </div>
-            </div>
-            <div>
-              <div>
-                <Styles.InputMini
+          <div className="flex flex-col">
+            <div className="flex flex-row gap-2 mb-2">
+              <div className="flex flex-col items-center">
+                <input
                   readOnly
-                  defaultValue={
-                    char?.BaseAttack && strMod ? char.BaseAttack + strMod : ''
-                  }
+                  value={char?.Name || ''}
+                  className="w-[260px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
                 />
-                <label htmlFor="CharLevel">Corpo a Corpo</label>
+                <label className="text-xs text-gray-700">Nome</label>
               </div>
-              <div>
-                <Styles.InputMini readOnly defaultValue={dexMod} />
-                <label htmlFor="charExp">Iniciativa</label>
+              <div className="flex flex-col items-center">
+                <input
+                  readOnly
+                  value={char?.User || ''}
+                  className="w-[240px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
+                />
+                <label className="text-xs text-gray-700">Usuário</label>
+              </div>
+              <div className="flex flex-col items-center">
+                <input
+                  readOnly
+                  value={char?.Race || ''}
+                  className="w-[240px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
+                />
+                <label className="text-xs text-gray-700">Raça</label>
+              </div>
+              <div className="flex flex-col items-center">
+                <input
+                  readOnly
+                  value={char?.Alig || ''}
+                  className="w-[240px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
+                />
+                <label className="text-xs text-gray-700">Alinhamento</label>
               </div>
             </div>
-          </Styles.HealthContainer>
 
-          <Styles.ClassContainer>
-            {!loading && classes && <CharClass classes={classes} />}
-          </Styles.ClassContainer>
-        </Styles.HealthClassContainer>
+            <div className="flex flex-row gap-2 mb-2">
+              <div className="flex flex-col items-center">
+                <input
+                  readOnly
+                  value={char?.Age || ''}
+                  className="w-[110px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
+                />
+                <label className="text-xs text-gray-700">Idade</label>
+              </div>
+              <div className="flex flex-col items-center">
+                <input
+                  readOnly
+                  value={char?.Gender || ''}
+                  className="w-[190px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
+                />
+                <label className="text-xs text-gray-700">Gênero</label>
+              </div>
+              <div className="flex flex-col items-center">
+                <input
+                  readOnly
+                  value={char?.Size || ''}
+                  className="w-[190px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
+                />
+                <label className="text-xs text-gray-700">Tamanho</label>
+              </div>
+              <div className="flex flex-col items-center">
+                <input
+                  readOnly
+                  value={char?.Divin || ''}
+                  className="w-[240px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
+                />
+                <label className="text-xs text-gray-700">Divino</label>
+              </div>
+            </div>
+            <div className="flex flex-row gap-2 mb-2">
+              <div className="flex flex-col items-center">
+                <input
+                  readOnly
+                  value={char?.Height || ''}
+                  className="w-[110px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
+                />
+                <label className="text-xs text-gray-700">Altura</label>
+              </div>
+              <div className="flex flex-col items-center">
+                <input
+                  readOnly
+                  value={char?.Weight || ''}
+                  className="w-[110px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
+                />
+                <label className="text-xs text-gray-700">Peso</label>
+              </div>
+              <div className="flex flex-col items-center">
+                <input
+                  readOnly
+                  value={char?.Eye || ''}
+                  className="w-[240px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
+                />
+                <label className="text-xs text-gray-700">Olhos</label>
+              </div>
+              <div className="flex flex-col items-center">
+                <input
+                  readOnly
+                  value={char?.Hair || ''}
+                  className="w-[240px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
+                />
+                <label className="text-xs text-gray-700">Cabelo</label>
+              </div>
+              <div className="flex flex-col items-center">
+                <input
+                  readOnly
+                  value={char?.Skin || ''}
+                  className="w-[240px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow mx-1"
+                />
+                <label className="text-xs text-gray-700">Pele</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
 
-        <Styles.ResistContainer>
-          <legend>Testes de Resistência</legend>
-          {!loading && resist && <CharResist resist={resist} />}
-          <Styles.DefenseContainer>
-            {!loading && armors && dexMod !== undefined && (
-              <CharCa armors={armors} dextMod={dexMod} />
-            )}
-          </Styles.DefenseContainer>
-        </Styles.ResistContainer>
-      </Styles.StatsContainer>
-      <Styles.ArmoryContainer>
-        <Styles.ArmorContainer>
-          <legend>Armaduras e Escudos</legend>
+      <div className="flex justify-around items-center mt-4 w-[1240px]">
+        {/* Atributos */}
+        <fieldset className="border border-[#6f0000] rounded flex flex-col items-center p-2 shadow-md min-w-[340px] h-[360px]">
+          <legend className="text-[18px] font-semibold ml-5 w-[100px] text-[#6f0000] bg-white shadow px-2 py-1 rounded">
+            Atributos
+          </legend>
+          <div className="grid grid-cols-5 gap-x-3 gap-y-2 mt-2 ">
+            {/* Primeira linha: labels */}
+            <div></div>
+            <div className="text-xs text-gray-700 text-center">Valor</div>
+            <div className="text-xs text-gray-700 text-center">Mod</div>
+            <div className="text-xs text-gray-700 text-center">V.Temp</div>
+            <div className="text-xs text-gray-700 text-center">M.Temp</div>
+            {/* FOR */}
+            <div>
+              <input
+                readOnly
+                value="FOR"
+                className="bg-[#6f0000] text-white w-[48px] font-bold text-[18px] text-center rounded py-2"
+              />
+            </div>
+            <input
+              readOnly
+              value={char?.Str || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.StrMod || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.StrTemp || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.StrModTemp || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            {/* DES */}
+            <div>
+              <input
+                readOnly
+                value="DES"
+                className="bg-[#6f0000] text-white w-[48px] font-bold text-[18px] text-center rounded py-2"
+              />
+            </div>
+            <input
+              readOnly
+              value={char?.Dex || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.DexMod || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.DexTemp || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.DexModTemp || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            {/* CON */}
+            <div>
+              <input
+                readOnly
+                value="CON"
+                className="bg-[#6f0000] text-white w-[48px] font-bold text-[18px] text-center rounded py-2"
+              />
+            </div>
+            <input
+              readOnly
+              value={char?.Con || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.ConMod || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.ConTemp || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.ConModTemp || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            {/* INT */}
+            <div>
+              <input
+                readOnly
+                value="INT"
+                className="bg-[#6f0000] text-white w-[48px] font-bold text-[18px] text-center rounded py-2"
+              />
+            </div>
+            <input
+              readOnly
+              value={char?.Int || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.IntMod || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.IntTemp || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.IntModTemp || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            {/* SAB */}
+            <div>
+              <input
+                readOnly
+                value="SAB"
+                className="bg-[#6f0000] text-white w-[48px] font-bold text-[18px] text-center rounded py-2"
+              />
+            </div>
+            <input
+              readOnly
+              value={char?.Wis || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.WisMod || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.WisTemp || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.WisModTemp || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            {/* CAR */}
+            <div>
+              <input
+                readOnly
+                value="CAR"
+                className="bg-[#6f0000] text-white w-[48px] font-bold text-[18px] text-center rounded py-2"
+              />
+            </div>
+            <input
+              readOnly
+              value={char?.Cha || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.ChaMod || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.ChaTemp || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+            <input
+              readOnly
+              value={char?.ChaModTemp || ''}
+              className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
+            />
+          </div>
+        </fieldset>
+
+        {/* Classes e Level */}
+        <fieldset className="border border-[#6f0000] rounded  flex flex-col items-center p-2 shadow-md ml-4 h-[360px]">
+          <legend className="text-[18px] font-semibold ml-5 w-[160px] text-[#6f0000] bg-white shadow px-2 py-1 rounded">
+            Classes e Level
+          </legend>
+          <div className="flex flex-col items-center w-full mt-2">
+            <div className="flex flex-col gap-2 mb-2">
+              <div className="flex flex-row gap-2">
+                <div className="flex flex-col items-center">
+                  <input
+                    readOnly
+                    value={char?.Level || ''}
+                    className="w-[100px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow-md"
+                  />
+                  <label className="text-xs text-gray-700">Level</label>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <input
+                    readOnly
+                    value={char?.Health || ''}
+                    className="w-[100px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow-md"
+                  />
+                  <label className="text-xs text-gray-700">Vida (HP)</label>
+                </div>
+                <div className="flex flex-col items-center">
+                  <input
+                    readOnly
+                    value={
+                      char?.BaseAttack && strMod ? char.BaseAttack + strMod : ''
+                    }
+                    className="w-[100px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow-md"
+                  />
+                  <label className="text-xs text-gray-700">Corpo a Corpo</label>
+                </div>
+              </div>
+              <div className="flex flex-row gap-2">
+                <div className="flex flex-col items-center">
+                  <input
+                    readOnly
+                    value={char?.Exp || ''}
+                    className="w-[100px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow-md"
+                  />
+                  <label className="text-xs text-gray-700">Exp</label>
+                </div>
+                <div className="flex flex-col items-center">
+                  <input
+                    readOnly
+                    value={char?.HealthNow || ''}
+                    className="w-[100px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow-md"
+                  />
+                  <label className="text-xs text-gray-700">Vida Atual</label>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <input
+                    readOnly
+                    value={dexMod ?? ''}
+                    className="w-[100px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow-md"
+                  />
+                  <label className="text-xs text-gray-700">Iniciativa</label>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-row gap-2 mb-2">
+              {!loading && classes && <CharClass classes={classes} />}
+            </div>
+          </div>
+        </fieldset>
+        {/* Testes de Resistência */}
+        <fieldset className="border border-[#6f0000] rounded flex flex-col items-center p-2 shadow-md ml-4 h-[360px]">
+          <legend className="text-[18px] font-semibold ml-5 w-[210px] text-[#6f0000] bg-white shadow px-2 py-1 rounded">
+            Testes de Resistência
+          </legend>
+          <div className="flex flex-col items-center w-full mt-2">
+            {!loading && resist && <CharResist resist={resist} />}
+            <div className="flex flex-row gap-2 mb-2">
+              {!loading && armors && dexMod !== undefined && (
+                <CharCa armors={armors} dextMod={dexMod} />
+              )}
+            </div>
+          </div>
+        </fieldset>
+      </div>
+      {/* Armaduras, Armas, Equipamentos */}
+      <div className="flex flex-col gap-2 mt-4 w-[1240px]">
+        <fieldset className="border border-[#6f0000] rounded w-full flex flex-col items-center p-2 shadow-md">
+          <legend className="text-[18px] font-semibold ml-5 w-[250px] text-[#6f0000] bg-white shadow px-2 py-1 rounded">
+            Armaduras e Escudos
+          </legend>
           {!loading && armors && char && (
             <CharArmor
               armors={armors}
@@ -427,11 +486,11 @@ export default function CharacterDetail() {
               onArmorRemoved={loadChar}
             />
           )}
-        </Styles.ArmorContainer>
-      </Styles.ArmoryContainer>
-      <Styles.ArmoryContainer>
-        <Styles.WeaponContainer>
-          <legend>Armas</legend>
+        </fieldset>
+        <fieldset className="border border-[#6f0000] rounded w-full flex flex-col items-center p-2 shadow-md">
+          <legend className="text-[18px] font-semibold ml-5 w-[250px] text-[#6f0000] bg-white shadow px-2 py-1 rounded">
+            Armas
+          </legend>
           {!loading && weapons && char && (
             <CharWeapon
               weapons={weapons}
@@ -440,11 +499,11 @@ export default function CharacterDetail() {
               onWeaponRemoved={loadChar}
             />
           )}
-        </Styles.WeaponContainer>
-      </Styles.ArmoryContainer>
-      <Styles.ArmoryContainer>
-        <Styles.EquipmentContainer>
-          <legend>Equipamentos</legend>
+        </fieldset>
+        <fieldset className="border border-[#6f0000] rounded w-full flex flex-col items-center p-2 shadow-md">
+          <legend className="text-[18px] font-semibold ml-5 w-[250px] text-[#6f0000] bg-white shadow px-2 py-1 rounded">
+            Equipamentos
+          </legend>
           {!loading && equipments && char && (
             <CharEquipment
               equipments={equipments}
@@ -452,8 +511,8 @@ export default function CharacterDetail() {
               onEquipmentRemoved={loadChar}
             />
           )}
-        </Styles.EquipmentContainer>
-      </Styles.ArmoryContainer>
-    </Styles.Container>
+        </fieldset>
+      </div>
+    </div>
   )
 }

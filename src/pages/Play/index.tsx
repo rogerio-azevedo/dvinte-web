@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react'
 
 import { connect } from '../../services/socket'
@@ -40,6 +41,27 @@ export default function Play() {
   // const [maxDex, setMaxDex] = useState<number>()
   const [weapons, setWeapons] = useState<WeaponItem[]>()
   const [charStatus, setCharStatus] = useState<CharStatusData>()
+  const { setDiceData } = useDices()
+
+  const clickListener = (event: any) => {
+    if (event.target.tagName === 'CANVAS') {
+      setDiceData({
+        diceType: null,
+        diceSides: null,
+        diceMult: null,
+        diceResult: null,
+        diceShow: false,
+        diceRoll: false,
+      })
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener('click', clickListener)
+    return () => {
+      document.removeEventListener('click', clickListener)
+    }
+  }, []) // eslint-disable-line
 
   useEffect(() => {
     connect()
@@ -73,7 +95,7 @@ export default function Play() {
     <div className="flex w-full h-full justify-center items-center">
       <div className="flex flex-row align-stretch w-full  auto gap-16px overflow-hidden gap-4 px-2 h-[calc(100vh-65px)]">
         <div
-          className={`relative flex-1 min-w-0 h-full overflow-hidden bg-white rounded-lg shadow-[0px_0px_4px_0px_rgba(0,0,0,0.6)] scrollbar-custom`}
+          className={`relative flex-1 min-w-0 h-full overflow-hidden bg-white rounded-lg shadow-[0px_0px_4px_0px_rgba(0,0,0,0.6)] scrollbar-custom z-0`}
         >
           <GenericDices />
           <ScrollContainer vertical={allowDrag} horizontal={allowDrag}>

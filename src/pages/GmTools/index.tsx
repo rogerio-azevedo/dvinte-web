@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import type { ChangeEvent } from 'react'
 // import { useSelector } from 'react-redux'
 
@@ -44,19 +44,20 @@ interface MonsterAttack {
   multiplier: number
   damage: number
   critical: number
+  range?: number
 }
 
 interface Monster {
   id: number
   monster_url: string
   name: string
-  challenge: string
+  challenge: number
   ca: number
   initiative: number
   health: number
   health_now: number
-  monster_attack: MonsterAttack[]
-  attacks: SelectOption[]
+  monster_attack?: MonsterAttack[]
+  attacks?: SelectOption[]
 }
 
 interface SelectOption {
@@ -66,38 +67,50 @@ interface SelectOption {
 
 export default function GmTools() {
   // const profile = useSelector(state => state.user.profile)
-  const inputRef = useRef<HTMLInputElement>(null)
 
-  const [monsterHealth, setMonsterHealth] = useState<number>(0)
+  const [characterHealth, setCharacterHealth] = useState<{
+    [characterId: number]: number
+  }>({})
+  const [monsterHealth, setMonsterHealth] = useState<{
+    [monsterId: number]: number
+  }>({})
   const [list, setList] = useState<Character[]>([])
   const [monsters, setMonsters] = useState<Monster[]>([])
-  const [selAttack, setSelAttack] = useState<number | null>(null)
+  const [selectedAttacks, setSelectedAttacks] = useState<{
+    [monsterId: number]: number | null
+  }>({})
   const [loading, setLoading] = useState(false)
 
   async function loadChar() {
     setLoading(true)
-    const response = await api.get('characters')
-    const respMonster = await api.get('monsters')
+    try {
+      const response = await api.get('characters')
+      const respMonster = await api.get('monsters')
 
-    const newMonsters = await respMonster?.data?.map((item: Monster) => ({
-      ...item,
-      attacks: item?.monster_attack?.map(a => ({
-        value: a.id,
-        label: a.name.toUpperCase(),
-      })),
-    }))
+      const newMonsters = await respMonster?.data?.map((item: Monster) => {
+        const attacks =
+          item?.monster_attack?.map(a => ({
+            value: a.id,
+            label: a.name.toUpperCase(),
+          })) || []
+        return {
+          ...item,
+          attacks,
+        }
+      })
 
-    console.log('Characters:', response.data)
-    console.log('Monsters:', newMonsters)
-
-    setList(response.data)
-    setMonsters(newMonsters)
-    setLoading(false)
+      setList(response.data)
+      setMonsters(newMonsters)
+    } catch (error) {
+      console.error('Error loading data:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
     loadChar()
-  }, [monsterHealth]) // eslint-disable-line
+  }, []) // eslint-disable-line
 
   async function handleInitiative(monsterId: number) {
     const monster = await monsters.filter(
@@ -134,12 +147,20 @@ export default function GmTools() {
       monster => monster.id === monsterId
     )[0]
 
-    const attacks = monster?.monster_attack?.filter(a => a.id === selAttack)[0]
+    const selectedAttackId = selectedAttacks[monsterId]
+    const attacks = monster?.monster_attack?.filter(
+      a => a.id === selectedAttackId
+    )[0]
+
+    if (!attacks) {
+      console.error('No attack selected for monster:', monster.name)
+      return
+    }
 
     const monsterName = monster.name
-    const base = Number(attacks?.hit)
-    const critFrom = Number(attacks?.crit_from)
-    const attackName = attacks?.name
+    const base = Number(attacks.hit)
+    const critFrom = Number(attacks.crit_from)
+    const attackName = attacks.name
     const dice = Math.floor(Math.random() * 20) + 1
 
     let isCrit = ''
@@ -180,13 +201,21 @@ export default function GmTools() {
       monster => monster.id === monsterId
     )[0]
 
-    const attacks = monster?.monster_attack?.filter(a => a.id === selAttack)[0]
+    const selectedAttackId = selectedAttacks[monsterId]
+    const attacks = monster?.monster_attack?.filter(
+      a => a.id === selectedAttackId
+    )[0]
+
+    if (!attacks) {
+      console.error('No attack selected for monster:', monster.name)
+      return
+    }
 
     const monsterName = monster?.name
-    const attackName = attacks?.name
-    const monsterDice = Number(attacks?.dice) || 0
-    const monsterMulti = Number(attacks?.multiplier) || 0
-    const extraDamage = Number(attacks?.damage) || 0
+    const attackName = attacks.name
+    const monsterDice = Number(attacks.dice) || 0
+    const monsterMulti = Number(attacks.multiplier) || 0
+    const extraDamage = Number(attacks.damage) || 0
 
     let result = 0
     const random = () => {
@@ -217,14 +246,22 @@ export default function GmTools() {
       monster => monster.id === monsterId
     )[0]
 
-    const attacks = monster?.monster_attack?.filter(a => a.id === selAttack)[0]
+    const selectedAttackId = selectedAttacks[monsterId]
+    const attacks = monster?.monster_attack?.filter(
+      a => a.id === selectedAttackId
+    )[0]
+
+    if (!attacks) {
+      console.error('No attack selected for monster:', monster.name)
+      return
+    }
 
     const monsterName = monster.name
-    const attackName = attacks?.name
-    const monsterDice = Number(attacks?.dice) || 0
-    const monsterMulti = Number(attacks?.multiplier) || 0
-    const extraDamage = Number(attacks?.damage) || 0
-    const monsterCrit = Number(attacks?.critical) || 0
+    const attackName = attacks.name
+    const monsterDice = Number(attacks.dice) || 0
+    const monsterMulti = Number(attacks.multiplier) || 0
+    const extraDamage = Number(attacks.damage) || 0
+    const monsterCrit = Number(attacks.critical) || 0
 
     let result = 0
     const random = () => {
@@ -255,24 +292,81 @@ export default function GmTools() {
     })
   }
 
-  async function handleMonsterHealth(monster: number) {
-    await api.put(
-      '/monsterhealthnow',
-      { newHealth: monsterHealth },
-      {
-        params: {
-          id: monster,
-        },
-      }
-    )
+  async function handleCharacterHealth(characterId: number) {
+    try {
+      const health = characterHealth[characterId] || 0
+      await api.put(
+        '/healthnow',
+        { newHealth: health },
+        {
+          params: {
+            id: characterId,
+          },
+        }
+      )
 
-    setMonsterHealth(0)
+      // Limpar o valor do personagem específico
+      setCharacterHealth(prev => ({
+        ...prev,
+        [characterId]: 0,
+      }))
+
+      // Recarregar os dados para atualizar a interface
+      loadChar()
+    } catch (error) {
+      console.error('Erro ao atualizar saúde do personagem:', error)
+    }
   }
 
-  const handleMonsterHealthChange = (e: ChangeEvent<HTMLInputElement>) => {
+  async function handleMonsterHealth(monsterId: number) {
+    try {
+      const health = monsterHealth[monsterId] || 0
+      await api.put(
+        '/monsterhealthnow',
+        { newHealth: health },
+        {
+          params: {
+            id: monsterId,
+          },
+        }
+      )
+
+      // Limpar o valor do monstro específico
+      setMonsterHealth(prev => ({
+        ...prev,
+        [monsterId]: 0,
+      }))
+
+      // Recarregar os dados para atualizar a interface
+      await loadChar()
+    } catch (error) {
+      console.error('Erro ao atualizar saúde do monstro:', error)
+    }
+  }
+
+  const handleCharacterHealthChange = (
+    characterId: number,
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
     const value = Number(e.target.value)
     if (!isNaN(value)) {
-      setMonsterHealth(value)
+      setCharacterHealth(prev => ({
+        ...prev,
+        [characterId]: value,
+      }))
+    }
+  }
+
+  const handleMonsterHealthChange = (
+    monsterId: number,
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = Number(e.target.value)
+    if (!isNaN(value)) {
+      setMonsterHealth(prev => ({
+        ...prev,
+        [monsterId]: value,
+      }))
     }
   }
 
@@ -345,12 +439,10 @@ export default function GmTools() {
     {
       title: 'Dano/Cura',
       dataIndex: 'pv',
-      render: () => (
+      render: (_, item) => (
         <input
-          ref={inputRef}
-          onFocus={() => setMonsterHealth(0)}
-          value={monsterHealth}
-          onChange={handleMonsterHealthChange}
+          value={characterHealth[item.id] || 0}
+          onChange={e => handleCharacterHealthChange(item.id, e)}
           type="number"
         />
       ),
@@ -359,7 +451,7 @@ export default function GmTools() {
       title: 'Salvar',
       dataIndex: 'Salvar',
       render: (_, item) => (
-        <button onClick={() => handleMonsterHealth(item.id)}>Salvar</button>
+        <button onClick={() => handleCharacterHealth(item.id)}>Salvar</button>
       ),
     },
     {
@@ -424,26 +516,31 @@ export default function GmTools() {
       title: 'ND',
       dataIndex: 'challenge',
       key: 'challenge',
+      render: (challenge: number) => challenge?.toString() || '0',
     },
     {
       title: 'CA',
       dataIndex: 'ca',
       key: 'ca',
+      render: (ca: number) => ca?.toString() || '0',
     },
     {
       title: 'Dex',
       dataIndex: 'initiative',
       key: 'initiative',
+      render: (initiative: number) => initiative?.toString() || '0',
     },
     {
       title: 'Vida',
       dataIndex: 'health',
       key: 'health',
+      render: (health: number) => health?.toString() || '0',
     },
     {
       title: 'Saúde',
       dataIndex: 'health_now',
       key: 'health_now',
+      render: (health_now: number) => health_now?.toString() || '0',
     },
     {
       title: 'Init',
@@ -455,20 +552,30 @@ export default function GmTools() {
     {
       title: 'Arma',
       dataIndex: 'Arma',
-      render: (_, item) => (
-        <div>
-          <Select
-            styles={customStyles}
-            maxMenuHeight={220}
-            placeholder="ESCOLHA"
-            onChange={(e: SelectOption | null) =>
-              setSelAttack(e?.value || null)
-            }
-            options={monsters.find(m => m.id === item.id)?.attacks}
-            isClearable
-          />
-        </div>
-      ),
+      render: (_, item) => {
+        const monster = monsters.find(m => m.id === item.id)
+        const monsterAttacks = monster?.attacks || []
+        return (
+          <div>
+            <Select
+              styles={customStyles}
+              maxMenuHeight={220}
+              placeholder="ESCOLHA"
+              onChange={(e: SelectOption | null) =>
+                setSelectedAttacks(prev => ({
+                  ...prev,
+                  [item.id]: e?.value || null,
+                }))
+              }
+              value={monsterAttacks.find(
+                option => option.value === selectedAttacks[item.id]
+              )}
+              options={monsterAttacks}
+              isClearable
+            />
+          </div>
+        )
+      },
     },
     {
       title: 'Attack',
@@ -494,12 +601,10 @@ export default function GmTools() {
     {
       title: 'Dano/Cura',
       dataIndex: 'pv',
-      render: () => (
+      render: (_, item) => (
         <input
-          ref={inputRef}
-          onFocus={() => setMonsterHealth(0)}
-          value={monsterHealth}
-          onChange={handleMonsterHealthChange}
+          value={monsterHealth[item.id] || 0}
+          onChange={e => handleMonsterHealthChange(item.id, e)}
           type="number"
         />
       ),

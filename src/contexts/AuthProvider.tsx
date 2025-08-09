@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { user, token } = JSON.parse(stored);
       setUser(user);
       setToken(token);
-      if (token) api.defaults.headers.Authorization = `Bearer ${token}`;
+      // O interceptor da API já cuida de adicionar o token automaticamente
     }
     setLoading(false);
   }, []);
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { token, user } = response.data;
       setUser(user);
       setToken(token);
-      api.defaults.headers.Authorization = `Bearer ${token}`;
+      // O interceptor da API já cuida de adicionar o token automaticamente
       window.location.href = "/dashboard";
     } catch {
       toast.error("Falha na autenticação, verifique seus dados");
@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(() => {
     setUser(null);
     setToken(null);
-    delete api.defaults.headers.Authorization;
+    // O interceptor já lida com a remoção do token quando o localStorage é limpo
     window.location.href = "/";
   }, []);
 

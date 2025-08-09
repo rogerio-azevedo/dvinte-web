@@ -251,11 +251,7 @@ export class DiceObject {
 
     const fromValue = this.getUpsideValue()
 
-    console.log('🎲 Tentando ajustar face do dado:', {
-      de: fromValue + 1,
-      para: toValue,
-      tipo: this.constructor.name,
-    })
+
 
     for (let i = 0, l = geometry.faces.length; i < l; ++i) {
       let materialIndex = geometry.faces[i].materialIndex
@@ -281,9 +277,7 @@ export class DiceObject {
       this.object.material = this.getMaterials()
     }
 
-    console.log('🎲 Face do dado ajustada, verificando resultado:', {
-      valorFinal: this.getUpsideValue() + 1,
-    })
+
 
     this.object.geometry = geometry
   }

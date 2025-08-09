@@ -277,28 +277,18 @@ export default function MyDices() {
           30 * Math.random() - 10
         )
 
-      console.log('🎲 Preparando dado', i + 1, ':', {
-        targetValue: diceResult?.[i],
-        currentUpValue: dice[i].getUpsideValue() + 1,
-        type: diceType,
-      })
+
 
       diceValues.push({ dice: dice[i], value: diceResult?.[i] ?? null })
     }
 
-    console.log(
-      '🎲 Valores finais dos dados:',
-      diceValues.map((dv: any) => ({
-        targetValue: dv.value,
-        currentUpValue: dv.dice.getUpsideValue() + 1,
-      }))
-    )
+
 
     DiceManager.prepareValues(diceValues)
   }
 
   useEffect(() => {
-    console.log('diceResult', diceResult)
+    // diceResult updated
   }, [diceResult])
 
   useEffect(() => {

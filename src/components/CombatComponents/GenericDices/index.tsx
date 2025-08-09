@@ -1,6 +1,4 @@
-/* eslint-disable no-console */
-
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa'
 
@@ -93,8 +91,13 @@ export default function GenericDices() {
   const [isRolling, setIsRolling] = useState(false)
   const [result, setResult] = useState<number | null>(null)
   const [rollDetails, setRollDetails] = useState<string>('')
+  const [pendingChatMessage, setPendingChatMessage] = useState<{
+    message: string
+    result: number
+  } | null>(null)
 
-  const { setDiceData } = useDices()
+  const { setDiceData, state: diceState } = useDices()
+  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Persistência do estado aberto/fechado
   useEffect(() => {
@@ -105,12 +108,78 @@ export default function GenericDices() {
     localStorage.setItem('generic-dice-card-open', isOpen ? 'true' : 'false')
   }, [isOpen])
 
+  // Detecta quando a animação dos dados 3D termina para enviar mensagem para o chat
+  useEffect(() => {
+    if (pendingChatMessage && !isRolling) {
+      // Para d100, usa timeout pois não tem animação 3D
+      if (selectedDice === 100) {
+        const timeoutId = setTimeout(async () => {
+          try {
+            await api.post('combats', {
+              id: user?.id,
+              user_id: user?.id,
+              user: user?.name,
+              message: pendingChatMessage.message,
+              result: pendingChatMessage.result,
+              type: 2,
+            })
+            toast.success('Rolagem enviada para o chat!')
+          } catch {
+            toast.error('Erro ao enviar para o chat')
+          } finally {
+            setPendingChatMessage(null)
+          }
+        }, 1500)
+
+        animationTimeoutRef.current = timeoutId
+      } else {
+        // Para outros dados, monitora quando a animação 3D termina
+        if (diceState.diceShow) {
+          const timeoutId = setTimeout(async () => {
+            try {
+              await api.post('combats', {
+                id: user?.id,
+                user_id: user?.id,
+                user: user?.name,
+                message: pendingChatMessage.message,
+                result: pendingChatMessage.result,
+                type: 2,
+              })
+              toast.success('Rolagem enviada para o chat!')
+            } catch {
+              toast.error('Erro ao enviar para o chat')
+            } finally {
+              setPendingChatMessage(null)
+            }
+          }, 1500)
+
+          animationTimeoutRef.current = timeoutId
+        }
+      }
+    }
+
+    return () => {
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current)
+        animationTimeoutRef.current = null
+      }
+    }
+  }, [
+    pendingChatMessage,
+    isRolling,
+    diceState.diceShow,
+    diceState.diceRoll,
+    selectedDice,
+    user,
+  ])
+
   // Função para rolar dados via API
   const rollDice = useCallback(async () => {
     if (!user || isRolling) return
     setIsRolling(true)
     setResult(null)
     setRollDetails('')
+    setPendingChatMessage(null) // Limpa mensagem pendente anterior
 
     setDiceData({
       diceType: null,
@@ -155,28 +224,24 @@ export default function GenericDices() {
             : ''
         }`
       )
-      // Envia para o chat/backend
+
+      // Prepara mensagem para ser enviada após a animação terminar
       const rolled = `Rolou ${multiplier}x d${selectedDice}: [${rolls.join(
         ', '
       )}]${
         modifier !== 0 ? (modifier > 0 ? ` +${modifier}` : ` ${modifier}`) : ''
       } = ${total}`
-      await api.post('combats', {
-        id: user.id,
-        user_id: user.id,
-        user: user.name,
+
+      setPendingChatMessage({
         message: rolled,
         result: total,
-        type: 2,
       })
-      toast.success('Rolagem enviada para o chat!')
-    } catch (error) {
-      console.log(error)
+    } catch {
       toast.error('Erro ao rolar dados')
     } finally {
       setIsRolling(false)
     }
-  }, [user, isRolling, multiplier, selectedDice, modifier])
+  }, [user, isRolling, multiplier, selectedDice, modifier, setDiceData])
 
   // Stepper handlers
   const inc = () => setMultiplier(m => Math.min(m + 1, 20))

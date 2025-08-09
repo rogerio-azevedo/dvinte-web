@@ -68,8 +68,15 @@ export default function RenderMap({
   }
 
   async function getMap() {
-    const response = await api.get<MapData>('maps/1')
-    setMapData(response?.data)
+    try {
+      // Usar campanha padrão 1
+      const response = await api.get<MapData>('maps/1')
+      setMapData(response?.data)
+    } catch (error) {
+      console.error('Erro ao carregar mapa:', error)
+      // Fallback para mapa padrão se não encontrar
+      setMapData({} as MapData)
+    }
   }
 
   function handleWheel(e: any) {
@@ -95,14 +102,22 @@ export default function RenderMap({
   }
 
   useEffect(() => {
-    socket.on('map.message', (data: MapData) => {
+    const handleMapMessage = (data: MapData) => {
+      console.log('📡 Recebido map.message:', data)
       setMapData(data)
 
       if (data.portrait !== '') {
+        console.log('🖼️ Portrait detectado, resetando posição do stage')
         setStagePos({ x: 0, y: 0 })
       }
-    })
-  }, [mapData])
+    }
+
+    socket.on('map.message', handleMapMessage)
+
+    return () => {
+      socket.off('map.message', handleMapMessage)
+    }
+  }, [])
 
   useEffect(() => {
     getMap()
@@ -261,13 +276,6 @@ export default function RenderMap({
               }
             />
           ))}
-
-          <Image
-            image={portrait}
-            opacity={1}
-            width={mapData?.orientation ? 450 : 800}
-            height={mapData?.orientation ? 600 : 450}
-          />
         </Layer>
 
         <Layer>
@@ -301,6 +309,16 @@ export default function RenderMap({
               }
             />
           ))}
+        </Layer>
+
+        {/* Layer separada para a imagem do portrait - fica por cima de TUDO */}
+        <Layer>
+          <Image
+            image={portrait}
+            opacity={1}
+            width={mapData?.orientation ? 450 : 800}
+            height={mapData?.orientation ? 600 : 450}
+          />
         </Layer>
       </Stage>
     </div>

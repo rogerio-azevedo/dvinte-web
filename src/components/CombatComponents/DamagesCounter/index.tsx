@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts'
 import api from '../../../services/api'
-import { socket, connect } from '../../../services/socket'
+import { socket, connect, emit } from '../../../services/socket'
 
 import * as Styles from './styles'
 
@@ -57,7 +57,7 @@ export default function DamagesCounter() {
         isCrit: 'false',
       }
 
-      await api.post('/combats', message)
+      emit('chat.message', message)
       await loadDamage('session')
     } catch (err) {
       console.error('[DamagesCounter] Erro ao iniciar sessão:', err)
@@ -76,7 +76,7 @@ export default function DamagesCounter() {
         isCrit: 'false',
       }
 
-      await api.post('/combats', message)
+      emit('chat.message', message)
       await loadDamage('combat')
     } catch (err) {
       console.error('[DamagesCounter] Erro ao iniciar combate:', err)

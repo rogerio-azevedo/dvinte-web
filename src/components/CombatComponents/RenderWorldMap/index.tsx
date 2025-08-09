@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect } from 'react'
 import { Stage, Layer, Image } from 'react-konva'
+import type { KonvaEventObject } from 'konva/lib/Node'
 import useImage from 'use-image'
 
 import { connect, socket } from '../../../services/socket'
-
-import { Container } from './styles'
 
 import api from '../../../services/api'
 
@@ -31,28 +30,29 @@ const RenderWorldMap: React.FC = () => {
     }
   }
 
-  const handleWheel = (e: any): void => {
+  const handleWheel = (e: KonvaEventObject<WheelEvent>): void => {
     e.evt.preventDefault()
 
     const scaleBy = 1.08
     const stage = e.target.getStage()
+    if (!stage) return
+
     const oldScale = stage.scaleX()
+    const pointerPos = stage.getPointerPosition()
+    if (!pointerPos) return
+
     const mousePointTo = {
-      x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
-      y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale,
+      x: pointerPos.x / oldScale - stage.x() / oldScale,
+      y: pointerPos.y / oldScale - stage.y() / oldScale,
     }
 
     const newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy
 
     setStageScale(newScale)
 
-    setStageX(
-      -(mousePointTo.x - stage.getPointerPosition().x / newScale) * newScale
-    )
+    setStageX(-(mousePointTo.x - pointerPos.x / newScale) * newScale)
 
-    setStageY(
-      -(mousePointTo.y - stage.getPointerPosition().y / newScale) * newScale
-    )
+    setStageY(-(mousePointTo.y - pointerPos.y / newScale) * newScale)
   }
 
   useEffect(() => {
@@ -70,10 +70,10 @@ const RenderWorldMap: React.FC = () => {
     connect()
   }, [])
 
-  const [map] = useImage(mapData?.world || '/tir-nakhor.png')
+  const [map] = useImage(mapData?.world || '')
 
   return (
-    <Container>
+    <div style={{ width: '100%', height: '100%' }}>
       <Stage
         x={stageX}
         y={stageY}
@@ -94,12 +94,14 @@ const RenderWorldMap: React.FC = () => {
           <Image
             image={map}
             opacity={1}
-            width={window.innerWidth}
-            height={window.innerHeight}
+            width={4000}
+            height={4000}
+            // width={window.innerWidth}
+            // height={window.innerHeight}
           />
         </Layer>
       </Stage>
-    </Container>
+    </div>
   )
 }
 

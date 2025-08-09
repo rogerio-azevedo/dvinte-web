@@ -119,6 +119,7 @@ const PlayMenuBar: React.FC<PlayMenuBarProps> = ({
         onClick={() => handleMenu(MENU.STATUS)}
       />
     </div>
+
     {user?.is_gm && (
       <div data-tip="Mapas">
         <GiTreasureMap

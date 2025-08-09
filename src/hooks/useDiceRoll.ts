@@ -55,7 +55,7 @@ export function useDiceRoll(): UseDiceRollReturn {
       const response = await api.get<DicePermissions>('/dice/permissions')
       setPermissions(response.data)
     } catch (error) {
-      console.error('Erro ao carregar permissões:', error)
+      // Erro ao carregar permissões
       // Permissões padrão em caso de erro
       setPermissions({
         canRoll: true,
@@ -95,7 +95,7 @@ export function useDiceRoll(): UseDiceRollReturn {
       setIsRolling(true)
 
       try {
-        console.log('🎲 Iniciando rolagem segura:', request)
+        // Iniciando rolagem segura
 
         // Chama a API do backend
         const response = await api.post<DiceRollResponse>('/dice/roll', request)
@@ -125,9 +125,9 @@ export function useDiceRoll(): UseDiceRollReturn {
           { autoClose: 5000 }
         )
 
-        console.log('✅ Rolagem segura concluída:', response.data.data)
+        // Rolagem segura concluída
       } catch (error: unknown) {
-        console.error('❌ Erro na rolagem segura:', error)
+        // Erro na rolagem segura
 
         const errorMessage =
           error instanceof Error ? error.message : 'Erro desconhecido'

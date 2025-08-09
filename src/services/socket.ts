@@ -61,7 +61,7 @@ class WebSocketService {
       this.ws.onmessage = (event: MessageEvent) => {
         try {
           const data: SocketEventData = JSON.parse(event.data)
-          console.log('[WS] Message received:', data)
+          // Message received
 
           // Emit the event to listeners
           if (data.event) {

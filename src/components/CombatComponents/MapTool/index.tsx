@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React, { useState, useEffect } from 'react'
 import { useAuth, useMenu } from '../../../contexts'
 import { toast } from 'react-toastify'
@@ -14,6 +15,8 @@ interface MapData {
   campaign_id: number
   battle: string
   world: string
+  portrait?: string
+  orientation?: boolean
   width: string
   height: string
   grid: boolean
@@ -25,6 +28,8 @@ interface MapData {
 interface MapResponse {
   battle?: string
   world?: string
+  portrait?: string
+  orientation?: boolean
   width?: string
   height?: string
   grid?: boolean
@@ -43,6 +48,8 @@ const MapTool: React.FC = () => {
   const { actions: menuActions } = useMenu()
   const [battle, setBattle] = useState<string>('')
   const [world, setWorld] = useState<string>('')
+  const [portrait, setPortrait] = useState<string>('')
+  const [orientation, setOrientation] = useState<boolean>(false)
   const [width, setWidth] = useState<string>('')
   const [height, setHeight] = useState<string>('')
   const [grid, setGrid] = useState<boolean>(true)
@@ -67,6 +74,8 @@ const MapTool: React.FC = () => {
         campaign_id: selectedCampaign,
         battle,
         world,
+        portrait,
+        orientation,
         width,
         height,
         grid,
@@ -76,6 +85,9 @@ const MapTool: React.FC = () => {
       }
 
       await api.post('maps', mapData)
+
+      socket.emit('map.message', mapData)
+
       toast.success('Mapa alterado com sucesso!')
     } catch (error) {
       console.error('Erro ao salvar mapa:', error)
@@ -102,23 +114,22 @@ const MapTool: React.FC = () => {
   async function loadMapData(campaignId: number): Promise<void> {
     try {
       const response = await api.get<MapResponse>(`maps/${campaignId}`)
-      const { data } = response
+      const mapData = response.data
 
-      if (data) {
-        setBattle(data.battle || '')
-        setWorld(data.world || '')
-        setWidth(data.width || '')
-        setHeight(data.height || '')
-        setGrid(data.grid ?? true)
-        setFog(data.fog ?? false)
-        setGm_layer(data.gm_layer ?? false)
+      if (mapData) {
+        setBattle(mapData.battle || '')
+        setWorld(mapData.world || '')
+        setPortrait(mapData.portrait || '')
+        setOrientation(mapData.orientation || false)
+        setWidth(mapData.width?.toString() || '')
+        setHeight(mapData.height?.toString() || '')
+        setGrid(mapData.grid || true)
+        setFog(mapData.fog || false)
+        setGm_layer(mapData.gm_layer || false)
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro ao carregar dados do mapa:', error)
-      // Não mostrar erro se for 404 (mapa não existe ainda)
-      if (error.response?.status !== 404) {
-        toast.error('Erro ao carregar configurações do mapa.')
-      }
+      toast.error('Erro ao carregar dados do mapa.')
     }
   }
 
@@ -142,6 +153,10 @@ const MapTool: React.FC = () => {
 
   function handleGmLayer(checked: boolean): void {
     setGm_layer(checked)
+  }
+
+  function handleOrientation(checked: boolean): void {
+    setOrientation(checked)
   }
 
   function handleFogLevel(level: string): void {
@@ -214,6 +229,37 @@ const MapTool: React.FC = () => {
               onChange={e => setWorld(e.target.value)}
               placeholder="URL do mapa mundo"
             />
+          </div>
+        </Styles.InputContainer>
+
+        <Styles.InputContainer>
+          <div>
+            <label htmlFor="portrait">Portrait</label>
+            <Styles.InputLarge
+              id="portrait"
+              value={portrait}
+              onChange={e => setPortrait(e.target.value)}
+              placeholder="URL do portrait"
+            />
+          </div>
+        </Styles.InputContainer>
+
+        <Styles.InputContainer>
+          <div>
+            <label htmlFor="orientation">Orientação da Imagem</label>
+            <div style={{ marginTop: '18px' }}>
+              <Switch
+                id="orientation"
+                checked={orientation}
+                onChange={handleOrientation}
+                aria-label="Habilitar orientação do mapa"
+              />
+              <span
+                style={{ marginLeft: '8px', fontSize: '12px', color: '#666' }}
+              >
+                {orientation ? 'Retrato (Vertical)' : 'Paisagem (Horizontal)'}
+              </span>
+            </div>
           </div>
         </Styles.InputContainer>
 

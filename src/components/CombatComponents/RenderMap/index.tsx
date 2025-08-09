@@ -312,6 +312,8 @@ export default function RenderMap({
         </Layer>
 
         {/* Layer separada para a imagem do portrait - fica por cima de TUDO */}
+        {/* TEMPORARIAMENTE COMENTADO PARA TESTE DE DRAG */}
+        {/*
         <Layer>
           <Image
             image={portrait}
@@ -320,6 +322,7 @@ export default function RenderMap({
             height={mapData?.orientation ? 600 : 450}
           />
         </Layer>
+        */}
       </Stage>
     </div>
   )

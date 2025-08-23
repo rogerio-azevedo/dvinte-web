@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -57,6 +56,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
         DexModTemp: char.DexModTemp,
         Weapon: char.Weapon,
       }))
+      console.log('🚀 ~ Armory ~ mappedCharacters:', mappedCharacters)
 
       // Filtra apenas personagens válidos
       const validCharacters = mappedCharacters.filter(
@@ -67,8 +67,16 @@ export default function Armory({ loadChar }: ArmoryProps) {
 
       console.log(validCharacters)
 
+      // Auto-selecionar quando há apenas 1 personagem
       if (validCharacters.length === 1) {
-        setSelectedCharacter(validCharacters[0])
+        const singleChar = validCharacters[0]
+        setSelectedCharacter(singleChar)
+
+        if (!singleChar.Weapon || singleChar.Weapon.length === 0) {
+          loadCharacterWeapons(singleChar.id)
+        } else {
+          setCharacterWeapons(singleChar.Weapon || [])
+        }
       }
     } catch (error) {
       console.error('❌ Erro ao carregar personagens:', error)
@@ -78,6 +86,8 @@ export default function Armory({ loadChar }: ArmoryProps) {
       setLoadingCharacters(false)
     }
   }, [user?.id])
+
+  // Removido loadFullCharacterData - usando dados diretos da lista
 
   const loadCharacterWeapons = useCallback(async (charId: number) => {
     if (loadingWeapons) return
@@ -100,11 +110,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
     loadUserCharacters()
   }, [loadUserCharacters])
 
-  useEffect(() => {
-    if (selectedCharacter?.id) {
-      loadCharacterWeapons(selectedCharacter.id)
-    }
-  }, [selectedCharacter, loadCharacterWeapons])
+  // Removido useEffect desnecessário - carregamento via handleCharacterChange
 
   const handleCharacterChange = (value: string | null) => {
     if (!value) {
@@ -116,7 +122,19 @@ export default function Armory({ loadChar }: ArmoryProps) {
     const selected = userCharacters.find(
       char => char && char.id && String(char.id) === value
     )
-    setSelectedCharacter(selected || null)
+
+    if (selected) {
+      setSelectedCharacter(selected)
+      // Carregar apenas as armas se necessário
+      if (!selected.Weapon || selected.Weapon.length === 0) {
+        loadCharacterWeapons(selected.id)
+      } else {
+        setCharacterWeapons(selected.Weapon || [])
+      }
+    } else {
+      setSelectedCharacter(null)
+    }
+
     setWeapon(undefined)
   }
 
@@ -127,7 +145,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
 
     return (
       <Styles.WeaponContainer>
-        {userCharacters.length > 1 && (
+        {validCharacters.length > 1 && (
           <SelectCharacter
             characters={validCharacters.map(char => ({
               value: String(char.id),
@@ -188,11 +206,38 @@ export default function Armory({ loadChar }: ArmoryProps) {
       isCrit = 'NORMAL'
     }
 
-    const StrMod = selectedCharacter.StrModTemp ?? selectedCharacter.StrMod ?? 0
-    const DexMod = selectedCharacter.DexModTemp ?? selectedCharacter.DexMod ?? 0
+    // Usar os modificadores que já vêm corretos da API
+    const StrMod =
+      selectedCharacter.StrModTemp !== null &&
+      selectedCharacter.StrModTemp !== undefined &&
+      selectedCharacter.StrModTemp !== 0
+        ? selectedCharacter.StrModTemp
+        : selectedCharacter.StrMod ?? 0
+    const DexMod =
+      selectedCharacter.DexModTemp !== null &&
+      selectedCharacter.DexModTemp !== undefined &&
+      selectedCharacter.DexModTemp !== 0
+        ? selectedCharacter.DexModTemp
+        : selectedCharacter.DexMod ?? 0
     const mod = wep.range > 3 ? DexMod : StrMod
-    const base = (selectedCharacter.BaseAttack ?? 0) + mod
+    const baseAttack = selectedCharacter.BaseAttack ?? 0
+    const base = baseAttack + mod
     const attack = base + dice + extraHit
+
+    // Debug logs para confirmar a correção
+    console.log('🎯 Debug ataque (corrigido):', {
+      personagem: selectedCharacter.name,
+      arma: name,
+      range: wep.range,
+      StrMod,
+      DexMod,
+      modUsado: mod,
+      baseAttack,
+      baseTotal: base,
+      dice,
+      extraHit,
+      attackTotal: attack,
+    })
 
     let rolled = ''
     if (isCrit === 'HIT') {

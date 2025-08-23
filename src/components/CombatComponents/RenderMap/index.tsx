@@ -311,18 +311,16 @@ export default function RenderMap({
           ))}
         </Layer>
 
-        {/* Layer separada para a imagem do portrait - fica por cima de TUDO */}
-        {/* TEMPORARIAMENTE COMENTADO PARA TESTE DE DRAG */}
-        {/*
-        <Layer>
-          <Image
-            image={portrait}
-            opacity={1}
-            width={mapData?.orientation ? 450 : 800}
-            height={mapData?.orientation ? 600 : 450}
-          />
-        </Layer>
-        */}
+        {mapData?.portrait && (
+          <Layer>
+            <Image
+              image={portrait}
+              opacity={1}
+              width={mapData?.orientation ? 450 : 800}
+              height={mapData?.orientation ? 600 : 450}
+            />
+          </Layer>
+        )}
       </Stage>
     </div>
   )

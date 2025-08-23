@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react"
-import { Image, Transformer } from "react-konva"
-import Konva from "konva"
-import useImage from "use-image"
+import { useEffect, useRef } from 'react'
+import { Image, Transformer } from 'react-konva'
+import Konva from 'konva'
+import useImage from 'use-image'
 
-import api from "../../../services/api"
+import api from '../../../services/api'
 
 interface CharTokenProps {
   image: string
@@ -32,8 +32,8 @@ export default function CharToken({
   draggable,
   opacity,
 }: CharTokenProps) {
-  const shapeRef = useRef<any>(null)
-  const trRef = useRef<any>(null)
+  const shapeRef = useRef<Konva.Image>(null)
+  const trRef = useRef<Konva.Transformer>(null)
 
   const grid = 1
 
@@ -67,14 +67,17 @@ export default function CharToken({
       y: e.target.y(),
     }
 
-    // Salva no banco (o backend já emite via Socket.IO)
-    await api.put("chartokens", tokenData)
+    try {
+      await api.put('chartokens', tokenData)
+    } catch (error) {
+      console.error('❌ Token update failed:', error)
+    }
   }
 
   useEffect(() => {
-    if (isSelected) {
+    if (isSelected && trRef.current && shapeRef.current) {
       trRef.current.nodes([shapeRef.current])
-      trRef.current.getLayer().batchDraw()
+      trRef.current.getLayer()?.batchDraw()
     }
   }, [isSelected])
 
@@ -89,7 +92,7 @@ export default function CharToken({
     }
 
     // Salva no banco (o backend já emite via Socket.IO)
-    await api.put("chartokens", tokenData)
+    await api.put('chartokens', tokenData)
   }
 
   const [tokenImg] = useImage(image)

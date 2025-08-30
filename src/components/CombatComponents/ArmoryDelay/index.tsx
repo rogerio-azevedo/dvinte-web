@@ -285,14 +285,28 @@ export default function Armory({ loadChar }: ArmoryProps) {
 
     const size = selectedCharacter.Size
 
+    // Usar os modificadores que já vêm corretos da API (mesma lógica do ataque)
+    const StrMod =
+      selectedCharacter.StrModTemp !== null &&
+      selectedCharacter.StrModTemp !== undefined &&
+      selectedCharacter.StrModTemp !== 0
+        ? selectedCharacter.StrModTemp
+        : selectedCharacter.StrMod ?? 0
+    const DexMod =
+      selectedCharacter.DexModTemp !== null &&
+      selectedCharacter.DexModTemp !== undefined &&
+      selectedCharacter.DexModTemp !== 0
+        ? selectedCharacter.DexModTemp
+        : selectedCharacter.DexMod ?? 0
+
     let mod = 0
     let modType = ''
 
     if (wep.dex_damage === true) {
-      mod = selectedCharacter.DexModTemp ?? selectedCharacter.DexMod ?? 0
+      mod = DexMod
       modType = 'de mod de Destreza'
     } else {
-      mod = selectedCharacter.StrModTemp ?? selectedCharacter.StrMod ?? 0
+      mod = StrMod
       modType = 'de mod de Força'
     }
 
@@ -331,6 +345,25 @@ export default function Armory({ loadChar }: ArmoryProps) {
     })
 
     const totalDamage = result + extraDamage + exMod + element
+
+    // Debug logs para confirmar a correção
+    console.log('⚔️ Debug dano (corrigido):', {
+      personagem: selectedCharacter.name,
+      arma: name,
+      size,
+      StrMod,
+      DexMod,
+      modUsado: mod,
+      modType,
+      str_bonus: wep.str_bonus,
+      exMod,
+      dice,
+      multi,
+      result,
+      extraDamage,
+      element,
+      totalDamage,
+    })
 
     const rolled = `CAUSOU DANO com ${name} => ${multi} x d${dice}: ${result} + ${exMod} ${modType} + ${extraDamage} de bônus da arma + ${element} bônus de elemento. Com resultado: ${totalDamage}`
 
@@ -372,14 +405,28 @@ export default function Armory({ loadChar }: ArmoryProps) {
 
     const size = selectedCharacter.Size
 
+    // Usar os modificadores que já vêm corretos da API (mesma lógica do ataque)
+    const StrMod =
+      selectedCharacter.StrModTemp !== null &&
+      selectedCharacter.StrModTemp !== undefined &&
+      selectedCharacter.StrModTemp !== 0
+        ? selectedCharacter.StrModTemp
+        : selectedCharacter.StrMod ?? 0
+    const DexMod =
+      selectedCharacter.DexModTemp !== null &&
+      selectedCharacter.DexModTemp !== undefined &&
+      selectedCharacter.DexModTemp !== 0
+        ? selectedCharacter.DexModTemp
+        : selectedCharacter.DexMod ?? 0
+
     let mod = 0
     let modType = ''
 
     if (wep.dex_damage === true) {
-      mod = selectedCharacter.DexModTemp ?? selectedCharacter.DexMod ?? 0
+      mod = DexMod
       modType = 'de mod de Destreza'
     } else {
-      mod = selectedCharacter.StrModTemp ?? selectedCharacter.StrMod ?? 0
+      mod = StrMod
       modType = 'de mod de Força'
     }
 
@@ -420,6 +467,29 @@ export default function Armory({ loadChar }: ArmoryProps) {
 
     const totalDamage =
       result + extraDamage * critMult + exMod * critMult + element
+
+    // Debug logs para confirmar a correção
+    console.log('💥 Debug dano crítico (corrigido):', {
+      personagem: selectedCharacter.name,
+      arma: name,
+      size,
+      StrMod,
+      DexMod,
+      modUsado: mod,
+      modType,
+      str_bonus: wep.str_bonus,
+      exMod,
+      critMult,
+      exModCrit: exMod * critMult,
+      dice,
+      multi,
+      multiCrit: multi * critMult,
+      result,
+      extraDamage,
+      extraDamageCrit: extraDamage * critMult,
+      element,
+      totalDamage,
+    })
 
     const rolled = `CAUSOU DANO CRÍTICO com ${name} => ${
       multi * critMult

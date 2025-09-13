@@ -1,7 +1,6 @@
-/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect, type ReactElement } from 'react'
+import { useState, useEffect, useCallback, type ReactElement } from 'react'
 import { useAuth, useMenu } from '../../../contexts'
 import { Stage, Layer, Line, Image, Rect } from 'react-konva'
 import useImage from 'use-image'
@@ -14,7 +13,6 @@ import {
   type Token,
   type MapData,
   type Line as LineType,
-  type StagePos,
 } from './interfaces'
 
 export default function RenderMap({
@@ -26,7 +24,6 @@ export default function RenderMap({
   const { state: menuState, actions: menuActions } = useMenu()
   const { fogLevel, eraserSize, fogPersist } = menuState
 
-  const [stagePos, setStagePos] = useState<StagePos>({ x: 0, y: 0 })
   const [stageScale, setStageScale] = useState<number>(1)
   const [stageX, setStageX] = useState<number>(0)
   const [stageY, setStageY] = useState<number>(0)
@@ -35,6 +32,7 @@ export default function RenderMap({
   const [selectedId, selectShape] = useState<number | null>(null)
   const [mapData, setMapData] = useState<MapData>({} as MapData)
   const [myToken, setMyToken] = useState<number>(0)
+  const [overlappingTokens, setOverlappingTokens] = useState<number[]>([])
 
   // dispatch migrado para menuActions
   const is_gm = user?.is_gm
@@ -108,7 +106,8 @@ export default function RenderMap({
 
       if (data.portrait !== '') {
         console.log('🖼️ Portrait detectado, resetando posição do stage')
-        setStagePos({ x: 0, y: 0 })
+        setStageX(0)
+        setStageY(0)
       }
     }
 
@@ -129,18 +128,18 @@ export default function RenderMap({
     }
 
     getcharToken()
-  }, [user?.id]) // eslint-disable-line
+  }, [user?.id])
 
   function handleMouseDown(e: any) {
     if (e.evt.button === 2 && !allowDrag) {
       setIsDrawing(true)
 
-      const pointer = e.target.getStage().getPointerPosition()
+      const worldCoords = getWorldCoordinates(e.target.getStage())
 
       const newLines = lines?.concat({
         id: Date.now(),
         tool: 'eraser',
-        points: [pointer.x, pointer.y],
+        points: [worldCoords.x, worldCoords.y],
       })
       setLines(newLines)
     }
@@ -167,13 +166,13 @@ export default function RenderMap({
       return
     }
 
-    const pointer = e.target.getStage().getPointerPosition()
+    const worldCoords = getWorldCoordinates(e.target.getStage())
     const newLines = lines?.slice()
     const lastLine = {
       ...newLines[newLines?.length - 1],
     }
     lastLine.size = eraserSize
-    lastLine.points = lastLine?.points.concat([pointer.x, pointer.y])
+    lastLine.points = lastLine?.points.concat([worldCoords.x, worldCoords.y])
     newLines[newLines.length - 1] = lastLine
     setLines(newLines)
   }
@@ -190,6 +189,88 @@ export default function RenderMap({
 
   const [map] = useImage(mapData?.battle || '')
   const [portrait] = useImage(mapData?.portrait || '')
+
+  // Função para converter coordenadas do mouse para coordenadas do mundo
+  const getWorldCoordinates = useCallback(
+    (stage: any) => {
+      const pointer = stage.getPointerPosition()
+      if (!pointer) return { x: 0, y: 0 }
+
+      // Ajusta as coordenadas considerando a posição e escala do stage
+      const worldX = (pointer.x - stageX) / stageScale
+      const worldY = (pointer.y - stageY) / stageScale
+
+      return { x: worldX, y: worldY }
+    },
+    [stageX, stageY, stageScale]
+  )
+
+  // Função para detectar tokens sobrepostos em uma posição
+  const getTokensAtPosition = useCallback(
+    (x: number, y: number): Token[] => {
+      const gridX = Math.round(x / grid) * grid
+      const gridY = Math.round(y / grid) * grid
+
+      return tokens.filter(token => {
+        const tokenGridX = Math.round(token.x / grid) * grid
+        const tokenGridY = Math.round(token.y / grid) * grid
+        return tokenGridX === gridX && tokenGridY === gridY
+      })
+    },
+    [tokens, grid]
+  )
+
+  // Função para selecionar próximo token sobreposto
+  const selectNextOverlappingToken = (clickedTokenId: number) => {
+    // Encontra o token clicado
+    const clickedToken = tokens.find(t => t.id === clickedTokenId)
+    if (!clickedToken) return
+
+    // Encontra todos os tokens na mesma posição
+    const tokensAtPos = getTokensAtPosition(clickedToken.x, clickedToken.y)
+
+    if (tokensAtPos.length <= 1) {
+      // Se há apenas um token, seleciona normalmente
+      selectShape(clickedTokenId)
+      setOverlappingTokens([])
+      return
+    }
+
+    // Se há múltiplos tokens, implementa rotação de seleção
+    const currentIndex = tokensAtPos.findIndex(t => t.id === selectedId)
+    const nextIndex = (currentIndex + 1) % tokensAtPos.length
+    const nextToken = tokensAtPos[nextIndex]
+
+    selectShape(nextToken.id)
+    setOverlappingTokens(tokensAtPos.map(t => t.id))
+  }
+
+  // Função para verificar se uma posição está ocupada
+  const isPositionOccupied = (
+    x: number,
+    y: number,
+    excludeTokenId?: number
+  ): boolean => {
+    const gridX = Math.round(x / grid) * grid
+    const gridY = Math.round(y / grid) * grid
+
+    // Verifica se está dentro dos limites do mapa
+    if (
+      gridX < 0 ||
+      gridY < 0 ||
+      gridX >= (mapData?.width || 1920) * 0.6 ||
+      gridY >= (mapData?.height || 1080) * 0.6
+    ) {
+      return true // Considera ocupado se estiver fora dos limites
+    }
+
+    return tokens.some(token => {
+      if (excludeTokenId && token.id === excludeTokenId) return false
+      const tokenGridX = Math.round(token.x / grid) * grid
+      const tokenGridY = Math.round(token.y / grid) * grid
+      return tokenGridX === gridX && tokenGridY === gridY
+    })
+  }
 
   useEffect(() => {
     const handleTokens = (data: Token[]) => {
@@ -208,6 +289,24 @@ export default function RenderMap({
 
     return () => socket.off('token.message', handleTokens)
   }, [setTokens])
+
+  // Efeito para detectar tokens sobrepostos automaticamente
+  useEffect(() => {
+    const overlapping: number[] = []
+
+    tokens.forEach(token => {
+      const tokensAtPos = getTokensAtPosition(token.x, token.y)
+      if (tokensAtPos.length > 1) {
+        tokensAtPos.forEach(t => {
+          if (!overlapping.includes(t.id)) {
+            overlapping.push(t.id)
+          }
+        })
+      }
+    })
+
+    setOverlappingTokens(overlapping)
+  }, [tokens, getTokensAtPosition])
 
   return (
     <div className="flex w-full h-full justify-between items-center">
@@ -265,8 +364,6 @@ export default function RenderMap({
 
           {lines?.map(line => (
             <Line
-              x={stagePos.x}
-              y={stagePos.y}
               key={line?.id}
               strokeWidth={line?.size}
               stroke={'black'}
@@ -279,36 +376,58 @@ export default function RenderMap({
         </Layer>
 
         <Layer>
-          {(Array.isArray(tokens) ? tokens : []).map(item => (
-            <CharToken
-              key={item.id}
-              id={item.id}
-              x={item.x}
-              y={item.y}
-              isSelected={
-                myToken === item.character_id && !allowDrag
-                  ? item.id === selectedId
-                  : is_gm && !allowDrag && item.id === selectedId
-              }
-              onSelect={() => {
-                selectShape(item.id)
-              }}
-              image={item.image}
-              width={item.width}
-              height={item.height}
-              rotation={item.rotation || 0}
-              draggable={
-                myToken === item.character_id && !allowDrag
-                  ? true
-                  : is_gm && !allowDrag
-                  ? true
-                  : false
-              }
-              opacity={
-                item.enabled ? 1 : item.enabled === false && is_gm ? 0.6 : 0
-              }
-            />
-          ))}
+          {(Array.isArray(tokens) ? tokens : [])
+            .sort((a, b) => {
+              // Ordena tokens: selecionado por último (fica por cima)
+              if (a.id === selectedId) return 1
+              if (b.id === selectedId) return -1
+              // Tokens do jogador atual ficam por cima dos outros
+              if (a.character_id === myToken && b.character_id !== myToken)
+                return 1
+              if (b.character_id === myToken && a.character_id !== myToken)
+                return -1
+              // Por último, ordena por ID (mais recente por cima)
+              return b.id - a.id
+            })
+            .map(item => (
+              <CharToken
+                key={item.id}
+                id={item.id}
+                x={item.x}
+                y={item.y}
+                isSelected={
+                  myToken === item.character_id && !allowDrag
+                    ? item.id === selectedId
+                    : is_gm && !allowDrag && item.id === selectedId
+                }
+                onSelect={() => {
+                  // Usa o sistema de clique que atravessa tokens sobrepostos
+                  selectNextOverlappingToken(item.id)
+                }}
+                image={item.image}
+                width={item.width}
+                height={item.height}
+                rotation={item.rotation || 0}
+                draggable={
+                  myToken === item.character_id && !allowDrag
+                    ? true
+                    : is_gm && !allowDrag
+                    ? true
+                    : false
+                }
+                opacity={
+                  item.enabled
+                    ? overlappingTokens.includes(item.id)
+                      ? 0.7 // Tokens sobrepostos ficam um pouco transparentes
+                      : 1
+                    : item.enabled === false && is_gm
+                    ? 0.6
+                    : 0
+                }
+                isPositionOccupied={isPositionOccupied}
+                character={item.character}
+              />
+            ))}
         </Layer>
 
         {mapData?.portrait && (

@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from "react"
+import type { Dispatch, SetStateAction } from 'react'
 
 export interface RenderMapProps {
   tokens?: Token[]
@@ -16,6 +16,13 @@ export interface Token {
   rotation: number
   enabled: boolean
   character_id: number
+  character?: {
+    id: number
+    name: string
+    level: number
+    health: number
+    health_now: number
+  }
 }
 
 export interface MapData {

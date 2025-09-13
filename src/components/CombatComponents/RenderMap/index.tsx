@@ -36,7 +36,7 @@ export default function RenderMap({
 
   // dispatch migrado para menuActions
   const is_gm = user?.is_gm
-  const grid = 68
+  const grid = 75
   const gridWidth =
     mapData?.width > mapData?.height ? mapData?.width : mapData?.height
 

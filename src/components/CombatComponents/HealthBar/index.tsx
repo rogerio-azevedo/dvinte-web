@@ -22,7 +22,7 @@ const HealthBar: React.FC<HealthBarProps> = ({
     return null
   }
 
-  const barHeight = 16 // Aumentado para comportar o texto
+  const barHeight = 18 // Aumentado ainda mais para melhor legibilidade
   const barY = y - barHeight - 6 // Posiciona a barra acima do token
   const healthPercentage = Math.max(0, Math.min(1, currentHealth / maxHealth))
 
@@ -60,20 +60,34 @@ const HealthBar: React.FC<HealthBarProps> = ({
         cornerRadius={2}
       />
 
-      {/* Texto com os valores */}
+      {/* Sombra do texto (para melhor contraste) */}
       <Text
-        x={x}
+        x={x + 1}
         y={barY + 2}
         width={width}
-        height={barHeight - 4}
+        height={barHeight - 2}
         text={healthText}
-        fontSize={10}
-        fontFamily="Arial"
+        fontSize={12}
+        fontFamily="Arial, sans-serif"
+        fontStyle="bold"
+        fill="#000000"
+        align="center"
+        verticalAlign="middle"
+      />
+
+      {/* Texto principal */}
+      <Text
+        x={x}
+        y={barY + 1}
+        width={width}
+        height={barHeight - 2}
+        text={healthText}
+        fontSize={12}
+        fontFamily="Arial, sans-serif"
+        fontStyle="bold"
         fill="#ffffff"
         align="center"
         verticalAlign="middle"
-        stroke="#000000"
-        strokeWidth={0.3}
       />
 
       {/* Borda externa */}

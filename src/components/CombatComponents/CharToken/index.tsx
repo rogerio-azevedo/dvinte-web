@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Image, Transformer, Group } from 'react-konva'
+import { Image, Transformer } from 'react-konva'
 import Konva from 'konva'
 import useImage from 'use-image'
 
@@ -49,18 +49,17 @@ export default function CharToken({
 }: CharTokenProps) {
   const shapeRef = useRef<Konva.Image>(null)
   const trRef = useRef<Konva.Transformer>(null)
-  const groupRef = useRef<Konva.Group>(null)
 
-  // Estados para posição em tempo real
-  const [currentX, setCurrentX] = useState(x)
-  const [currentY, setCurrentY] = useState(y)
+  // Estados para posição da barra de vida
+  const [barX, setBarX] = useState(x)
+  const [barY, setBarY] = useState(y)
 
-  const grid = 68 // Corrigido para usar o grid correto
+  const grid = 75 // Grid aumentado para melhor espaçamento
 
-  // Atualiza posição quando as props mudam
+  // Atualiza posição da barra quando props mudam
   useEffect(() => {
-    setCurrentX(x)
-    setCurrentY(y)
+    setBarX(x)
+    setBarY(y)
   }, [x, y])
 
   async function handleDragStart(e: Konva.KonvaEventObject<DragEvent>) {
@@ -74,10 +73,10 @@ export default function CharToken({
     })
   }
 
-  // Atualiza posição em tempo real durante o drag
+  // Atualiza posição da barra durante o drag
   function handleDragMove(e: Konva.KonvaEventObject<DragEvent>) {
-    setCurrentX(e.target.x())
-    setCurrentY(e.target.y())
+    setBarX(e.target.x())
+    setBarY(e.target.y())
   }
 
   async function handleDragEnd(e: Konva.KonvaEventObject<DragEvent>) {
@@ -87,34 +86,34 @@ export default function CharToken({
     // Verifica se a posição está ocupada (se a função foi fornecida)
     if (isPositionOccupied && isPositionOccupied(newX, newY, id)) {
       // Se estiver ocupada, volta para a posição original
-      setCurrentX(x)
-      setCurrentY(y)
-      if (shapeRef.current) {
-        shapeRef.current.to({
-          duration: 0.3,
-          easing: Konva.Easings.ElasticEaseOut,
-          scaleX: 1,
-          scaleY: 1,
-          shadowOffsetX: 5,
-          shadowOffsetY: 5,
-        })
-      }
-      return
-    }
-
-    // Se a posição estiver livre, move para a nova posição
-    setCurrentX(newX)
-    setCurrentY(newY)
-    if (shapeRef.current) {
-      shapeRef.current.to({
-        duration: 0.7,
+      setBarX(x)
+      setBarY(y)
+      e.target.to({
+        duration: 0.3,
         easing: Konva.Easings.ElasticEaseOut,
         scaleX: 1,
         scaleY: 1,
         shadowOffsetX: 5,
         shadowOffsetY: 5,
+        x: x, // Posição original
+        y: y, // Posição original
       })
+      return
     }
+
+    // Se a posição estiver livre, move para a nova posição
+    setBarX(newX)
+    setBarY(newY)
+    e.target.to({
+      duration: 0.7,
+      easing: Konva.Easings.ElasticEaseOut,
+      scaleX: 1,
+      scaleY: 1,
+      shadowOffsetX: 5,
+      shadowOffsetY: 5,
+      x: newX,
+      y: newY,
+    })
 
     const tokenData = {
       id: Number(e.target.id()) || e.target.id(),
@@ -153,20 +152,13 @@ export default function CharToken({
   const [tokenImg] = useImage(image)
 
   return (
-    <Group
-      ref={groupRef}
-      x={currentX}
-      y={currentY}
-      draggable={draggable}
-      onDragStart={handleDragStart}
-      onDragMove={handleDragMove}
-      onDragEnd={handleDragEnd}
-    >
+    <>
       {/* Token principal */}
       <Image
+        draggable={draggable}
         id={id.toString()}
-        x={0} // Relativo ao grupo
-        y={0} // Relativo ao grupo
+        x={x}
+        y={y}
         image={tokenImg}
         width={width}
         height={height}
@@ -180,14 +172,17 @@ export default function CharToken({
         shadowBlur={10}
         innerRadius={20}
         outerRadius={40}
+        onDragStart={handleDragStart}
+        onDragMove={handleDragMove}
+        onDragEnd={handleDragEnd}
         opacity={opacity}
       />
 
-      {/* Barra de vida - sempre sincronizada */}
+      {/* Barra de vida - posição sincronizada */}
       {character && character.health > 0 && (
         <HealthBar
-          x={0} // Relativo ao grupo
-          y={0} // Relativo ao grupo
+          x={barX}
+          y={barY}
           width={width}
           currentHealth={character.health_now}
           maxHealth={character.health}
@@ -197,6 +192,6 @@ export default function CharToken({
 
       {/* Transformer */}
       {isSelected && <Transformer ref={trRef} />}
-    </Group>
+    </>
   )
 }

@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect } from 'react'
@@ -11,6 +10,7 @@ import { Table } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 
 import api from '../../services/api'
+import { socket, connect } from '../../services/socket'
 
 // import SelectCharacter from '~/components/SelectCharacter'
 import * as Styles from './styles'
@@ -69,10 +69,10 @@ export default function GmTools() {
   // const profile = useSelector(state => state.user.profile)
 
   const [characterHealth, setCharacterHealth] = useState<{
-    [characterId: number]: number
+    [characterId: number]: number | string
   }>({})
   const [monsterHealth, setMonsterHealth] = useState<{
-    [monsterId: number]: number
+    [monsterId: number]: number | string
   }>({})
   const [list, setList] = useState<Character[]>([])
   const [monsters, setMonsters] = useState<Monster[]>([])
@@ -110,7 +110,56 @@ export default function GmTools() {
 
   useEffect(() => {
     loadChar()
-  }, []) // eslint-disable-line
+    connect()
+
+    // Listener para atualizações de vida de personagens
+    const handleCharacterHealthUpdate = (data: {
+      characterId: number
+      health: number
+      health_now: number
+      change: number
+      name: string
+    }) => {
+      // Atualizar o estado local dos personagens
+      setList(prevList =>
+        prevList.map(char =>
+          char.id === data.characterId
+            ? { ...char, health_now: data.health_now }
+            : char
+        )
+      )
+    }
+
+    // Listener para atualizações de vida de monstros
+    const handleMonsterHealthUpdate = (data: {
+      monsterId: number
+      health: number
+      health_now: number
+      change: number
+      name: string
+    }) => {
+      console.log('📡 Recebida atualização de vida do monstro:', data)
+
+      // Atualizar o estado local dos monstros
+      setMonsters(prevMonsters =>
+        prevMonsters.map(monster =>
+          monster.id === data.monsterId
+            ? { ...monster, health_now: data.health_now }
+            : monster
+        )
+      )
+    }
+
+    // Registrar os listeners
+    socket.on('character.health.updated', handleCharacterHealthUpdate)
+    socket.on('monster.health.updated', handleMonsterHealthUpdate)
+
+    // Cleanup
+    return () => {
+      socket.off('character.health.updated', handleCharacterHealthUpdate)
+      socket.off('monster.health.updated', handleMonsterHealthUpdate)
+    }
+  }, [])
 
   async function handleInitiative(monsterId: number) {
     const monster = await monsters.filter(
@@ -222,7 +271,6 @@ export default function GmTools() {
       return Math.floor(Math.random() * Number(monsterDice)) + 1
     }
 
-    // eslint-disable-next-line
     for (let i = 0; i < monsterMulti; i++) {
       result += random()
     }
@@ -268,7 +316,6 @@ export default function GmTools() {
       return Math.floor(Math.random() * Number(monsterDice)) + 1
     }
 
-    // eslint-disable-next-line
     for (let i = 0; i < monsterMulti; i++) {
       result += random()
     }
@@ -294,7 +341,11 @@ export default function GmTools() {
 
   async function handleCharacterHealth(characterId: number) {
     try {
-      const health = characterHealth[characterId] || 0
+      const healthValue = characterHealth[characterId]
+      const health =
+        typeof healthValue === 'string'
+          ? Number(healthValue) || 0
+          : healthValue || 0
       await api.put(
         '/healthnow',
         { newHealth: health },
@@ -308,11 +359,10 @@ export default function GmTools() {
       // Limpar o valor do personagem específico
       setCharacterHealth(prev => ({
         ...prev,
-        [characterId]: 0,
+        [characterId]: '',
       }))
 
-      // Recarregar os dados para atualizar a interface
-      loadChar()
+      // Os dados serão atualizados automaticamente via WebSocket
     } catch (error) {
       console.error('Erro ao atualizar saúde do personagem:', error)
     }
@@ -320,7 +370,11 @@ export default function GmTools() {
 
   async function handleMonsterHealth(monsterId: number) {
     try {
-      const health = monsterHealth[monsterId] || 0
+      const healthValue = monsterHealth[monsterId]
+      const health =
+        typeof healthValue === 'string'
+          ? Number(healthValue) || 0
+          : healthValue || 0
       await api.put(
         '/monsterhealthnow',
         { newHealth: health },
@@ -334,11 +388,10 @@ export default function GmTools() {
       // Limpar o valor do monstro específico
       setMonsterHealth(prev => ({
         ...prev,
-        [monsterId]: 0,
+        [monsterId]: '',
       }))
 
-      // Recarregar os dados para atualizar a interface
-      await loadChar()
+      // Os dados serão atualizados automaticamente via WebSocket
     } catch (error) {
       console.error('Erro ao atualizar saúde do monstro:', error)
     }
@@ -348,12 +401,20 @@ export default function GmTools() {
     characterId: number,
     e: ChangeEvent<HTMLInputElement>
   ) => {
-    const value = Number(e.target.value)
-    if (!isNaN(value)) {
+    const value = e.target.value
+    if (value === '') {
       setCharacterHealth(prev => ({
         ...prev,
-        [characterId]: value,
+        [characterId]: '',
       }))
+    } else {
+      const numValue = Number(value)
+      if (!isNaN(numValue)) {
+        setCharacterHealth(prev => ({
+          ...prev,
+          [characterId]: numValue,
+        }))
+      }
     }
   }
 
@@ -361,12 +422,20 @@ export default function GmTools() {
     monsterId: number,
     e: ChangeEvent<HTMLInputElement>
   ) => {
-    const value = Number(e.target.value)
-    if (!isNaN(value)) {
+    const value = e.target.value
+    if (value === '') {
       setMonsterHealth(prev => ({
         ...prev,
-        [monsterId]: value,
+        [monsterId]: '',
       }))
+    } else {
+      const numValue = Number(value)
+      if (!isNaN(numValue)) {
+        setMonsterHealth(prev => ({
+          ...prev,
+          [monsterId]: numValue,
+        }))
+      }
     }
   }
 
@@ -439,11 +508,15 @@ export default function GmTools() {
     {
       title: 'Dano/Cura',
       dataIndex: 'pv',
+      width: 120,
       render: (_, item) => (
         <input
-          value={characterHealth[item.id] || 0}
+          value={characterHealth[item.id] || ''}
           onChange={e => handleCharacterHealthChange(item.id, e)}
+          onFocus={e => e.target.select()}
           type="number"
+          placeholder="0"
+          style={{ width: '80px' }}
         />
       ),
     },
@@ -601,11 +674,15 @@ export default function GmTools() {
     {
       title: 'Dano/Cura',
       dataIndex: 'pv',
+      width: 120,
       render: (_, item) => (
         <input
-          value={monsterHealth[item.id] || 0}
+          value={monsterHealth[item.id] || ''}
           onChange={e => handleMonsterHealthChange(item.id, e)}
+          onFocus={e => e.target.select()}
           type="number"
+          placeholder="0"
+          style={{ width: '80px' }}
         />
       ),
     },

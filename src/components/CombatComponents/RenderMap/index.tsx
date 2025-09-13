@@ -111,12 +111,40 @@ export default function RenderMap({
       }
     }
 
+    // Listener para atualizações de vida de personagens
+    const handleCharacterHealthUpdate = (data: {
+      characterId: number
+      health: number
+      health_now: number
+      change: number
+      name: string
+    }) => {
+      // Atualizar os tokens que representam esse personagem
+      if (setTokens) {
+        setTokens(prevTokens =>
+          prevTokens.map(token =>
+            token.character_id === data.characterId && token.character
+              ? {
+                  ...token,
+                  character: {
+                    ...token.character,
+                    health_now: data.health_now,
+                  },
+                }
+              : token
+          )
+        )
+      }
+    }
+
     socket.on('map.message', handleMapMessage)
+    socket.on('character.health.updated', handleCharacterHealthUpdate)
 
     return () => {
       socket.off('map.message', handleMapMessage)
+      socket.off('character.health.updated', handleCharacterHealthUpdate)
     }
-  }, [])
+  }, [setTokens])
 
   useEffect(() => {
     getMap()

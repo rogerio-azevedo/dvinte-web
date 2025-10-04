@@ -37,7 +37,7 @@ const HealthBar: React.FC<HealthBarProps> = ({
   const healthText = `${currentHealth}/${maxHealth}`
 
   return (
-    <Group>
+    <Group listening={false}>
       {/* Fundo da barra (cinza escuro) */}
       <Rect
         x={x}
@@ -48,6 +48,7 @@ const HealthBar: React.FC<HealthBarProps> = ({
         cornerRadius={3}
         stroke="#1f2937"
         strokeWidth={1}
+        listening={false}
       />
 
       {/* Barra de vida atual */}
@@ -58,6 +59,7 @@ const HealthBar: React.FC<HealthBarProps> = ({
         height={barHeight - 4}
         fill={healthColor}
         cornerRadius={2}
+        listening={false}
       />
 
       {/* Sombra do texto (para melhor contraste) */}
@@ -73,6 +75,7 @@ const HealthBar: React.FC<HealthBarProps> = ({
         fill="#000000"
         align="center"
         verticalAlign="middle"
+        listening={false}
       />
 
       {/* Texto principal */}
@@ -88,6 +91,7 @@ const HealthBar: React.FC<HealthBarProps> = ({
         fill="#ffffff"
         align="center"
         verticalAlign="middle"
+        listening={false}
       />
 
       {/* Borda externa */}
@@ -100,6 +104,7 @@ const HealthBar: React.FC<HealthBarProps> = ({
         strokeWidth={1}
         cornerRadius={3}
         fill="transparent"
+        listening={false}
       />
     </Group>
   )

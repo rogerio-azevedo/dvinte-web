@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Image, Transformer } from 'react-konva'
+import { Group, Image, Transformer } from 'react-konva'
 import Konva from 'konva'
 import useImage from 'use-image'
 
@@ -47,19 +47,22 @@ export default function CharToken({
   isPositionOccupied,
   character,
 }: CharTokenProps) {
-  const shapeRef = useRef<Konva.Image>(null)
+  const groupRef = useRef<Konva.Group>(null)
   const trRef = useRef<Konva.Transformer>(null)
 
-  // Estados para posição da barra de vida
-  const [barX, setBarX] = useState(x)
-  const [barY, setBarY] = useState(y)
+  // Estado para posição da barra durante o drag
+  const [dragBarX, setDragBarX] = useState<number | null>(null)
+  const [dragBarY, setDragBarY] = useState<number | null>(null)
 
-  const grid = 75 // Grid aumentado para melhor espaçamento
+  const grid = 75
 
-  // Atualiza posição da barra quando props mudam
+  // Reseta posição temporária quando as props x/y mudam (atualização do socket)
   useEffect(() => {
-    setBarX(x)
-    setBarY(y)
+    if (dragBarX !== null || dragBarY !== null) {
+      setDragBarX(null)
+      setDragBarY(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [x, y])
 
   async function handleDragStart(e: Konva.KonvaEventObject<DragEvent>) {
@@ -68,26 +71,53 @@ export default function CharToken({
         x: 15,
         y: 15,
       },
-      scaleX: 1.1,
-      scaleY: 1.1,
+      scaleX: 1.05,
+      scaleY: 1.05,
     })
   }
 
-  // Atualiza posição da barra durante o drag
   function handleDragMove(e: Konva.KonvaEventObject<DragEvent>) {
-    setBarX(e.target.x())
-    setBarY(e.target.y())
+    const offsetX = width / 2
+    const offsetY = height / 2
+
+    // Posição do Group durante o drag
+    const groupX = e.target.x()
+    const groupY = e.target.y()
+
+    // Converte para coordenadas do banco (canto superior esquerdo)
+    const dbX = groupX - offsetX
+    const dbY = groupY - offsetY
+
+    // Atualiza posição temporária da barra
+    setDragBarX(dbX)
+    setDragBarY(dbY)
   }
 
   async function handleDragEnd(e: Konva.KonvaEventObject<DragEvent>) {
-    const newX = Math.round(e.target.x() / grid) * grid
-    const newY = Math.round(e.target.y() / grid) * grid
+    const offsetX = width / 2
+    const offsetY = height / 2
 
-    // Verifica se a posição está ocupada (se a função foi fornecida)
-    if (isPositionOccupied && isPositionOccupied(newX, newY, id)) {
+    // Posição ajustada do Group no canvas
+    const groupX = e.target.x()
+    const groupY = e.target.y()
+
+    // Converte de volta para coordenadas do banco (remove o offset)
+    const dbX = groupX - offsetX
+    const dbY = groupY - offsetY
+
+    // Aplica snap to grid nas coordenadas do banco
+    const snappedDbX = Math.round(dbX / grid) * grid
+    const snappedDbY = Math.round(dbY / grid) * grid
+
+    // Converte de volta para posição do Group (adiciona o offset)
+    const snappedGroupX = snappedDbX + offsetX
+    const snappedGroupY = snappedDbY + offsetY
+
+    // Verifica se a posição está ocupada (usando coordenadas do banco)
+    if (isPositionOccupied && isPositionOccupied(snappedDbX, snappedDbY, id)) {
       // Se estiver ocupada, volta para a posição original
-      setBarX(x)
-      setBarY(y)
+      const originalAdjustedX = x + offsetX
+      const originalAdjustedY = y + offsetY
       e.target.to({
         duration: 0.3,
         easing: Konva.Easings.ElasticEaseOut,
@@ -95,15 +125,20 @@ export default function CharToken({
         scaleY: 1,
         shadowOffsetX: 5,
         shadowOffsetY: 5,
-        x: x, // Posição original
-        y: y, // Posição original
+        x: originalAdjustedX,
+        y: originalAdjustedY,
       })
+      // Reseta posição temporária imediatamente (não houve mudança)
+      setDragBarX(null)
+      setDragBarY(null)
       return
     }
 
+    // Atualiza a barra para a posição final snapped
+    setDragBarX(snappedDbX)
+    setDragBarY(snappedDbY)
+
     // Se a posição estiver livre, move para a nova posição
-    setBarX(newX)
-    setBarY(newY)
     e.target.to({
       duration: 0.7,
       easing: Konva.Easings.ElasticEaseOut,
@@ -111,14 +146,17 @@ export default function CharToken({
       scaleY: 1,
       shadowOffsetX: 5,
       shadowOffsetY: 5,
-      x: newX,
-      y: newY,
+      x: snappedGroupX,
+      y: snappedGroupY,
     })
 
+    // NÃO reseta aqui - deixa o useEffect resetar quando x/y forem atualizados pelo socket
+
+    // Salva coordenadas do banco (sem offset)
     const tokenData = {
       id: Number(e.target.id()) || e.target.id(),
-      x: newX,
-      y: newY,
+      x: snappedDbX,
+      y: snappedDbY,
     }
 
     try {
@@ -129,20 +167,36 @@ export default function CharToken({
   }
 
   useEffect(() => {
-    if (isSelected && trRef.current && shapeRef.current) {
-      trRef.current.nodes([shapeRef.current])
+    if (isSelected && trRef.current && groupRef.current) {
+      trRef.current.nodes([groupRef.current])
       trRef.current.getLayer()?.batchDraw()
     }
   }, [isSelected])
 
   async function handleTransform(e: Konva.KonvaEventObject<Event>) {
+    const node = e.target
+    const scaleX = node.scaleX()
+    const scaleY = node.scaleY()
+
+    // Calcula novo width e height
+    const newWidth = width * scaleX
+    const newHeight = height * scaleY
+
+    // Calcula offset baseado nas novas dimensões
+    const offsetX = newWidth / 2
+    const offsetY = newHeight / 2
+
+    // Converte de volta para coordenadas do banco (remove o offset)
+    const dbX = node.x() - offsetX
+    const dbY = node.y() - offsetY
+
     const tokenData = {
-      id: Number(e.target.id()) || e.target.id(),
-      x: e.target.x(),
-      y: e.target.y(),
-      width: e.target.width() * e.target.scaleX(),
-      height: e.target.height() * e.target.scaleY(),
-      rotation: e.target.rotation(),
+      id: Number(node.id()) || node.id(),
+      x: dbX,
+      y: dbY,
+      width: newWidth,
+      height: newHeight,
+      rotation: node.rotation(),
     }
 
     // Salva no banco (o backend já emite via Socket.IO)
@@ -151,35 +205,51 @@ export default function CharToken({
 
   const [tokenImg] = useImage(image)
 
+  // Calcula offset para rotação no centro
+  const offsetX = width / 2
+  const offsetY = height / 2
+
+  // Centro do token no canvas (onde o Group será posicionado)
+  const tokenCenterX = x + offsetX
+  const tokenCenterY = y + offsetY
+
+  // Posição da barra: usa posição temporária durante drag, senão usa props
+  const barX = dragBarX !== null ? dragBarX : x
+  const barY = dragBarY !== null ? dragBarY : y
+
   return (
     <>
-      {/* Token principal */}
-      <Image
-        draggable={draggable}
+      {/* Token - Group permite rotação no centro, hitbox exata do token */}
+      <Group
         id={id.toString()}
-        x={x}
-        y={y}
-        image={tokenImg}
-        width={width}
-        height={height}
-        scaleX={1}
+        x={tokenCenterX}
+        y={tokenCenterY}
+        offsetX={offsetX}
+        offsetY={offsetY}
         rotation={rotation}
-        shadowOpacity={0.6}
+        draggable={draggable}
         onClick={onSelect}
         onTap={onSelect}
-        ref={shapeRef}
-        onTransformEnd={handleTransform}
-        shadowBlur={10}
-        innerRadius={20}
-        outerRadius={40}
         onDragStart={handleDragStart}
         onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
-        opacity={opacity}
-      />
+        onTransformEnd={handleTransform}
+        ref={groupRef}
+      >
+        <Image
+          image={tokenImg}
+          width={width}
+          height={height}
+          shadowOpacity={0.6}
+          shadowBlur={10}
+          shadowOffsetX={5}
+          shadowOffsetY={5}
+          opacity={opacity}
+        />
+      </Group>
 
-      {/* Barra de vida - posição sincronizada */}
-      {character && character.health > 0 && (
+      {/* Barra de vida - FORA do Group, sempre horizontal e acima do token */}
+      {character && character.health > 0 && opacity > 0.1 && (
         <HealthBar
           x={barX}
           y={barY}

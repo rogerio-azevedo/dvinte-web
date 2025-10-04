@@ -22,6 +22,7 @@ export interface Token {
     level: number
     health: number
     health_now: number
+    user_id: number
   }
 }
 

@@ -31,11 +31,11 @@ export default function RenderMap({
   const [isDrawing, setIsDrawing] = useState<boolean>(false)
   const [selectedId, selectShape] = useState<number | null>(null)
   const [mapData, setMapData] = useState<MapData>({} as MapData)
-  const [myToken, setMyToken] = useState<number>(0)
   const [overlappingTokens, setOverlappingTokens] = useState<number[]>([])
 
   // dispatch migrado para menuActions
   const is_gm = user?.is_gm
+  const userId = user?.id
   const grid = 75
   const gridWidth =
     mapData?.width > mapData?.height ? mapData?.width : mapData?.height
@@ -149,13 +149,6 @@ export default function RenderMap({
   useEffect(() => {
     getMap()
     connect()
-
-    async function getcharToken() {
-      const response = await api.get(`combats/${user?.id}`)
-      setMyToken(response.data.Cod)
-    }
-
-    getcharToken()
   }, [user?.id])
 
   function handleMouseDown(e: any) {
@@ -410,52 +403,57 @@ export default function RenderMap({
               if (a.id === selectedId) return 1
               if (b.id === selectedId) return -1
               // Tokens do jogador atual ficam por cima dos outros
-              if (a.character_id === myToken && b.character_id !== myToken)
-                return 1
-              if (b.character_id === myToken && a.character_id !== myToken)
-                return -1
+              const aIsOwned = a.character?.user_id === userId
+              const bIsOwned = b.character?.user_id === userId
+              if (aIsOwned && !bIsOwned) return 1
+              if (bIsOwned && !aIsOwned) return -1
               // Por último, ordena por ID (mais recente por cima)
               return b.id - a.id
             })
-            .map(item => (
-              <CharToken
-                key={item.id}
-                id={item.id}
-                x={item.x}
-                y={item.y}
-                isSelected={
-                  myToken === item.character_id && !allowDrag
-                    ? item.id === selectedId
-                    : is_gm && !allowDrag && item.id === selectedId
-                }
-                onSelect={() => {
-                  // Usa o sistema de clique que atravessa tokens sobrepostos
-                  selectNextOverlappingToken(item.id)
-                }}
-                image={item.image}
-                width={item.width}
-                height={item.height}
-                rotation={item.rotation || 0}
-                draggable={
-                  myToken === item.character_id && !allowDrag
-                    ? true
-                    : is_gm && !allowDrag
-                    ? true
-                    : false
-                }
-                opacity={
-                  item.enabled
-                    ? overlappingTokens.includes(item.id)
-                      ? 0.7 // Tokens sobrepostos ficam um pouco transparentes
-                      : 1
-                    : item.enabled === false && is_gm
-                    ? 0.6
-                    : 0
-                }
-                isPositionOccupied={isPositionOccupied}
-                character={item.character}
-              />
-            ))}
+            .map(item => {
+              // Verifica se o token pertence ao jogador atual
+              const isOwnedByPlayer = item.character?.user_id === userId
+
+              return (
+                <CharToken
+                  key={item.id}
+                  id={item.id}
+                  x={item.x}
+                  y={item.y}
+                  isSelected={
+                    isOwnedByPlayer && !allowDrag
+                      ? item.id === selectedId
+                      : is_gm && !allowDrag && item.id === selectedId
+                  }
+                  onSelect={() => {
+                    // Usa o sistema de clique que atravessa tokens sobrepostos
+                    selectNextOverlappingToken(item.id)
+                  }}
+                  image={item.image}
+                  width={item.width}
+                  height={item.height}
+                  rotation={item.rotation || 0}
+                  draggable={
+                    isOwnedByPlayer && !allowDrag
+                      ? true
+                      : is_gm && !allowDrag
+                      ? true
+                      : false
+                  }
+                  opacity={
+                    item.enabled
+                      ? overlappingTokens.includes(item.id)
+                        ? 0.7 // Tokens sobrepostos ficam um pouco transparentes
+                        : 1
+                      : item.enabled === false && is_gm
+                      ? 0.6
+                      : 0
+                  }
+                  isPositionOccupied={isPositionOccupied}
+                  character={item.character}
+                />
+              )
+            })}
         </Layer>
 
         {mapData?.portrait && (

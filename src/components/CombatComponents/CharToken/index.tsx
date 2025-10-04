@@ -29,6 +29,7 @@ interface CharTokenProps {
     level: number
     health: number
     health_now: number
+    user_id: number
   }
 }
 

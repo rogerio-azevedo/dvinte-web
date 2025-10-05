@@ -20,6 +20,10 @@ const RenderWorldMap: React.FC = () => {
   const [stageScale, setStageScale] = useState(1)
   const [stageX, setStageX] = useState(0)
   const [stageY, setStageY] = useState(0)
+  const [mapDimensions, setMapDimensions] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  })
 
   const getMap = async (): Promise<void> => {
     try {
@@ -72,6 +76,26 @@ const RenderWorldMap: React.FC = () => {
 
   const [map] = useImage(mapData?.world || '')
 
+  // Calcular dimensões do mapa quando a imagem carregar
+  useEffect(() => {
+    if (map) {
+      const imgWidth = map.width
+      const imgHeight = map.height
+      const screenWidth = window.innerWidth
+      const screenHeight = window.innerHeight
+
+      // Calcular escala para preencher a tela mantendo proporção
+      const scaleX = screenWidth / imgWidth
+      const scaleY = screenHeight / imgHeight
+      const scale = Math.max(scaleX, scaleY) // Usar o maior para preencher toda a tela
+
+      setMapDimensions({
+        width: imgWidth * scale,
+        height: imgHeight * scale,
+      })
+    }
+  }, [map])
+
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <Stage
@@ -94,10 +118,8 @@ const RenderWorldMap: React.FC = () => {
           <Image
             image={map}
             opacity={1}
-            width={4000}
-            height={4000}
-            // width={window.innerWidth}
-            // height={window.innerHeight}
+            width={mapDimensions.width}
+            height={mapDimensions.height}
           />
         </Layer>
       </Stage>

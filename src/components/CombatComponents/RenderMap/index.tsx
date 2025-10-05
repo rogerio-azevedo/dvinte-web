@@ -450,6 +450,7 @@ export default function RenderMap({
                       : 0
                   }
                   isPositionOccupied={isPositionOccupied}
+                  label={item.label}
                   character={item.character}
                 />
               )

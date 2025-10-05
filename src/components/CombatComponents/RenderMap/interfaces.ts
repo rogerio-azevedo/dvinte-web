@@ -16,6 +16,7 @@ export interface Token {
   rotation: number
   enabled: boolean
   character_id: number
+  label?: string | null
   character?: {
     id: number
     name: string

@@ -18,6 +18,7 @@ interface CharTokenProps {
   isSelected: boolean | undefined
   draggable: boolean
   opacity: number
+  label?: string | null
   isPositionOccupied?: (
     x: number,
     y: number,
@@ -45,6 +46,7 @@ export default function CharToken({
   isSelected,
   draggable,
   opacity,
+  label,
   isPositionOccupied,
   character,
 }: CharTokenProps) {
@@ -249,14 +251,15 @@ export default function CharToken({
         />
       </Group>
 
-      {/* Barra de vida - FORA do Group, sempre horizontal e acima do token */}
-      {character && character.health > 0 && opacity > 0.1 && (
+      {/* Barra de vida ou Label - FORA do Group, sempre horizontal e acima do token */}
+      {opacity > 0.1 && (character || label) && (
         <HealthBar
           x={barX}
           y={barY}
           width={width}
-          currentHealth={character.health_now}
-          maxHealth={character.health}
+          currentHealth={character?.health_now}
+          maxHealth={character?.health}
+          label={label}
           visible={true}
         />
       )}

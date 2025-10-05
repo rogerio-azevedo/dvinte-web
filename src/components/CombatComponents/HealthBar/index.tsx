@@ -5,8 +5,9 @@ interface HealthBarProps {
   x: number
   y: number
   width: number
-  currentHealth: number
-  maxHealth: number
+  currentHealth?: number
+  maxHealth?: number
+  label?: string | null
   visible?: boolean
 }
 
@@ -16,15 +17,26 @@ const HealthBar: React.FC<HealthBarProps> = ({
   width,
   currentHealth,
   maxHealth,
+  label,
   visible = true,
 }) => {
-  if (!visible || maxHealth <= 0) {
+  if (!visible) {
     return null
   }
 
-  const barHeight = 18 // Aumentado ainda mais para melhor legibilidade
-  const barY = y - barHeight - 6 // Posiciona a barra acima do token
-  const healthPercentage = Math.max(0, Math.min(1, currentHealth / maxHealth))
+  // Se tem label mas não tem character, mostra só o label (sem barra de HP)
+  const showOnlyLabel = label && !maxHealth
+
+  // Se não tem nem label nem maxHealth, não mostra nada
+  if (!showOnlyLabel && (!maxHealth || maxHealth <= 0)) {
+    return null
+  }
+
+  const barHeight = 18
+  const barY = y - barHeight - 6
+  const healthPercentage = maxHealth
+    ? Math.max(0, Math.min(1, (currentHealth || 0) / maxHealth))
+    : 0
 
   // Cores baseadas na porcentagem de vida
   const getHealthColor = (percentage: number): string => {
@@ -34,7 +46,16 @@ const HealthBar: React.FC<HealthBarProps> = ({
   }
 
   const healthColor = getHealthColor(healthPercentage)
-  const healthText = `${currentHealth}/${maxHealth}`
+
+  // Determina o texto a ser exibido
+  let displayText = ''
+  if (showOnlyLabel) {
+    // Apenas label (monstro/NPC sem HP)
+    displayText = label || ''
+  } else {
+    // Apenas HP (para personagens)
+    displayText = `${currentHealth}/${maxHealth}`
+  }
 
   return (
     <Group listening={false}>
@@ -44,23 +65,25 @@ const HealthBar: React.FC<HealthBarProps> = ({
         y={barY}
         width={width}
         height={barHeight}
-        fill="#374151"
+        fill={showOnlyLabel ? '#6b7280' : '#374151'}
         cornerRadius={3}
         stroke="#1f2937"
         strokeWidth={1}
         listening={false}
       />
 
-      {/* Barra de vida atual */}
-      <Rect
-        x={x + 2}
-        y={barY + 2}
-        width={Math.max(0, (width - 4) * healthPercentage)}
-        height={barHeight - 4}
-        fill={healthColor}
-        cornerRadius={2}
-        listening={false}
-      />
+      {/* Barra de vida atual - só renderiza se não for apenas label */}
+      {!showOnlyLabel && (
+        <Rect
+          x={x + 2}
+          y={barY + 2}
+          width={Math.max(0, (width - 4) * healthPercentage)}
+          height={barHeight - 4}
+          fill={healthColor}
+          cornerRadius={2}
+          listening={false}
+        />
+      )}
 
       {/* Sombra do texto (para melhor contraste) */}
       <Text
@@ -68,7 +91,7 @@ const HealthBar: React.FC<HealthBarProps> = ({
         y={barY + 2}
         width={width}
         height={barHeight - 2}
-        text={healthText}
+        text={displayText}
         fontSize={12}
         fontFamily="Arial, sans-serif"
         fontStyle="bold"
@@ -84,7 +107,7 @@ const HealthBar: React.FC<HealthBarProps> = ({
         y={barY + 1}
         width={width}
         height={barHeight - 2}
-        text={healthText}
+        text={displayText}
         fontSize={12}
         fontFamily="Arial, sans-serif"
         fontStyle="bold"

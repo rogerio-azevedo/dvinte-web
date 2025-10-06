@@ -79,19 +79,9 @@ const RenderWorldMap: React.FC = () => {
   // Calcular dimensões do mapa quando a imagem carregar
   useEffect(() => {
     if (map) {
-      const imgWidth = map.width
-      const imgHeight = map.height
-      const screenWidth = window.innerWidth
-      const screenHeight = window.innerHeight
-
-      // Calcular escala para preencher a tela mantendo proporção
-      const scaleX = screenWidth / imgWidth
-      const scaleY = screenHeight / imgHeight
-      const scale = Math.max(scaleX, scaleY) // Usar o maior para preencher toda a tela
-
       setMapDimensions({
-        width: imgWidth * scale,
-        height: imgHeight * scale,
+        width: 1600,
+        height: 900,
       })
     }
   }, [map])

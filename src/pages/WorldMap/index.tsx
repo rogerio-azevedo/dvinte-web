@@ -1,15 +1,13 @@
 import React from 'react'
 import RenderWorldMap from '../../components/CombatComponents/RenderWorldMap'
 
-import { Container, MapContainer } from './styles'
-
 const WorldMap: React.FC = () => {
   return (
-    <Container>
-      <MapContainer>
+    <div className="h-[calc(100vh-64px)] overflow-hidden">
+      <div className="w-full h-full">
         <RenderWorldMap />
-      </MapContainer>
-    </Container>
+      </div>
+    </div>
   )
 }
 

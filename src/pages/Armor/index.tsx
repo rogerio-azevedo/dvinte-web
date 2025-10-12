@@ -106,7 +106,9 @@ export default function Armor() {
         // Atualizar armadura existente
         const response = await api.put(`/armors/${editingId}`, data)
         setList(prevList =>
-          prevList.map(item => (item.id === editingId ? response.data : item))
+          prevList.map(item =>
+            Number(item.id) === editingId ? response.data : item
+          )
         )
         toast.success('Armadura atualizada com sucesso!')
       } else {

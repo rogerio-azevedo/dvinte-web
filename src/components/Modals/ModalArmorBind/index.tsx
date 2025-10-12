@@ -66,8 +66,11 @@ const ModalArmorBind: React.FC<ModalArmorBindProps> = ({ armor }) => {
 
       toast.success('Armadura vinculada com sucesso!')
       handleCloseModal()
-    } catch {
-      toast.error('Erro ao vincular armadura ao personagem')
+    } catch (error) {
+      const errorMessage =
+        (error as { response?: { data?: { error?: string } } })?.response?.data
+          ?.error || 'Erro ao vincular armadura ao personagem'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }

@@ -96,7 +96,7 @@ export default function Equipment() {
           id: String(response.data.id),
         }
         const newList = list.map(item =>
-          item.id === editingId ? updatedEquipment : item
+          Number(item.id) === editingId ? updatedEquipment : item
         )
         setList(newList)
         toast.success('Equipamento atualizado com sucesso!')

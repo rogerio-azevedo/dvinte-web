@@ -117,4 +117,7 @@ export interface Resistance {
   ConModTemp?: number
   DexModTemp?: number
   WisModTemp?: number
+  fortitudeBonus?: number
+  reflexBonus?: number
+  willBonus?: number
 }

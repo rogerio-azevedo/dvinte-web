@@ -100,7 +100,9 @@ export default function Weapon() {
         // Atualizar arma existente
         const response = await api.put(`/weapons/${editingId}`, data)
         setList(prevList =>
-          prevList.map(item => (item.id === editingId ? response.data : item))
+          prevList.map(item =>
+            Number(item.id) === editingId ? response.data : item
+          )
         )
         toast.success('Arma atualizada com sucesso!')
       } else {

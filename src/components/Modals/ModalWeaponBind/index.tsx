@@ -78,8 +78,11 @@ const ModalWeaponBind: React.FC<ModalWeaponBindProps> = ({ weapon }) => {
 
       toast.success('Arma vinculada com sucesso!')
       handleCloseModal()
-    } catch {
-      toast.error('Erro ao vincular arma ao personagem')
+    } catch (error) {
+      const errorMessage =
+        (error as { response?: { data?: { error?: string } } })?.response?.data
+          ?.error || 'Erro ao vincular arma ao personagem'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }

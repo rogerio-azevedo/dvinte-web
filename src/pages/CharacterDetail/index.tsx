@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router'
 import api from '../../services/api'
+import { toast } from 'react-toastify'
+import { Button } from 'antd'
+import { FaSync } from 'react-icons/fa'
 
 import CharClass from '../../components/CharClass'
 import CharArmor from '../../components/CharArmor'
@@ -10,6 +13,7 @@ import CharWeapon from '../../components/CharWeapon'
 import CharEquipment from '../../components/CharEquipment'
 import CharCa from '../../components/CharCa'
 import CharResist from '../../components/CharResist'
+import { calculateEquipmentBonuses } from '../../util/calculateEquipmentBonuses'
 
 import type {
   Character,
@@ -40,6 +44,9 @@ export default function CharacterDetail() {
       const str = data.StrModTemp || data.StrMod
       const dex = data.DexModTemp || data.DexMod
 
+      // Calcular bônus dos equipamentos
+      const equipmentBonuses = calculateEquipmentBonuses(data.Equipment || [])
+
       setStrMod(str)
       setDexMod(dex)
       setChar(data)
@@ -57,11 +64,26 @@ export default function CharacterDetail() {
         ConModTemp: data.ConModTemp,
         DexModTemp: data.DexModTemp,
         WisModTemp: data.WisModTemp,
+        // Adicionar bônus dos equipamentos
+        fortitudeBonus: equipmentBonuses.fortitude,
+        reflexBonus: equipmentBonuses.reflex,
+        willBonus: equipmentBonuses.will,
       })
     } catch (error) {
       console.error('Erro ao carregar personagem:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function recalculateAttributes() {
+    try {
+      await api.post(`attributes-temp/${id}/recalculate`)
+      toast.success('Atributos recalculados com sucesso!')
+      await loadChar() // Recarregar dados
+    } catch (error) {
+      console.error('Erro ao recalcular atributos:', error)
+      toast.error('Erro ao recalcular atributos')
     }
   }
 
@@ -207,9 +229,20 @@ export default function CharacterDetail() {
       <div className="flex justify-around items-center mt-4 w-[1240px]">
         {/* Atributos */}
         <fieldset className="border border-[#6f0000] rounded flex flex-col items-center p-2 shadow-md min-w-[340px] h-[360px]">
-          <legend className="text-[18px] font-semibold ml-5 w-[100px] text-[#6f0000] bg-white shadow px-2 py-1 rounded">
-            Atributos
-          </legend>
+          <div className="flex items-center justify-between w-full mb-2">
+            <legend className="text-[18px] font-semibold ml-5 w-[100px] text-[#6f0000] bg-white shadow px-2 py-1 rounded">
+              Atributos
+            </legend>
+            <Button
+              icon={<FaSync />}
+              size="small"
+              onClick={recalculateAttributes}
+              className="mr-2"
+              title="Recalcular atributos temporários baseado nos equipamentos"
+            >
+              Recalcular
+            </Button>
+          </div>
           <div className="grid grid-cols-5 gap-x-3 gap-y-2 mt-2 ">
             {/* Primeira linha: labels */}
             <div></div>

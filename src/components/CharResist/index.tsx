@@ -21,6 +21,9 @@ interface Resistance {
   DexModTemp?: number
   WisMod: number
   WisModTemp?: number
+  fortitudeBonus?: number
+  reflexBonus?: number
+  willBonus?: number
 }
 
 interface CharResistProps {
@@ -39,9 +42,14 @@ const CharResist: React.FC<CharResistProps> = ({ resist }) => {
   const wisMod =
     (resist.WisModTemp ?? 0) > 0 ? resist.WisModTemp! : resist.WisMod
 
-  const forTotal = Number(fortitude) + Number(forMod)
-  const refTotal = Number(reflex) + Number(refMod)
-  const wisTotal = Number(will) + Number(wisMod)
+  // Aplicar bônus dos equipamentos
+  const fortitudeBonus = resist.fortitudeBonus || 0
+  const reflexBonus = resist.reflexBonus || 0
+  const willBonus = resist.willBonus || 0
+
+  const forTotal = Number(fortitude) + Number(forMod) + fortitudeBonus
+  const refTotal = Number(reflex) + Number(refMod) + reflexBonus
+  const wisTotal = Number(will) + Number(wisMod) + willBonus
 
   return (
     <Container>
@@ -69,7 +77,7 @@ const CharResist: React.FC<CharResistProps> = ({ resist }) => {
           </div>
           <div>
             <label htmlFor="inputResist">outros</label>
-            <InputResit readOnly defaultValue="" />
+            <InputResit readOnly defaultValue={fortitudeBonus || ''} />
           </div>
           <div>
             <label htmlFor="inputResist">temp</label>
@@ -97,7 +105,7 @@ const CharResist: React.FC<CharResistProps> = ({ resist }) => {
             <InputResit readOnly defaultValue="" />
           </div>
           <div>
-            <InputResit readOnly defaultValue="" />
+            <InputResit readOnly defaultValue={reflexBonus || ''} />
           </div>
           <div>
             <InputResit readOnly defaultValue="" />
@@ -124,7 +132,7 @@ const CharResist: React.FC<CharResistProps> = ({ resist }) => {
             <InputResit readOnly defaultValue="" />
           </div>
           <div>
-            <InputResit readOnly defaultValue="" />
+            <InputResit readOnly defaultValue={willBonus || ''} />
           </div>
           <div>
             <InputResit readOnly defaultValue="" />

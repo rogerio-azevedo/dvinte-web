@@ -66,8 +66,11 @@ const ModalEquipmentBind: React.FC<ModalEquipmentBindProps> = ({
 
       toast.success('Equipamento vinculado com sucesso!')
       handleCloseModal()
-    } catch {
-      toast.error('Erro ao vincular equipamento ao personagem')
+    } catch (error) {
+      const errorMessage =
+        (error as { response?: { data?: { error?: string } } })?.response?.data
+          ?.error || 'Erro ao vincular equipamento ao personagem'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }

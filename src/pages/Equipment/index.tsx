@@ -6,8 +6,9 @@ import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { Select, Modal } from 'antd'
 
-import { FaPlusCircle } from 'react-icons/fa'
+import { FaPlusCircle, FaEdit, FaTrash } from 'react-icons/fa'
 import ModalEquipmentBind from '../../components/Modals/ModalEquipmentBind'
+import { toast } from 'react-toastify'
 
 import api from '../../services/api'
 
@@ -55,10 +56,12 @@ interface Equipment {
 const { Option } = Select
 
 export default function Equipment() {
-  const { handleSubmit, register, reset, control } = useForm<FormData>()
+  const { handleSubmit, register, reset, control, setValue } =
+    useForm<FormData>()
   const [loading, setLoading] = useState(false)
   const [list, setList] = useState<Equipment[]>([])
   const [modalOpen, setModalOpen] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
 
   useEffect(() => {
     async function loadData() {
@@ -84,17 +87,37 @@ export default function Equipment() {
   const onSubmit = async (data: FormData) => {
     try {
       setLoading(true)
-      const response = await api.post('equipments', data)
-      const newEquipment = {
-        ...response.data,
-        id: String(response.data.id),
+
+      if (editingId) {
+        // Edição
+        const response = await api.put(`equipments/${editingId}`, data)
+        const updatedEquipment = {
+          ...response.data,
+          id: String(response.data.id),
+        }
+        const newList = list.map(item =>
+          item.id === editingId ? updatedEquipment : item
+        )
+        setList(newList)
+        toast.success('Equipamento atualizado com sucesso!')
+      } else {
+        // Criação
+        const response = await api.post('equipments', data)
+        const newEquipment = {
+          ...response.data,
+          id: String(response.data.id),
+        }
+        const newList = [newEquipment, ...list]
+        setList(newList)
+        toast.success('Equipamento criado com sucesso!')
       }
-      const newList = [newEquipment, ...list]
-      setList(newList)
+
       reset()
       setModalOpen(false)
+      setEditingId(null)
     } catch (error) {
       console.error('Erro ao salvar equipamento:', error)
+      toast.error('Erro ao salvar equipamento')
     } finally {
       setLoading(false)
     }
@@ -102,11 +125,61 @@ export default function Equipment() {
 
   function handleOpenModal() {
     reset()
+    setEditingId(null)
     setModalOpen(true)
+  }
+
+  function handleEdit(item: Equipment) {
+    // Preenche o formulário com os dados do equipamento
+    setValue('name', item.name)
+    setValue('str_temp', String(item.str_temp))
+    setValue('dex_temp', String(item.dex_temp))
+    setValue('con_temp', String(item.con_temp))
+    setValue('int_temp', String(item.int_temp))
+    setValue('wis_temp', String(item.wis_temp))
+    setValue('cha_temp', String(item.cha_temp))
+    setValue('attack_bonus', String(item.attack_bonus))
+    setValue('damage_bonus', String(item.damage_bonus))
+    setValue('armor_class_bonus', String(item.armor_class_bonus))
+    setValue('fortitude_bonus', String(item.fortitude_bonus))
+    setValue('reflex_bonus', String(item.reflex_bonus))
+    setValue('will_bonus', String(item.will_bonus))
+    setValue('price', String(item.price))
+    setValue('weight', String(item.weight))
+    setValue('book', item.book)
+    setValue('version', item.version)
+
+    setEditingId(Number(item.id))
+    setModalOpen(true)
+  }
+
+  function handleDelete(item: Equipment) {
+    Modal.confirm({
+      title: 'Confirmar Exclusão',
+      content: `Tem certeza que deseja excluir "${item.name}"?`,
+      okText: 'Sim, Excluir',
+      cancelText: 'Cancelar',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          setLoading(true)
+          await api.delete(`equipments/${item.id}`)
+          const newList = list.filter(i => i.id !== item.id)
+          setList(newList)
+          toast.success('Equipamento excluído com sucesso!')
+        } catch (error) {
+          console.error('Erro ao excluir equipamento:', error)
+          toast.error('Erro ao excluir equipamento')
+        } finally {
+          setLoading(false)
+        }
+      },
+    })
   }
 
   function handleCloseModal() {
     setModalOpen(false)
+    setEditingId(null)
     reset()
   }
 
@@ -152,25 +225,25 @@ export default function Equipment() {
             <table className="w-full min-w-[1200px]">
               <thead className="bg-gray-100 text-xs uppercase text-gray-700">
                 <tr>
-                  <th className="px-4 py-3 text-left">Cod</th>
-                  <th className="px-4 py-3 text-left">Nome</th>
-                  <th className="px-3 py-3 text-center">FOR</th>
-                  <th className="px-3 py-3 text-center">DES</th>
-                  <th className="px-3 py-3 text-center">CON</th>
-                  <th className="px-3 py-3 text-center">INT</th>
-                  <th className="px-3 py-3 text-center">SAB</th>
-                  <th className="px-3 py-3 text-center">CAR</th>
-                  <th className="px-3 py-3 text-center">Acerto</th>
-                  <th className="px-3 py-3 text-center">Dano</th>
-                  <th className="px-3 py-3 text-center">CA</th>
-                  <th className="px-3 py-3 text-center">Fort</th>
-                  <th className="px-3 py-3 text-center">Refl</th>
-                  <th className="px-3 py-3 text-center">Vont</th>
-                  <th className="px-4 py-3 text-right">Preço</th>
-                  <th className="px-4 py-3 text-right">Peso</th>
-                  <th className="px-4 py-3 text-left">Livro</th>
-                  <th className="px-4 py-3 text-center">Versão</th>
-                  <th className="px-4 py-3 text-center">Ações</th>
+                  <th className="px-3 py-2 text-left">Cod</th>
+                  <th className="px-3 py-2 text-left">Nome</th>
+                  <th className="px-2 py-2 text-center">FOR</th>
+                  <th className="px-2 py-2 text-center">DES</th>
+                  <th className="px-2 py-2 text-center">CON</th>
+                  <th className="px-2 py-2 text-center">INT</th>
+                  <th className="px-2 py-2 text-center">SAB</th>
+                  <th className="px-2 py-2 text-center">CAR</th>
+                  <th className="px-2 py-2 text-center">Acerto</th>
+                  <th className="px-2 py-2 text-center">Dano</th>
+                  <th className="px-2 py-2 text-center">CA</th>
+                  <th className="px-2 py-2 text-center">Fort</th>
+                  <th className="px-2 py-2 text-center">Refl</th>
+                  <th className="px-2 py-2 text-center">Vont</th>
+                  <th className="px-3 py-2 text-right">Preço</th>
+                  <th className="px-3 py-2 text-right">Peso</th>
+                  <th className="px-3 py-2 text-left">Livro</th>
+                  <th className="px-3 py-2 text-center">Versão</th>
+                  <th className="px-3 py-2 text-center">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -179,18 +252,18 @@ export default function Equipment() {
                     key={item.id}
                     className="transition-colors hover:bg-gray-50"
                   >
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-3 py-2 text-sm text-gray-600">
                       {item.id}
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="font-medium text-gray-900">
+                    <td className="px-3 py-2">
+                      <span className="text-sm font-medium text-gray-900">
                         {item.name}
                       </span>
                     </td>
                     {/* Atributos */}
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
-                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                        className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
                           item.str_temp > 0
                             ? 'bg-green-100 text-green-700'
                             : item.str_temp < 0
@@ -202,9 +275,9 @@ export default function Equipment() {
                         {item.str_temp}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
-                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                        className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
                           item.dex_temp > 0
                             ? 'bg-green-100 text-green-700'
                             : item.dex_temp < 0
@@ -216,9 +289,9 @@ export default function Equipment() {
                         {item.dex_temp}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
-                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                        className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
                           item.con_temp > 0
                             ? 'bg-green-100 text-green-700'
                             : item.con_temp < 0
@@ -230,9 +303,9 @@ export default function Equipment() {
                         {item.con_temp}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
-                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                        className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
                           item.int_temp > 0
                             ? 'bg-green-100 text-green-700'
                             : item.int_temp < 0
@@ -244,9 +317,9 @@ export default function Equipment() {
                         {item.int_temp}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
-                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                        className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
                           item.wis_temp > 0
                             ? 'bg-green-100 text-green-700'
                             : item.wis_temp < 0
@@ -258,9 +331,9 @@ export default function Equipment() {
                         {item.wis_temp}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
-                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                        className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
                           item.cha_temp > 0
                             ? 'bg-green-100 text-green-700'
                             : item.cha_temp < 0
@@ -273,9 +346,9 @@ export default function Equipment() {
                       </span>
                     </td>
                     {/* Combate */}
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
-                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                        className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
                           item.attack_bonus > 0
                             ? 'bg-blue-100 text-blue-700'
                             : 'bg-gray-100 text-gray-500'
@@ -285,9 +358,9 @@ export default function Equipment() {
                         {item.attack_bonus}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
-                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                        className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
                           item.damage_bonus > 0
                             ? 'bg-red-100 text-red-700'
                             : 'bg-gray-100 text-gray-500'
@@ -297,9 +370,9 @@ export default function Equipment() {
                         {item.damage_bonus}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
-                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                        className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
                           item.armor_class_bonus > 0
                             ? 'bg-purple-100 text-purple-700'
                             : 'bg-gray-100 text-gray-500'
@@ -310,9 +383,9 @@ export default function Equipment() {
                       </span>
                     </td>
                     {/* Resistências */}
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
-                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                        className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
                           item.fortitude_bonus > 0
                             ? 'bg-yellow-100 text-yellow-700'
                             : 'bg-gray-100 text-gray-500'
@@ -322,9 +395,9 @@ export default function Equipment() {
                         {item.fortitude_bonus}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
-                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                        className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
                           item.reflex_bonus > 0
                             ? 'bg-yellow-100 text-yellow-700'
                             : 'bg-gray-100 text-gray-500'
@@ -334,9 +407,9 @@ export default function Equipment() {
                         {item.reflex_bonus}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center">
+                    <td className="px-2 py-2 text-center">
                       <span
-                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                        className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
                           item.will_bonus > 0
                             ? 'bg-yellow-100 text-yellow-700'
                             : 'bg-gray-100 text-gray-500'
@@ -347,22 +420,38 @@ export default function Equipment() {
                       </span>
                     </td>
                     {/* Info */}
-                    <td className="px-4 py-3 text-right text-sm text-gray-600">
+                    <td className="px-3 py-2 text-right text-xs text-gray-600">
                       {item.price} PO
                     </td>
-                    <td className="px-4 py-3 text-right text-sm text-gray-600">
+                    <td className="px-3 py-2 text-right text-xs text-gray-600">
                       {item.weight} kg
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-3 py-2 text-xs text-gray-600">
                       {item.book}
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="rounded-full bg-gray-200 px-2 py-1 text-xs font-medium text-gray-700">
+                    <td className="px-3 py-2 text-center">
+                      <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700">
                         {item.version}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <ModalEquipmentBind equipment={item} />
+                    <td className="px-3 py-2">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="rounded p-2 text-blue-600 transition-colors hover:bg-blue-50"
+                          title="Editar"
+                        >
+                          <FaEdit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item)}
+                          className="rounded p-2 text-red-600 transition-colors hover:bg-red-50"
+                          title="Excluir"
+                        >
+                          <FaTrash size={16} />
+                        </button>
+                        <ModalEquipmentBind equipment={item} />
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -376,7 +465,7 @@ export default function Equipment() {
       <Modal
         title={
           <div className="text-xl font-bold text-[#8e0e00]">
-            Novo Equipamento
+            {editingId ? 'Editar Equipamento' : 'Novo Equipamento'}
           </div>
         }
         open={modalOpen}
@@ -410,8 +499,8 @@ export default function Equipment() {
                 </label>
                 <input
                   type="number"
-                  {...register('str_temp', { required: true })}
-                  defaultValue="0"
+                  {...register('str_temp')}
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -421,8 +510,8 @@ export default function Equipment() {
                 </label>
                 <input
                   type="number"
-                  {...register('dex_temp', { required: true })}
-                  defaultValue="0"
+                  {...register('dex_temp')}
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -432,8 +521,8 @@ export default function Equipment() {
                 </label>
                 <input
                   type="number"
-                  {...register('con_temp', { required: true })}
-                  defaultValue="0"
+                  {...register('con_temp')}
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -443,8 +532,8 @@ export default function Equipment() {
                 </label>
                 <input
                   type="number"
-                  {...register('int_temp', { required: true })}
-                  defaultValue="0"
+                  {...register('int_temp')}
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -454,8 +543,8 @@ export default function Equipment() {
                 </label>
                 <input
                   type="number"
-                  {...register('wis_temp', { required: true })}
-                  defaultValue="0"
+                  {...register('wis_temp')}
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -465,8 +554,8 @@ export default function Equipment() {
                 </label>
                 <input
                   type="number"
-                  {...register('cha_temp', { required: true })}
-                  defaultValue="0"
+                  {...register('cha_temp')}
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -486,7 +575,7 @@ export default function Equipment() {
                 <input
                   type="number"
                   {...register('attack_bonus')}
-                  defaultValue="0"
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -497,7 +586,7 @@ export default function Equipment() {
                 <input
                   type="number"
                   {...register('damage_bonus')}
-                  defaultValue="0"
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -508,7 +597,7 @@ export default function Equipment() {
                 <input
                   type="number"
                   {...register('armor_class_bonus')}
-                  defaultValue="0"
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -519,7 +608,7 @@ export default function Equipment() {
                 <input
                   type="number"
                   {...register('fortitude_bonus')}
-                  defaultValue="0"
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -530,7 +619,7 @@ export default function Equipment() {
                 <input
                   type="number"
                   {...register('reflex_bonus')}
-                  defaultValue="0"
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -541,7 +630,7 @@ export default function Equipment() {
                 <input
                   type="number"
                   {...register('will_bonus')}
-                  defaultValue="0"
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -560,8 +649,8 @@ export default function Equipment() {
                 </label>
                 <input
                   type="number"
-                  {...register('price', { required: true })}
-                  defaultValue="0"
+                  {...register('price')}
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -572,8 +661,8 @@ export default function Equipment() {
                 <input
                   type="number"
                   step="0.01"
-                  {...register('weight', { required: true })}
-                  defaultValue="0"
+                  {...register('weight')}
+                  placeholder="0"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
                 />
               </div>
@@ -631,7 +720,11 @@ export default function Equipment() {
               className="rounded-lg bg-[#8e0e00] px-6 py-2 font-semibold text-white shadow-md transition-all hover:bg-[#6f0000] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
               disabled={loading}
             >
-              {loading ? 'Salvando...' : 'Salvar Equipamento'}
+              {loading
+                ? 'Salvando...'
+                : editingId
+                ? 'Atualizar Equipamento'
+                : 'Salvar Equipamento'}
             </button>
           </div>
         </form>

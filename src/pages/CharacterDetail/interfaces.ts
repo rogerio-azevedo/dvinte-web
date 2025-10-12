@@ -38,6 +38,12 @@ export interface Equipment {
   int_temp: number
   wis_temp: number
   cha_temp: number
+  attack_bonus: number
+  damage_bonus: number
+  armor_class_bonus: number
+  fortitude_bonus: number
+  reflex_bonus: number
+  will_bonus: number
   weight: number
   price: number
   CharacterEquipment?: {

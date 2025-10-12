@@ -4,16 +4,12 @@
 
 import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import { Select } from 'antd'
-import type { ColumnsType } from 'antd/es/table'
+import { Select, Modal } from 'antd'
 
-import Button from '../../components/Button'
-import { FaPlusCircle } from 'react-icons/fa'
+import { FaPlusCircle, FaTimes } from 'react-icons/fa'
 import ModalEquipmentBind from '../../components/Modals/ModalEquipmentBind'
 
 import api from '../../services/api'
-
-import * as Styles from './styles'
 
 interface FormData {
   name: string
@@ -23,6 +19,12 @@ interface FormData {
   int_temp: string
   wis_temp: string
   cha_temp: string
+  attack_bonus: string
+  damage_bonus: string
+  armor_class_bonus: string
+  fortitude_bonus: string
+  reflex_bonus: string
+  will_bonus: string
   price: string
   weight: string
   book: string
@@ -32,12 +34,18 @@ interface FormData {
 interface Equipment {
   id: number
   name: string
-  str_temp: string
-  dex_temp: string
-  con_temp: string
-  int_temp: string
-  wis_temp: string
-  cha_temp: string
+  str_temp: number
+  dex_temp: number
+  con_temp: number
+  int_temp: number
+  wis_temp: number
+  cha_temp: number
+  attack_bonus: number
+  damage_bonus: number
+  armor_class_bonus: number
+  fortitude_bonus: number
+  reflex_bonus: number
+  will_bonus: number
   price: number
   weight: number
   book: string
@@ -50,7 +58,7 @@ export default function Equipment() {
   const { handleSubmit, register, reset, control } = useForm<FormData>()
   const [loading, setLoading] = useState(false)
   const [list, setList] = useState<Equipment[]>([])
-  const [showform, setShowform] = useState('hide')
+  const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
     async function loadData() {
@@ -84,7 +92,7 @@ export default function Equipment() {
       const newList = [newEquipment, ...list]
       setList(newList)
       reset()
-      setShowform('hide')
+      setModalOpen(false)
     } catch (error) {
       console.error('Erro ao salvar equipamento:', error)
     } finally {
@@ -92,203 +100,542 @@ export default function Equipment() {
     }
   }
 
-  const columns: ColumnsType<Equipment> = [
-    {
-      title: 'Cod',
-      dataIndex: 'id',
-      key: 'id',
-    },
-    {
-      title: 'Nome',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Força',
-      dataIndex: 'str_temp',
-      key: 'str_temp',
-    },
-    {
-      title: 'Destreza',
-      dataIndex: 'dex_temp',
-      key: 'dex_temp',
-    },
-    {
-      title: 'Constituição',
-      dataIndex: 'con_temp',
-      key: 'con_temp',
-    },
-    {
-      title: 'Inteligência',
-      dataIndex: 'int_temp',
-      key: 'int_temp',
-    },
-    {
-      title: 'Sabedoria',
-      dataIndex: 'wis_temp',
-      key: 'wis_temp',
-    },
-    {
-      title: 'Carisma',
-      dataIndex: 'cha_temp',
-      key: 'cha_temp',
-    },
-    {
-      title: 'Preço',
-      dataIndex: 'price',
-      render: (_, item) => `${item.price} PO`,
-    },
+  function handleOpenModal() {
+    reset()
+    setModalOpen(true)
+  }
 
-    {
-      title: 'Peso',
-      dataIndex: 'weight',
-      render: (_, item) => `${item.weight} kg`,
-    },
-
-    {
-      title: 'Livro',
-      dataIndex: 'book',
-      render: (_, item) => `${item.book}`,
-    },
-    {
-      title: 'Versão',
-      dataIndex: 'version',
-      render: (_, item) => `${item.version}`,
-    },
-    {
-      title: 'Comprar',
-      dataIndex: 'buy',
-      render: (_, item) => <ModalEquipmentBind equipment={item} />,
-    },
-  ]
-
-  function handleAdd() {
-    setShowform('show')
+  function handleCloseModal() {
+    setModalOpen(false)
+    reset()
   }
 
   return (
-    <Styles.Container>
-      <Styles.ContentContainer>
-        <Styles.HeaderContainer>
-          <h1>Cadastro de Equipamentos</h1>
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-800">
+          Cadastro de Equipamentos
+        </h1>
+        <button
+          onClick={handleOpenModal}
+          className="flex items-center gap-2 rounded-lg bg-[#8e0e00] px-6 py-3 text-white shadow-lg transition-all hover:bg-[#6f0000] hover:shadow-xl"
+        >
+          <FaPlusCircle size={20} />
+          <span className="font-semibold">Novo Equipamento</span>
+        </button>
+      </div>
 
-          <FaPlusCircle
-            color="#8e0e00"
-            size={40}
-            onClick={handleAdd}
-            cursor={'pointer'}
-          />
-        </Styles.HeaderContainer>
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-[#8e0e00]"></div>
+        </div>
+      )}
 
-        <Styles.FormContainer showform={showform}>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Styles.InputContainer>
-              <div>
-                <label htmlFor="name">Nome</label>
-                <Styles.InputLarge {...register('name', { required: true })} />
-              </div>
-              <div>
-                <label htmlFor="str_temp">Força</label>
-                <Styles.InputShort
-                  {...register('str_temp', { required: true })}
-                />
-              </div>
-              <div>
-                <label htmlFor="dex_temp">Destreza</label>
-                <Styles.InputShort
-                  {...register('dex_temp', { required: true })}
-                />
-              </div>
-              <div>
-                <label htmlFor="con_temp">Constituição</label>
-                <Styles.InputShort
-                  {...register('con_temp', { required: true })}
-                />
-              </div>
+      {/* Lista vazia */}
+      {!loading && list.length === 0 && (
+        <div className="rounded-lg bg-white p-12 text-center shadow-md">
+          <p className="text-xl text-gray-500">
+            Nenhum equipamento cadastrado ainda.
+          </p>
+          <p className="mt-2 text-sm text-gray-400">
+            Clique em "Novo Equipamento" para começar.
+          </p>
+        </div>
+      )}
 
-              <div>
-                <label htmlFor="int_temp">Inteligência</label>
-                <Styles.InputShort
-                  {...register('int_temp', { required: true })}
-                />
-              </div>
-              <div>
-                <label htmlFor="wis_temp">Sabedoria</label>
-                <Styles.InputShort
-                  {...register('wis_temp', { required: true })}
-                />
-              </div>
-              <div>
-                <label htmlFor="cha_temp">Carisma</label>
-                <Styles.InputShort
-                  {...register('cha_temp', { required: true })}
-                />
-              </div>
-            </Styles.InputContainer>
-
-            <Styles.InputContainer>
-              <div>
-                <label htmlFor="price">Preço</label>
-                <Styles.InputMed {...register('price', { required: true })} />
-              </div>
-              <div>
-                <label htmlFor="weight">Peso</label>
-                <Styles.InputMed {...register('weight', { required: true })} />
-              </div>
-              <div>
-                <label htmlFor="book">Livro</label>
-                <Styles.InputLarge {...register('book', { required: true })} />
-              </div>
-              <Styles.SelectContainer>
-                <label htmlFor="version">Versão</label>
-                <section>
-                  <Controller
-                    control={control}
-                    name="version"
-                    defaultValue=""
-                    render={({ field }) => (
-                      <Styles.SelectFormated
-                        {...field}
-                        size={'large'}
-                        showSearch
-                        style={{ width: '100%' }}
-                        placeholder="Escolha a Versão"
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option?.children
-                            .toLowerCase()
-                            .indexOf(input.toLowerCase()) >= 0
-                        }
+      {/* Tabela Customizada */}
+      {!loading && list.length > 0 && (
+        <div className="overflow-hidden rounded-lg bg-white shadow-md">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1200px]">
+              <thead className="bg-gray-100 text-xs uppercase text-gray-700">
+                <tr>
+                  <th className="px-4 py-3 text-left">Cod</th>
+                  <th className="px-4 py-3 text-left">Nome</th>
+                  <th className="px-3 py-3 text-center">FOR</th>
+                  <th className="px-3 py-3 text-center">DES</th>
+                  <th className="px-3 py-3 text-center">CON</th>
+                  <th className="px-3 py-3 text-center">INT</th>
+                  <th className="px-3 py-3 text-center">SAB</th>
+                  <th className="px-3 py-3 text-center">CAR</th>
+                  <th className="px-3 py-3 text-center">Acerto</th>
+                  <th className="px-3 py-3 text-center">Dano</th>
+                  <th className="px-3 py-3 text-center">CA</th>
+                  <th className="px-3 py-3 text-center">Fort</th>
+                  <th className="px-3 py-3 text-center">Refl</th>
+                  <th className="px-3 py-3 text-center">Vont</th>
+                  <th className="px-4 py-3 text-right">Preço</th>
+                  <th className="px-4 py-3 text-right">Peso</th>
+                  <th className="px-4 py-3 text-left">Livro</th>
+                  <th className="px-4 py-3 text-center">Versão</th>
+                  <th className="px-4 py-3 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {list.map(item => (
+                  <tr
+                    key={item.id}
+                    className="transition-colors hover:bg-gray-50"
+                  >
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {item.id}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="font-medium text-gray-900">
+                        {item.name}
+                      </span>
+                    </td>
+                    {/* Atributos */}
+                    <td className="px-3 py-3 text-center">
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          item.str_temp > 0
+                            ? 'bg-green-100 text-green-700'
+                            : item.str_temp < 0
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
                       >
-                        <Option value="V 1.0e">Versão 1.0e</Option>
-                        <Option value="V 2.0e">Versão 2.0e</Option>
-                        <Option value="V 3.0e">Versão 3.0e</Option>
-                        <Option value="V 3.5e">Versão 3.5e</Option>
-                        <Option value="V 4.0e">Versão 4.0e</Option>
-                        <Option value="V 5.0e">Versão 5.0e</Option>
-                      </Styles.SelectFormated>
-                    )}
-                  />
-                </section>
-              </Styles.SelectContainer>
-            </Styles.InputContainer>
+                        {item.str_temp > 0 ? '+' : ''}
+                        {item.str_temp}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          item.dex_temp > 0
+                            ? 'bg-green-100 text-green-700'
+                            : item.dex_temp < 0
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {item.dex_temp > 0 ? '+' : ''}
+                        {item.dex_temp}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          item.con_temp > 0
+                            ? 'bg-green-100 text-green-700'
+                            : item.con_temp < 0
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {item.con_temp > 0 ? '+' : ''}
+                        {item.con_temp}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          item.int_temp > 0
+                            ? 'bg-green-100 text-green-700'
+                            : item.int_temp < 0
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {item.int_temp > 0 ? '+' : ''}
+                        {item.int_temp}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          item.wis_temp > 0
+                            ? 'bg-green-100 text-green-700'
+                            : item.wis_temp < 0
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {item.wis_temp > 0 ? '+' : ''}
+                        {item.wis_temp}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          item.cha_temp > 0
+                            ? 'bg-green-100 text-green-700'
+                            : item.cha_temp < 0
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {item.cha_temp > 0 ? '+' : ''}
+                        {item.cha_temp}
+                      </span>
+                    </td>
+                    {/* Combate */}
+                    <td className="px-3 py-3 text-center">
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          item.attack_bonus > 0
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {item.attack_bonus > 0 ? '+' : ''}
+                        {item.attack_bonus}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          item.damage_bonus > 0
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {item.damage_bonus > 0 ? '+' : ''}
+                        {item.damage_bonus}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          item.armor_class_bonus > 0
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {item.armor_class_bonus > 0 ? '+' : ''}
+                        {item.armor_class_bonus}
+                      </span>
+                    </td>
+                    {/* Resistências */}
+                    <td className="px-3 py-3 text-center">
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          item.fortitude_bonus > 0
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {item.fortitude_bonus > 0 ? '+' : ''}
+                        {item.fortitude_bonus}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          item.reflex_bonus > 0
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {item.reflex_bonus > 0 ? '+' : ''}
+                        {item.reflex_bonus}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <span
+                        className={`rounded px-2 py-1 text-xs font-semibold ${
+                          item.will_bonus > 0
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {item.will_bonus > 0 ? '+' : ''}
+                        {item.will_bonus}
+                      </span>
+                    </td>
+                    {/* Info */}
+                    <td className="px-4 py-3 text-right text-sm text-gray-600">
+                      {item.price} PO
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm text-gray-600">
+                      {item.weight} kg
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {item.book}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="rounded-full bg-gray-200 px-2 py-1 text-xs font-medium text-gray-700">
+                        {item.version}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <ModalEquipmentBind equipment={item} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-            <Styles.InputContainer $loading={loading}>
-              <Button type="submit" TextButton="Gravar" />
-            </Styles.InputContainer>
-          </form>
-          <Styles.TableContainer>
-            <Styles.MyTable
-              rowKey="id"
-              dataSource={list}
-              columns={columns as any}
-              loading={loading}
-              pagination={{ pageSize: 15 }}
-              size="small"
+      {/* Modal */}
+      <Modal
+        title={
+          <div className="text-xl font-bold text-[#8e0e00]">
+            Novo Equipamento
+          </div>
+        }
+        open={modalOpen}
+        onCancel={handleCloseModal}
+        footer={null}
+        width={900}
+        centered
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-6">
+          {/* Nome */}
+          <div className="mb-6">
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Nome do Equipamento *
+            </label>
+            <input
+              {...register('name', { required: true })}
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-2 focus:ring-[#8e0e00] focus:ring-opacity-50"
+              placeholder="Ex: Anel de Proteção +2"
             />
-          </Styles.TableContainer>
-        </Styles.FormContainer>
-      </Styles.ContentContainer>
-    </Styles.Container>
+          </div>
+
+          {/* Atributos */}
+          <div className="mb-6">
+            <h3 className="mb-3 text-lg font-semibold text-gray-700">
+              Bônus de Atributos
+            </h3>
+            <div className="grid grid-cols-6 gap-4">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600">
+                  FOR
+                </label>
+                <input
+                  type="number"
+                  {...register('str_temp', { required: true })}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600">
+                  DES
+                </label>
+                <input
+                  type="number"
+                  {...register('dex_temp', { required: true })}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600">
+                  CON
+                </label>
+                <input
+                  type="number"
+                  {...register('con_temp', { required: true })}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600">
+                  INT
+                </label>
+                <input
+                  type="number"
+                  {...register('int_temp', { required: true })}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600">
+                  SAB
+                </label>
+                <input
+                  type="number"
+                  {...register('wis_temp', { required: true })}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600">
+                  CAR
+                </label>
+                <input
+                  type="number"
+                  {...register('cha_temp', { required: true })}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-center focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Bônus de Combate */}
+          <div className="mb-6">
+            <h3 className="mb-3 text-lg font-semibold text-gray-700">
+              Bônus de Combate e Resistências
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-600">
+                  Acerto
+                </label>
+                <input
+                  type="number"
+                  {...register('attack_bonus')}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-600">
+                  Dano
+                </label>
+                <input
+                  type="number"
+                  {...register('damage_bonus')}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-600">
+                  CA
+                </label>
+                <input
+                  type="number"
+                  {...register('armor_class_bonus')}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-600">
+                  Fortitude
+                </label>
+                <input
+                  type="number"
+                  {...register('fortitude_bonus')}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-600">
+                  Reflexos
+                </label>
+                <input
+                  type="number"
+                  {...register('reflex_bonus')}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-600">
+                  Vontade
+                </label>
+                <input
+                  type="number"
+                  {...register('will_bonus')}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Informações Gerais */}
+          <div className="mb-6">
+            <h3 className="mb-3 text-lg font-semibold text-gray-700">
+              Informações Gerais
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-600">
+                  Preço (PO)
+                </label>
+                <input
+                  type="number"
+                  {...register('price', { required: true })}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-600">
+                  Peso (kg)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  {...register('weight', { required: true })}
+                  defaultValue="0"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-600">
+                  Livro *
+                </label>
+                <input
+                  {...register('book', { required: true })}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#8e0e00] focus:outline-none focus:ring-1 focus:ring-[#8e0e00]"
+                  placeholder="Ex: Livro do Jogador"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-600">
+                  Versão *
+                </label>
+                <Controller
+                  control={control}
+                  name="version"
+                  defaultValue=""
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      size="large"
+                      className="w-full"
+                      placeholder="Escolha a Versão"
+                    >
+                      <Option value="V 1.0e">Versão 1.0e</Option>
+                      <Option value="V 2.0e">Versão 2.0e</Option>
+                      <Option value="V 3.0e">Versão 3.0e</Option>
+                      <Option value="V 3.5e">Versão 3.5e</Option>
+                      <Option value="V 4.0e">Versão 4.0e</Option>
+                      <Option value="V 5.0e">Versão 5.0e</Option>
+                    </Select>
+                  )}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Botões */}
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="rounded-lg border border-gray-300 px-6 py-2 font-medium text-gray-700 transition-all hover:bg-gray-100"
+              disabled={loading}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="rounded-lg bg-[#8e0e00] px-6 py-2 font-semibold text-white shadow-md transition-all hover:bg-[#6f0000] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={loading}
+            >
+              {loading ? 'Salvando...' : 'Salvar Equipamento'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </div>
   )
 }

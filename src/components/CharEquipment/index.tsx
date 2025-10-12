@@ -15,6 +15,12 @@ interface Equipment {
   int_temp: number
   wis_temp: number
   cha_temp: number
+  attack_bonus: number
+  damage_bonus: number
+  armor_class_bonus: number
+  fortitude_bonus: number
+  reflex_bonus: number
+  will_bonus: number
   weight: number
   price: number
   CharacterEquipment?: {
@@ -87,6 +93,30 @@ const CharEquipment: React.FC<CharEquipmentProps> = ({
             <div>
               <label htmlFor="inputEquip">CAR</label>
               <InputShort readOnly defaultValue={item.cha_temp} />
+            </div>
+            <div>
+              <label htmlFor="inputEquip">Acerto</label>
+              <InputShort readOnly defaultValue={item.attack_bonus || 0} />
+            </div>
+            <div>
+              <label htmlFor="inputEquip">Dano</label>
+              <InputShort readOnly defaultValue={item.damage_bonus || 0} />
+            </div>
+            <div>
+              <label htmlFor="inputEquip">CA</label>
+              <InputShort readOnly defaultValue={item.armor_class_bonus || 0} />
+            </div>
+            <div>
+              <label htmlFor="inputEquip">Fort</label>
+              <InputShort readOnly defaultValue={item.fortitude_bonus || 0} />
+            </div>
+            <div>
+              <label htmlFor="inputEquip">Refl</label>
+              <InputShort readOnly defaultValue={item.reflex_bonus || 0} />
+            </div>
+            <div>
+              <label htmlFor="inputEquip">Vont</label>
+              <InputShort readOnly defaultValue={item.will_bonus || 0} />
             </div>
             <div>
               <label htmlFor="inputEquip">Peso</label>

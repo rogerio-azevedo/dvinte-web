@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { Select, Modal } from 'antd'
 
-import { FaPlusCircle, FaTimes } from 'react-icons/fa'
+import { FaPlusCircle } from 'react-icons/fa'
 import ModalEquipmentBind from '../../components/Modals/ModalEquipmentBind'
 
 import api from '../../services/api'

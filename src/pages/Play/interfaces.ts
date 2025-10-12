@@ -24,6 +24,7 @@ export interface Character {
   WisModTemp?: number
   Armor: ArmorItem[]
   Weapon: WeaponItem[]
+  Equipment: EquipmentItem[]
 }
 
 export interface ArmorItem {
@@ -38,6 +39,25 @@ export interface WeaponItem {
   name: string
   damage: string
   critical: string
+}
+
+export interface EquipmentItem {
+  id: number
+  name: string
+  str_temp: number
+  dex_temp: number
+  con_temp: number
+  int_temp: number
+  wis_temp: number
+  cha_temp: number
+  attack_bonus: number
+  damage_bonus: number
+  armor_class_bonus: number
+  fortitude_bonus: number
+  reflex_bonus: number
+  will_bonus: number
+  weight: number
+  price: number
 }
 
 export interface CharStatusData {

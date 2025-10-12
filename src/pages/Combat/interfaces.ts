@@ -41,6 +41,25 @@ export interface Weapon {
   dex_damage: boolean
 }
 
+export interface Equipment {
+  id: number
+  name: string
+  str_temp: number
+  dex_temp: number
+  con_temp: number
+  int_temp: number
+  wis_temp: number
+  cha_temp: number
+  attack_bonus: number
+  damage_bonus: number
+  armor_class_bonus: number
+  fortitude_bonus: number
+  reflex_bonus: number
+  will_bonus: number
+  weight: number
+  price: number
+}
+
 export interface Character {
   id: number
   name: string
@@ -61,6 +80,7 @@ export interface Character {
   WisModTemp?: number
   Armor: Armor[]
   Weapon: Weapon[]
+  Equipment: Equipment[]
 }
 
 export interface Token {

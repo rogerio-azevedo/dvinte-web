@@ -1,25 +1,19 @@
-/* eslint-disable no-console */
-
-import React, { useState, useEffect } from 'react'
-import Modal from 'react-modal'
-import { FaTimes } from 'react-icons/fa'
+import { useState, useEffect } from 'react'
+import { Modal, Select, Switch } from 'antd'
 import { FaRegMoneyBillAlt } from 'react-icons/fa'
-import { useForm, type SubmitHandler } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
-import { Switch } from 'antd'
 
 import api from '../../../services/api'
 
-import SelectCharacter from '../../SelectCharacter'
-
-import * as Styles from './styles'
+const { Option } = Select
 
 interface Character {
   id: number
   name: string
 }
 
-interface ModalWeaponCreateProps {
+interface ModalWeaponBindProps {
   weapon: {
     id: string
     name: string
@@ -27,9 +21,8 @@ interface ModalWeaponCreateProps {
 }
 
 interface FormData {
-  character: string
+  character_id: number
   dex_damage: boolean
-  weapon: string
   price: number
   nickname: string
   hit: number
@@ -40,231 +33,291 @@ interface FormData {
   description: string
 }
 
-const customStyles = {
-  content: {
-    width: '750px',
-    height: '550px',
-    top: '45%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-  },
-}
+const ModalWeaponBind: React.FC<ModalWeaponBindProps> = ({ weapon }) => {
+  const { handleSubmit, register, setValue, watch, reset } = useForm<FormData>()
+  const [modalIsOpen, setModalIsOpen] = useState(false)
+  const [characters, setCharacters] = useState<Character[]>([])
+  const [loading, setLoading] = useState(false)
+  const [dexDamage, setDexDamage] = useState(false)
 
-Modal.setAppElement('#root')
-
-const ModalWeaponBind: React.FC<ModalWeaponCreateProps> = ({ weapon }) => {
-  const { handleSubmit, register, setValue } = useForm<FormData>()
-  const [modalIsOpen, setIsOpen] = useState(false)
-  const [selectedWeapon, setSelectedWeapon] = useState(weapon)
-  const [characters, setCharacters] = useState<
-    { value: string; label: string }[]
-  >([])
-  // const [loadingCharacters, setLoadingCharacters] = useState(false)
+  const selectedCharacter = watch('character_id')
 
   useEffect(() => {
-    register('character')
-    register('dex_damage', { value: false })
-    register('weapon', { value: selectedWeapon?.id })
-  }, [register, selectedWeapon])
+    if (modalIsOpen) {
+      loadCharacters()
+    }
+  }, [modalIsOpen])
 
   async function loadCharacters() {
     try {
-      // setLoadingCharacters(true)
       const response = await api.get('/characters')
-      const charactersData = response.data || []
-
-      const characterOptions = charactersData.map((char: Character) => ({
-        value: char.id.toString(),
-        label: char.name,
-      }))
-
-      setCharacters(characterOptions)
-    } catch (error) {
-      console.error('Error loading characters:', error)
+      setCharacters(response.data || [])
+    } catch {
       toast.error('Erro ao carregar personagens')
-    } finally {
-      // setLoadingCharacters(false)
     }
   }
 
-  const onSubmit: SubmitHandler<FormData> = (data, e) => {
-    async function saveData() {
-      try {
-        const weaponData = {
-          weapon: data.weapon,
-          hit: Number(data.hit || 0),
-          damage: Number(data.damage || 0),
-          element: Number(data.element || 0),
-          crit_mod: Number(data.crit_mod || 0),
-          crit_from_mod: Number(data.crit_from_mod || 0),
-          dex_damage: Boolean(data.dex_damage),
-          price: Number(data.price || 0),
-          nickname: data.nickname || '',
-          description: data.description || '',
-        }
+  const onSubmit = async (data: FormData) => {
+    try {
+      setLoading(true)
 
-        console.log('Sending weapon data:', weaponData)
-        await api.post(`/characters/${data.character}/weapons`, weaponData)
-        e?.target.reset()
-        toast.success('Arma vinculada com sucesso!')
-        setIsOpen(false)
-      } catch (error) {
-        console.error('Error saving weapon:', error)
-        toast.error('Erro ao vincular arma ao personagem')
+      const weaponData = {
+        weapon: weapon.id,
+        hit: Number(data.hit || 0),
+        damage: Number(data.damage || 0),
+        element: Number(data.element || 0),
+        crit_mod: Number(data.crit_mod || 0),
+        crit_from_mod: Number(data.crit_from_mod || 0),
+        dex_damage: dexDamage,
+        price: Number(data.price || 0),
+        nickname: data.nickname || '',
+        description: data.description || '',
       }
+
+      await api.post(`/characters/${data.character_id}/weapons`, weaponData)
+
+      toast.success('Arma vinculada com sucesso!')
+      handleCloseModal()
+    } catch {
+      toast.error('Erro ao vincular arma ao personagem')
+    } finally {
+      setLoading(false)
     }
-    saveData()
   }
 
-  function openModal() {
-    setIsOpen(true)
-    setSelectedWeapon(weapon)
-    loadCharacters()
+  function handleOpenModal() {
+    setModalIsOpen(true)
   }
 
-  function afterOpenModal() {
-    // references are now sync'd and can be accessed.
-  }
-
-  function closeModal() {
-    setIsOpen(false)
+  function handleCloseModal() {
+    setModalIsOpen(false)
+    setDexDamage(false)
+    reset()
   }
 
   return (
-    <Styles.Container>
-      <FaRegMoneyBillAlt
-        size={25}
-        color="#8e0e00"
-        cursor="pointer"
-        onClick={openModal}
-      />
-      <Modal
-        isOpen={modalIsOpen}
-        onAfterOpen={afterOpenModal}
-        onRequestClose={closeModal}
-        style={customStyles}
-        contentLabel="Example Modal"
+    <>
+      <button
+        onClick={handleOpenModal}
+        className="rounded p-2 text-green-700 transition-colors hover:bg-green-50"
+        title="Comprar/Vincular"
       >
-        <Styles.HeaderContainer>
-          <h2>Compra / Vinculação de Arma</h2>
-          <FaTimes
-            onClick={closeModal}
-            color="red"
-            size={20}
-            cursor="pointer"
-          />
-        </Styles.HeaderContainer>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Styles.InputContainer>
+        <FaRegMoneyBillAlt size={20} />
+      </button>
+
+      <Modal
+        title="Compra / Vinculação de Arma"
+        open={modalIsOpen}
+        onCancel={handleCloseModal}
+        footer={null}
+        width={800}
+        destroyOnClose
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-4">
+          {/* Info da Arma */}
+          <div className="mb-4 grid grid-cols-4 gap-4">
             <div>
-              <label htmlFor="weapon">Cod</label>
-              <Styles.WeaponShort readOnly value={selectedWeapon?.id} />
-            </div>
-            <div>
-              <label htmlFor="weapon">Nome</label>
-              <Styles.WeaponLarge
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Código
+              </label>
+              <input
+                type="text"
+                value={weapon.id}
                 readOnly
-                value={selectedWeapon?.name.toUpperCase()}
+                className="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-gray-600"
               />
             </div>
-          </Styles.InputContainer>
+            <div className="col-span-3">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Nome da Arma
+              </label>
+              <input
+                type="text"
+                value={weapon.name.toUpperCase()}
+                readOnly
+                className="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 font-medium text-gray-900"
+              />
+            </div>
+          </div>
 
-          <Styles.InputContainer>
+          {/* Preço e Apelido */}
+          <div className="mb-4 grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="price">Preço</label>
-              <Styles.WeaponMed
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Preço (PO)
+              </label>
+              <input
+                type="number"
                 {...register('price')}
-                type="number"
                 defaultValue={0}
+                className="w-full rounded border border-gray-300 px-3 py-2 focus:border-red-800 focus:outline-none focus:ring-1 focus:ring-red-800"
+                placeholder="0"
               />
             </div>
             <div>
-              <label htmlFor="nickname">Apelido</label>
-              <Styles.WeaponLarge {...register('nickname')} defaultValue="" />
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Apelido
+              </label>
+              <input
+                type="text"
+                {...register('nickname')}
+                className="w-full rounded border border-gray-300 px-3 py-2 focus:border-red-800 focus:outline-none focus:ring-1 focus:ring-red-800"
+                placeholder="Ex: Espada Flamejante"
+              />
             </div>
-          </Styles.InputContainer>
+          </div>
 
-          <Styles.InputContainer>
-            <div>
-              <label htmlFor="hit">Acerto Extra</label>
-              <Styles.WeaponMed
-                {...register('hit')}
-                type="number"
-                defaultValue={0}
-              />
+          {/* Modificadores de Combate */}
+          <div className="mb-4">
+            <h3 className="mb-2 text-sm font-semibold text-gray-800">
+              Modificadores de Combate
+            </h3>
+            <div className="grid grid-cols-4 gap-4">
+              <div>
+                <label className="mb-1 block text-xs text-gray-600">
+                  Acerto Extra
+                </label>
+                <input
+                  type="number"
+                  {...register('hit')}
+                  defaultValue={0}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-red-800 focus:outline-none focus:ring-1 focus:ring-red-800"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-600">
+                  Dano Extra
+                </label>
+                <input
+                  type="number"
+                  {...register('damage')}
+                  defaultValue={0}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-red-800 focus:outline-none focus:ring-1 focus:ring-red-800"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-600">
+                  Elemento (dado)
+                </label>
+                <input
+                  type="number"
+                  {...register('element')}
+                  defaultValue={0}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-red-800 focus:outline-none focus:ring-1 focus:ring-red-800"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-600">
+                  Dex no Dano
+                </label>
+                <div className="flex h-10 items-center">
+                  <Switch
+                    checked={dexDamage}
+                    onChange={checked => {
+                      setDexDamage(checked)
+                      setValue('dex_damage', checked)
+                    }}
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <label htmlFor="damage">Dano Extra</label>
-              <Styles.WeaponMed
-                {...register('damage')}
-                type="number"
-                defaultValue={0}
-              />
-            </div>
+          </div>
 
-            <div>
-              <label htmlFor="element">Elemento (dado)</label>
-              <Styles.WeaponMed
-                {...register('element')}
-                type="number"
-                defaultValue={0}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="dex_damage">Dex (dano)</label>
-              <div style={{ marginTop: '18px' }}>
-                <Switch
-                  defaultChecked={false}
-                  onChange={checked => setValue('dex_damage', checked)}
+          {/* Modificadores de Crítico */}
+          <div className="mb-4">
+            <h3 className="mb-2 text-sm font-semibold text-gray-800">
+              Modificadores de Crítico
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-xs text-gray-600">
+                  Crítico Mínimo (Modificador)
+                </label>
+                <input
+                  type="number"
+                  {...register('crit_from_mod')}
+                  defaultValue={0}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-red-800 focus:outline-none focus:ring-1 focus:ring-red-800"
+                  placeholder="Ex: -2 para 18-20 virar 16-20"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-600">
+                  Multiplicador (Modificador)
+                </label>
+                <input
+                  type="number"
+                  {...register('crit_mod')}
+                  defaultValue={0}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-red-800 focus:outline-none focus:ring-1 focus:ring-red-800"
+                  placeholder="Ex: +1 para x2 virar x3"
                 />
               </div>
             </div>
-          </Styles.InputContainer>
-          <Styles.InputContainer>
-            <div>
-              <label htmlFor="crit_from_mod">Crítico Mínimo</label>
-              <Styles.WeaponMed
-                {...register('crit_from_mod')}
-                type="number"
-                defaultValue={0}
-              />
-            </div>
-            <div>
-              <label htmlFor="crit_mod">Crit Multiplicador</label>
-              <Styles.WeaponMed
-                {...register('crit_mod')}
-                type="number"
-                defaultValue={0}
-              />
-            </div>
-            <div>
-              <label style={{ color: '#fff' }} htmlFor="character">
-                .
-              </label>
-              <SelectCharacter
-                characters={characters}
-                changeCharacter={e => setValue('character', e || '')}
-              />
-            </div>
-          </Styles.InputContainer>
+          </div>
 
-          <Styles.ButtonsContainer>
-            <div>
-              <label htmlFor="description">Observação</label>
-              <Styles.WeaponExtLarge
-                {...register('description')}
-                defaultValue=""
-              />
-            </div>
-            <Styles.Button type="submit">Vincular</Styles.Button>
-          </Styles.ButtonsContainer>
+          {/* Selecionar Personagem */}
+          <div className="mb-4">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Personagem <span className="text-red-500">*</span>
+            </label>
+            <Select
+              size="large"
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Escolha o personagem"
+              optionFilterProp="children"
+              onChange={value => setValue('character_id', value)}
+              filterOption={(input, option) =>
+                String(option?.children)
+                  ?.toLowerCase()
+                  .includes(input.toLowerCase()) ?? false
+              }
+            >
+              {characters.map(char => (
+                <Option key={char.id} value={char.id}>
+                  {char.name}
+                </Option>
+              ))}
+            </Select>
+          </div>
+
+          {/* Observação */}
+          <div className="mb-6">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Observação
+            </label>
+            <textarea
+              {...register('description')}
+              rows={3}
+              className="w-full rounded border border-gray-300 px-3 py-2 focus:border-red-800 focus:outline-none focus:ring-1 focus:ring-red-800"
+              placeholder="Adicione observações sobre esta arma..."
+            />
+          </div>
+
+          {/* Botões */}
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading || !selectedCharacter}
+              className="rounded-lg bg-red-800 px-6 py-2 font-semibold text-white transition-colors hover:bg-red-900 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading ? 'Vinculando...' : 'Vincular'}
+            </button>
+          </div>
         </form>
       </Modal>
-    </Styles.Container>
+    </>
   )
 }
 

@@ -1,17 +1,12 @@
-/* eslint-disable no-console */
-
-import React, { useState, useEffect } from 'react'
-import Modal from 'react-modal'
-import { FaTimes } from 'react-icons/fa'
+import { useState, useEffect } from 'react'
+import { Modal, Select } from 'antd'
 import { FaRegMoneyBillAlt } from 'react-icons/fa'
-import { useForm, type SubmitHandler } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 
 import api from '../../../services/api'
 
-import SelectCharacter from '../../SelectCharacter'
-
-import * as Styles from './styles'
+const { Option } = Select
 
 interface Character {
   id: number
@@ -26,164 +21,171 @@ interface ModalEquipmentBindProps {
 }
 
 interface FormData {
-  character: string
-  equipment: number
+  character_id: number
   description: string
 }
-
-const customStyles = {
-  content: {
-    width: '750px',
-    height: '550px',
-    top: '45%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-  },
-}
-
-Modal.setAppElement('#root')
 
 const ModalEquipmentBind: React.FC<ModalEquipmentBindProps> = ({
   equipment,
 }) => {
-  const { handleSubmit, register, setValue } = useForm<FormData>()
-  const [modalIsOpen, setIsOpen] = useState(false)
-  const [selectedEquipment, setSelectedEquipment] = useState(equipment)
-  const [characters, setCharacters] = useState<
-    { value: string; label: string }[]
-  >([])
-  // const [loadingCharacters, setLoadingCharacters] = useState(false)
+  const { handleSubmit, register, setValue, watch, reset } = useForm<FormData>()
+  const [modalIsOpen, setModalIsOpen] = useState(false)
+  const [characters, setCharacters] = useState<Character[]>([])
+  const [loading, setLoading] = useState(false)
+
+  const selectedCharacter = watch('character_id')
 
   useEffect(() => {
-    register('character')
-    register('equipment', { value: selectedEquipment?.id })
-  }, [register, selectedEquipment])
+    if (modalIsOpen) {
+      loadCharacters()
+    }
+  }, [modalIsOpen])
 
   async function loadCharacters() {
     try {
-      // setLoadingCharacters(true)
       const response = await api.get('/characters')
-      const charactersData = response.data || []
-
-      const characterOptions = charactersData.map((char: Character) => ({
-        value: char.id.toString(),
-        label: char.name,
-      }))
-
-      setCharacters(characterOptions)
-    } catch (error) {
-      console.error('Error loading characters:', error)
+      setCharacters(response.data || [])
+    } catch {
       toast.error('Erro ao carregar personagens')
-    } finally {
-      // setLoadingCharacters(false)
     }
   }
 
-  const onSubmit: SubmitHandler<FormData> = (data, e) => {
-    async function saveData() {
-      try {
-        const equipmentData = {
-          equipment: data.equipment,
-          description: data.description || '',
-        }
+  const onSubmit = async (data: FormData) => {
+    try {
+      setLoading(true)
 
-        console.log('Sending equipment data:', equipmentData)
-        await api.post(
-          `/characters/${data.character}/equipments`,
-          equipmentData
-        )
-        e?.target.reset()
-        toast.success('Equipamento vinculado com sucesso!')
-        setIsOpen(false)
-      } catch (error) {
-        console.error('Error saving equipment:', error)
-        toast.error('Erro ao vincular equipamento ao personagem')
+      const equipmentData = {
+        equipment: equipment.id,
+        description: data.description || '',
       }
+
+      await api.post(
+        `/characters/${data.character_id}/equipments`,
+        equipmentData
+      )
+
+      toast.success('Equipamento vinculado com sucesso!')
+      handleCloseModal()
+    } catch {
+      toast.error('Erro ao vincular equipamento ao personagem')
+    } finally {
+      setLoading(false)
     }
-    saveData()
   }
 
-  function openModal() {
-    setIsOpen(true)
-    setSelectedEquipment(equipment)
-    loadCharacters()
+  function handleOpenModal() {
+    setModalIsOpen(true)
   }
 
-  function afterOpenModal() {
-    // references are now sync'd and can be accessed.
-  }
-
-  function closeModal() {
-    setIsOpen(false)
+  function handleCloseModal() {
+    setModalIsOpen(false)
+    reset()
   }
 
   return (
-    <Styles.Container>
-      <FaRegMoneyBillAlt
-        size={25}
-        color="#8e0e00"
-        cursor="pointer"
-        onClick={openModal}
-      />
-      <Modal
-        isOpen={modalIsOpen}
-        onAfterOpen={afterOpenModal}
-        onRequestClose={closeModal}
-        style={customStyles}
-        contentLabel="Example Modal"
+    <>
+      <button
+        onClick={handleOpenModal}
+        className="rounded p-2 text-green-700 transition-colors hover:bg-green-50"
+        title="Comprar/Vincular"
       >
-        <Styles.HeaderContainer>
-          <h2>Compra / Vinculação de Equipamento</h2>
-          <FaTimes
-            onClick={closeModal}
-            color="red"
-            size={20}
-            cursor="pointer"
-          />
-        </Styles.HeaderContainer>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Styles.InputContainer>
-            <div>
-              <label htmlFor="equipment">Cod</label>
-              <Styles.WeaponShort readOnly value={selectedEquipment?.id} />
-            </div>
-            <div>
-              <label htmlFor="equipment">Nome</label>
-              <Styles.WeaponLarge
-                readOnly
-                value={selectedEquipment?.name.toUpperCase()}
-              />
-            </div>
-          </Styles.InputContainer>
+        <FaRegMoneyBillAlt size={20} />
+      </button>
 
-          <Styles.InputContainer>
+      <Modal
+        title="Compra / Vinculação de Equipamento"
+        open={modalIsOpen}
+        onCancel={handleCloseModal}
+        footer={null}
+        width={700}
+        destroyOnClose
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-4">
+          {/* Info do Equipamento */}
+          <div className="mb-4 grid grid-cols-4 gap-4">
             <div>
-              <label style={{ color: '#fff' }} htmlFor="character">
-                .
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Código
               </label>
-              <SelectCharacter
-                characters={characters}
-                changeCharacter={e => setValue('character', e || '')}
+              <input
+                type="text"
+                value={equipment.id}
+                readOnly
+                className="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-gray-600"
               />
             </div>
-          </Styles.InputContainer>
+            <div className="col-span-3">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Nome do Equipamento
+              </label>
+              <input
+                type="text"
+                value={equipment.name.toUpperCase()}
+                readOnly
+                className="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 font-medium text-gray-900"
+              />
+            </div>
+          </div>
 
-          <Styles.ButtonsContainer>
-            <div>
-              <label htmlFor="description">Observação</label>
-              <Styles.WeaponExtLarge
-                {...register('description')}
-                defaultValue=""
-              />
-            </div>
-            <Styles.Button type="submit">Vincular</Styles.Button>
-          </Styles.ButtonsContainer>
+          {/* Selecionar Personagem */}
+          <div className="mb-4">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Personagem <span className="text-red-500">*</span>
+            </label>
+            <Select
+              size="large"
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Escolha o personagem"
+              optionFilterProp="children"
+              onChange={value => setValue('character_id', value)}
+              filterOption={(input, option) =>
+                String(option?.children)
+                  ?.toLowerCase()
+                  .includes(input.toLowerCase()) ?? false
+              }
+            >
+              {characters.map(char => (
+                <Option key={char.id} value={char.id}>
+                  {char.name}
+                </Option>
+              ))}
+            </Select>
+          </div>
+
+          {/* Observação */}
+          <div className="mb-6">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Observação
+            </label>
+            <textarea
+              {...register('description')}
+              rows={4}
+              className="w-full rounded border border-gray-300 px-3 py-2 focus:border-red-800 focus:outline-none focus:ring-1 focus:ring-red-800"
+              placeholder="Adicione observações sobre este equipamento..."
+            />
+          </div>
+
+          {/* Botões */}
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading || !selectedCharacter}
+              className="rounded-lg bg-red-800 px-6 py-2 font-semibold text-white transition-colors hover:bg-red-900 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading ? 'Vinculando...' : 'Vincular'}
+            </button>
+          </div>
         </form>
       </Modal>
-    </Styles.Container>
+    </>
   )
 }
 

@@ -445,7 +445,7 @@ export default function Equipment() {
                         </button>
                         <button
                           onClick={() => handleDelete(item)}
-                          className="rounded p-2 text-red-600 transition-colors hover:bg-red-50"
+                          className="rounded p-2 text-[#8e0e00] transition-colors hover:bg-red-50"
                           title="Excluir"
                         >
                           <FaTrash size={16} />

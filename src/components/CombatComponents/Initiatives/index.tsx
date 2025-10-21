@@ -47,7 +47,6 @@ interface InitiativesProps {
 
 export default function Initiatives({
   from = 0,
-  profile = { id: 0, name: '' },
   charInit = 0,
 }: InitiativesProps) {
   const { user } = useAuth()

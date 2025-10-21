@@ -15,7 +15,9 @@ interface MapData {
   campaign_id: number
   battle: string
   world: string
+  battle_gm?: string
   portrait?: string
+  portrait_gm?: string
   orientation?: boolean
   width: string
   height: string
@@ -28,7 +30,9 @@ interface MapData {
 interface MapResponse {
   battle?: string
   world?: string
+  battle_gm?: string
   portrait?: string
+  portrait_gm?: string
   orientation?: boolean
   width?: string
   height?: string
@@ -48,7 +52,9 @@ const MapTool: React.FC = () => {
   const { actions: menuActions } = useMenu()
   const [battle, setBattle] = useState<string>('')
   const [world, setWorld] = useState<string>('')
+  const [battle_gm, setBattleGm] = useState<string>('')
   const [portrait, setPortrait] = useState<string>('')
+  const [portrait_gm, setPortraitGm] = useState<string>('')
   const [orientation, setOrientation] = useState<boolean>(false)
   const [width, setWidth] = useState<string>('')
   const [height, setHeight] = useState<string>('')
@@ -74,7 +80,9 @@ const MapTool: React.FC = () => {
         campaign_id: selectedCampaign,
         battle,
         world,
+        battle_gm,
         portrait,
+        portrait_gm,
         orientation,
         width,
         height,
@@ -119,7 +127,9 @@ const MapTool: React.FC = () => {
       if (mapData) {
         setBattle(mapData.battle || '')
         setWorld(mapData.world || '')
+        setBattleGm(mapData.battle_gm || '')
         setPortrait(mapData.portrait || '')
+        setPortraitGm(mapData.portrait_gm || '')
         setOrientation(mapData.orientation || false)
         setWidth(mapData.width?.toString() || '')
         setHeight(mapData.height?.toString() || '')
@@ -175,13 +185,63 @@ const MapTool: React.FC = () => {
     socket.emit('line.message', [])
   }
 
+  async function handleRevealMap(): Promise<void> {
+    try {
+      if (!user?.id) {
+        toast.error('Usuário não identificado')
+        return
+      }
+
+      if (!battle_gm && !portrait_gm) {
+        toast.error('Nenhum mapa GM configurado para revelar')
+        return
+      }
+
+      // Copia os mapas GM para os mapas públicos e desativa gm_layer
+      const mapData: MapData = {
+        campaign_id: selectedCampaign,
+        battle: battle_gm || battle,
+        world,
+        battle_gm,
+        portrait: portrait_gm || portrait,
+        portrait_gm,
+        orientation,
+        width,
+        height,
+        grid,
+        fog,
+        gm_layer: false, // Desativa a camada GM
+        owner: user.id,
+      }
+
+      await api.post('maps', mapData)
+      socket.emit('map.message', mapData)
+
+      // Revela layer de tokens (move todos de GM → public) via socket
+      await api.post('chartokens/reveal-layer')
+
+      // Atualiza estados locais
+      setBattle(battle_gm || battle)
+      setPortrait(portrait_gm || portrait)
+      setGm_layer(false)
+
+      toast.success('Mapa e tokens revelados para os jogadores!')
+    } catch (error) {
+      console.error('Erro ao revelar mapa:', error)
+      toast.error('Erro ao revelar o mapa. Tente novamente.')
+    }
+  }
+
   function handleFormSubmit(e: React.FormEvent): void {
     e.preventDefault()
     handleSave()
   }
 
   return (
-    <div className="flex flex-col gap-4 px-2">
+    <div
+      className="flex flex-col gap-4 px-2 overflow-y-auto"
+      style={{ maxHeight: 'calc(100vh - 100px)' }}
+    >
       <h2>Cadastro de Mapas</h2>
       <form onSubmit={handleFormSubmit}>
         <Styles.InputContainer>
@@ -210,12 +270,37 @@ const MapTool: React.FC = () => {
 
         <Styles.InputContainer>
           <div>
-            <label htmlFor="battle">Mapa Batalha</label>
+            <label htmlFor="battle">Mapa Batalha (Público)</label>
             <Styles.InputLarge
               id="battle"
               value={battle}
               onChange={e => setBattle(e.target.value)}
-              placeholder="URL do mapa de batalha"
+              placeholder="URL do mapa de batalha público"
+            />
+          </div>
+        </Styles.InputContainer>
+
+        <Styles.InputContainer>
+          <div>
+            <label htmlFor="battle_gm">
+              Mapa Batalha GM (Preparação)
+              {gm_layer && (
+                <span
+                  style={{
+                    marginLeft: '8px',
+                    color: '#ff4444',
+                    fontSize: '12px',
+                  }}
+                >
+                  ● ATIVO - Apenas GM vê este mapa
+                </span>
+              )}
+            </label>
+            <Styles.InputLarge
+              id="battle_gm"
+              value={battle_gm}
+              onChange={e => setBattleGm(e.target.value)}
+              placeholder="URL do mapa GM (visível apenas para GM quando GM Layer ativo)"
             />
           </div>
         </Styles.InputContainer>
@@ -234,12 +319,37 @@ const MapTool: React.FC = () => {
 
         <Styles.InputContainer>
           <div>
-            <label htmlFor="portrait">Portrait</label>
+            <label htmlFor="portrait">Portrait (Público)</label>
             <Styles.InputLarge
               id="portrait"
               value={portrait}
               onChange={e => setPortrait(e.target.value)}
-              placeholder="URL do portrait"
+              placeholder="URL do portrait público"
+            />
+          </div>
+        </Styles.InputContainer>
+
+        <Styles.InputContainer>
+          <div>
+            <label htmlFor="portrait_gm">
+              Portrait GM (Preparação)
+              {gm_layer && (
+                <span
+                  style={{
+                    marginLeft: '8px',
+                    color: '#ff4444',
+                    fontSize: '12px',
+                  }}
+                >
+                  ● ATIVO
+                </span>
+              )}
+            </label>
+            <Styles.InputLarge
+              id="portrait_gm"
+              value={portrait_gm}
+              onChange={e => setPortraitGm(e.target.value)}
+              placeholder="URL do portrait GM (visível apenas para GM quando GM Layer ativo)"
             />
           </div>
         </Styles.InputContainer>
@@ -364,6 +474,27 @@ const MapTool: React.FC = () => {
           <Styles.Button type="button" onClick={handleResetFog}>
             Limpar Fog
           </Styles.Button>
+          {(battle_gm || portrait_gm) && (
+            <Styles.Button
+              type="button"
+              onClick={handleRevealMap}
+              style={{
+                backgroundColor: gm_layer ? '#28a745' : '#6c757d',
+                fontWeight: 'bold',
+                opacity: gm_layer ? 1 : 0.6,
+              }}
+              disabled={!gm_layer}
+              title={
+                gm_layer
+                  ? 'Revelar mapa aos jogadores'
+                  : 'Ative o GM Layer para revelar o mapa'
+              }
+            >
+              {gm_layer
+                ? '🎭 Revelar Mapa aos Jogadores'
+                : '🔒 GM Layer Desativado'}
+            </Styles.Button>
+          )}
         </Styles.ButtonsContainer>
       </form>
     </div>

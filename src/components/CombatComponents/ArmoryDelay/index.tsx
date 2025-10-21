@@ -371,7 +371,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
       await api.post('combats', {
         id: from,
         user_id: user?.id,
-        user: user?.name,
+        user: selectedCharacter?.name || user?.name, // Nome do personagem, não do usuário
         message: rolled,
         result: totalDamage,
         type: 4,

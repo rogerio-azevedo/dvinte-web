@@ -311,7 +311,7 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
       await api.post('combats', {
         id: user?.id,
         user_id: user?.id,
-        user: user?.name,
+        user: character?.name || user?.name, // Nome do personagem, não do usuário
         message: rolled,
         result: totalDamage,
         type: 4,

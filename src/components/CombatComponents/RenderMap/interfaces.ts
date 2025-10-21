@@ -17,6 +17,7 @@ export interface Token {
   enabled: boolean
   character_id: number
   label?: string | null
+  layer?: 'public' | 'gm'
   character?: {
     id: number
     name: string
@@ -31,7 +32,9 @@ export interface MapData {
   width: number
   height: number
   battle: string
+  battle_gm?: string
   portrait: string
+  portrait_gm?: string
   grid: boolean
   fog: boolean
   orientation: boolean

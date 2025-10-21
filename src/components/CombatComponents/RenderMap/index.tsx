@@ -208,8 +208,19 @@ export default function RenderMap({
     menuActions.setFogPersist(lines)
   }, [lines, menuActions])
 
-  const [map] = useImage(mapData?.battle || '')
-  const [portrait] = useImage(mapData?.portrait || '')
+  // Se GM Layer está ativo e usuário é GM, mostra battle_gm, senão mostra battle
+  const battleMapUrl =
+    is_gm && mapData?.gm_layer && mapData?.battle_gm
+      ? mapData.battle_gm
+      : mapData?.battle || ''
+
+  const portraitUrl =
+    is_gm && mapData?.gm_layer && mapData?.portrait_gm
+      ? mapData.portrait_gm
+      : mapData?.portrait || ''
+
+  const [map] = useImage(battleMapUrl)
+  const [portrait] = useImage(portraitUrl)
 
   // Função para converter coordenadas do mouse para coordenadas do mundo
   const getWorldCoordinates = useCallback(
@@ -396,8 +407,10 @@ export default function RenderMap({
           ))}
         </Layer>
 
-        <Layer>
+        {/* Layer Público - visível para todos */}
+        <Layer name="public-layer">
           {(Array.isArray(tokens) ? tokens : [])
+            .filter(token => token.layer === 'public' || !token.layer)
             .sort((a, b) => {
               // Ordena tokens: selecionado por último (fica por cima)
               if (a.id === selectedId) return 1
@@ -456,6 +469,48 @@ export default function RenderMap({
               )
             })}
         </Layer>
+
+        {/* Layer GM - visível apenas para o GM quando ativo */}
+        {is_gm && (
+          <Layer name="gm-layer" opacity={mapData?.gm_layer ? 1 : 0.3}>
+            {(Array.isArray(tokens) ? tokens : [])
+              .filter(token => token.layer === 'gm')
+              .sort((a, b) => {
+                if (a.id === selectedId) return 1
+                if (b.id === selectedId) return -1
+                return b.id - a.id
+              })
+              .map(item => (
+                <CharToken
+                  key={item.id}
+                  id={item.id}
+                  x={item.x}
+                  y={item.y}
+                  isSelected={!allowDrag && item.id === selectedId}
+                  onSelect={() => {
+                    selectNextOverlappingToken(item.id)
+                  }}
+                  image={item.image}
+                  width={item.width}
+                  height={item.height}
+                  rotation={item.rotation || 0}
+                  draggable={!allowDrag}
+                  opacity={
+                    item.enabled
+                      ? overlappingTokens.includes(item.id)
+                        ? 0.7
+                        : mapData?.gm_layer
+                        ? 1
+                        : 0.5
+                      : 0.6
+                  }
+                  isPositionOccupied={isPositionOccupied}
+                  label={item.label}
+                  character={item.character}
+                />
+              ))}
+          </Layer>
+        )}
 
         {mapData?.portrait && (
           <Layer>

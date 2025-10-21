@@ -57,7 +57,13 @@ export default function DamagesCounter() {
         isCrit: 'false',
       }
 
+      // Salva no banco via POST
+      await api.post('/combats', message)
+
+      // Emite via socket (opcional, pois o POST já faz broadcast)
       emit('chat.message', message)
+
+      // Carrega damages da sessão
       await loadDamage('session')
     } catch (err) {
       console.error('[DamagesCounter] Erro ao iniciar sessão:', err)
@@ -76,7 +82,13 @@ export default function DamagesCounter() {
         isCrit: 'false',
       }
 
+      // Salva no banco via POST
+      await api.post('/combats', message)
+
+      // Emite via socket (opcional, pois o POST já faz broadcast)
       emit('chat.message', message)
+
+      // Carrega damages do combate
       await loadDamage('combat')
     } catch (err) {
       console.error('[DamagesCounter] Erro ao iniciar combate:', err)
@@ -114,7 +126,7 @@ export default function DamagesCounter() {
   return (
     <Styles.Container>
       <Styles.HeaderContainer>
-        <h2>Dano total por Usuário</h2>
+        <h2>Dano total por Personagem</h2>
       </Styles.HeaderContainer>
 
       <Styles.ButtonsContainer>

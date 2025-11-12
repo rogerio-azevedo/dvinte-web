@@ -49,7 +49,7 @@ interface Campaign {
 
 const MapTool: React.FC = () => {
   const { user } = useAuth()
-  const { actions: menuActions } = useMenu()
+  const { state: menuState, actions: menuActions } = useMenu()
   const [battle, setBattle] = useState<string>('')
   const [world, setWorld] = useState<string>('')
   const [battle_gm, setBattleGm] = useState<string>('')
@@ -66,6 +66,9 @@ const MapTool: React.FC = () => {
 
   const [fogOpacity, setFogOpacity] = useState<number>(60)
   const [size, setSize] = useState<number>(60)
+
+  // Estados locais para desenho livre
+  const { drawTool, brushSize, brushColor } = menuState
 
   // dispatch migrado para menuActions
 
@@ -183,6 +186,11 @@ const MapTool: React.FC = () => {
   function handleResetFog(): void {
     menuActions.resetFog()
     socket.emit('line.message', [])
+  }
+
+  function handleResetDrawings(): void {
+    menuActions.resetDrawings()
+    socket.emit('drawing.message', [])
   }
 
   async function handleRevealMap(): Promise<void> {
@@ -468,6 +476,135 @@ const MapTool: React.FC = () => {
             />
           </div>
         </Styles.InputContainer>
+
+        {/* ===== Seção de Desenho Livre ===== */}
+        <div
+          style={{
+            borderTop: '2px solid #ddd',
+            marginTop: '20px',
+            paddingTop: '20px',
+          }}
+        >
+          <h3 style={{ marginBottom: '15px', fontSize: '16px' }}>
+            ✏️ Desenho Livre
+          </h3>
+
+          <Styles.InputContainer>
+            <div>
+              <label htmlFor="drawTool">Ferramenta</label>
+              <select
+                id="drawTool"
+                value={drawTool}
+                onChange={e =>
+                  menuActions.setDrawTool(
+                    e.target.value as 'none' | 'pen' | 'eraser'
+                  )
+                }
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  marginTop: '5px',
+                  borderRadius: '4px',
+                  border: '1px solid #ccc',
+                  backgroundColor: drawTool === 'pen' ? '#e3f2fd' : 'white',
+                }}
+              >
+                <option value="none">Nenhuma</option>
+                <option value="pen">✏️ Caneta</option>
+                <option value="eraser">🧹 Borracha</option>
+              </select>
+            </div>
+          </Styles.InputContainer>
+
+          {drawTool === 'pen' && (
+            <>
+              <Styles.InputContainer>
+                <div>
+                  <label htmlFor="brushSize">Tamanho ({brushSize}px)</label>
+                  <Styles.RangeInput
+                    id="brushSize"
+                    value={brushSize}
+                    onChange={e =>
+                      menuActions.setBrushSize(parseInt(e.target.value, 10))
+                    }
+                    type="range"
+                    step={1}
+                    min={1}
+                    max={50}
+                    aria-label={`Tamanho do pincel: ${brushSize} pixels`}
+                  />
+                </div>
+              </Styles.InputContainer>
+
+              <Styles.InputContainer>
+                <div>
+                  <label htmlFor="brushColor">Cor do Pincel</label>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '8px',
+                      marginTop: '5px',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    {[
+                      '#FF0000',
+                      '#00FF00',
+                      '#0000FF',
+                      '#FFFF00',
+                      '#FF00FF',
+                      '#00FFFF',
+                      '#FFFFFF',
+                      '#000000',
+                    ].map(color => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => menuActions.setBrushColor(color)}
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          backgroundColor: color,
+                          border:
+                            brushColor === color
+                              ? '3px solid #333'
+                              : '1px solid #ccc',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          boxShadow:
+                            brushColor === color
+                              ? '0 0 8px rgba(0,0,0,0.5)'
+                              : 'none',
+                        }}
+                        aria-label={`Selecionar cor ${color}`}
+                      />
+                    ))}
+                    <input
+                      id="brushColor"
+                      type="color"
+                      value={brushColor}
+                      onChange={e => menuActions.setBrushColor(e.target.value)}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                      }}
+                      aria-label="Seletor de cor personalizada"
+                    />
+                  </div>
+                </div>
+              </Styles.InputContainer>
+            </>
+          )}
+
+          <Styles.ButtonsContainer style={{ marginTop: '15px' }}>
+            <Styles.Button type="button" onClick={handleResetDrawings}>
+              Limpar Desenhos
+            </Styles.Button>
+          </Styles.ButtonsContainer>
+        </div>
 
         <Styles.ButtonsContainer>
           <Styles.Button type="submit">Cadastrar</Styles.Button>

@@ -22,7 +22,15 @@ export default function RenderMap({
 }: RenderMapProps) {
   const { user } = useAuth()
   const { state: menuState, actions: menuActions } = useMenu()
-  const { fogLevel, eraserSize, fogPersist } = menuState
+  const {
+    fogLevel,
+    eraserSize,
+    fogPersist,
+    drawTool,
+    brushSize,
+    brushColor,
+    drawings,
+  } = menuState
 
   const [stageScale, setStageScale] = useState<number>(1)
   const [stageX, setStageX] = useState<number>(0)
@@ -32,6 +40,10 @@ export default function RenderMap({
   const [selectedId, selectShape] = useState<number | null>(null)
   const [mapData, setMapData] = useState<MapData>({} as MapData)
   const [overlappingTokens, setOverlappingTokens] = useState<number[]>([])
+
+  // Estado para desenhos livres
+  const [freeDrawings, setFreeDrawings] = useState<LineType[]>(drawings)
+  const [isDrawingFree, setIsDrawingFree] = useState<boolean>(false)
 
   // dispatch migrado para menuActions
   const is_gm = user?.is_gm
@@ -152,7 +164,8 @@ export default function RenderMap({
   }, [user?.id])
 
   function handleMouseDown(e: any) {
-    if (e.evt.button === 2 && !allowDrag) {
+    // FOG - Botão direito (eraser)
+    if (e.evt.button === 2 && !allowDrag && is_gm) {
       setIsDrawing(true)
 
       const worldCoords = getWorldCoordinates(e.target.getStage())
@@ -163,6 +176,53 @@ export default function RenderMap({
         points: [worldCoords.x, worldCoords.y],
       })
       setLines(newLines)
+      return
+    }
+
+    // Desenho Livre - Botão esquerdo
+    // Permite desenhar se não estiver arrastando e a ferramenta estiver ativa
+    // Mas não desenha se clicar em um Group (tokens) ou Transformer
+    const targetClassName = e.target.getClassName()
+    const isClickingOnToken =
+      targetClassName === 'Group' || targetClassName === 'Transformer'
+
+    console.log('🖱️ Mouse Down:', {
+      button: e.evt.button,
+      allowDrag,
+      drawTool,
+      targetClassName,
+      isClickingOnToken,
+      brushColor,
+      brushSize,
+    })
+
+    if (
+      e.evt.button === 0 &&
+      !allowDrag &&
+      drawTool !== 'none' &&
+      !isClickingOnToken
+    ) {
+      console.log('✏️ Iniciando desenho livre!')
+      setIsDrawingFree(true)
+
+      const worldCoords = getWorldCoordinates(e.target.getStage())
+
+      const newDrawing: LineType = {
+        id: Date.now(),
+        tool: drawTool,
+        points: [worldCoords.x, worldCoords.y],
+        color: brushColor,
+        size: brushSize,
+      }
+
+      console.log('📝 Novo desenho criado:', newDrawing)
+      setFreeDrawings(prev => {
+        const updated = [...prev, newDrawing]
+        console.log('📊 Total de desenhos:', updated.length)
+        return updated
+      })
+    } else {
+      console.log('❌ Desenho bloqueado')
     }
   }
 
@@ -172,30 +232,46 @@ export default function RenderMap({
       selectShape(null)
     }
 
+    // FOG
     if (isDrawing) {
       setIsDrawing(false)
       socket.emit('line.message', lines)
     }
+
+    // Desenho Livre
+    if (isDrawingFree) {
+      setIsDrawingFree(false)
+      socket.emit('drawing.message', freeDrawings)
+    }
   }
 
   function handleMouseMove(e: any) {
-    if (!isDrawing) {
-      return
-    }
-
-    if (!is_gm) {
-      return
-    }
-
     const worldCoords = getWorldCoordinates(e.target.getStage())
-    const newLines = lines?.slice()
-    const lastLine = {
-      ...newLines[newLines?.length - 1],
+
+    // FOG
+    if (isDrawing && is_gm) {
+      const newLines = lines?.slice()
+      const lastLine = {
+        ...newLines[newLines?.length - 1],
+      }
+      lastLine.size = eraserSize
+      lastLine.points = lastLine?.points.concat([worldCoords.x, worldCoords.y])
+      newLines[newLines.length - 1] = lastLine
+      setLines(newLines)
+      return
     }
-    lastLine.size = eraserSize
-    lastLine.points = lastLine?.points.concat([worldCoords.x, worldCoords.y])
-    newLines[newLines.length - 1] = lastLine
-    setLines(newLines)
+
+    // Desenho Livre
+    if (isDrawingFree) {
+      const newDrawings = freeDrawings.slice()
+      const lastDrawing = { ...newDrawings[newDrawings.length - 1] }
+      lastDrawing.points = lastDrawing.points.concat([
+        worldCoords.x,
+        worldCoords.y,
+      ])
+      newDrawings[newDrawings.length - 1] = lastDrawing
+      setFreeDrawings(newDrawings)
+    }
   }
 
   useEffect(() => {
@@ -207,6 +283,24 @@ export default function RenderMap({
   useEffect(() => {
     menuActions.setFogPersist(lines)
   }, [lines, menuActions])
+
+  // Socket para desenhos livres
+  useEffect(() => {
+    const handleDrawingMessage = (data: LineType[]) => {
+      setFreeDrawings(data)
+    }
+
+    socket.on('drawing.message', handleDrawingMessage)
+
+    return () => {
+      socket.off('drawing.message', handleDrawingMessage)
+    }
+  }, [])
+
+  useEffect(() => {
+    console.log('🎨 Desenhos atualizados:', freeDrawings.length, freeDrawings)
+    menuActions.setDrawings(freeDrawings)
+  }, [freeDrawings, menuActions])
 
   // Se GM Layer está ativo e usuário é GM, mostra battle_gm, senão mostra battle
   const battleMapUrl =
@@ -363,6 +457,16 @@ export default function RenderMap({
         onContextMenu={e => {
           e.evt.preventDefault()
         }}
+        style={{
+          cursor:
+            drawTool === 'pen'
+              ? 'crosshair'
+              : drawTool === 'eraser'
+              ? 'cell'
+              : allowDrag
+              ? 'grab'
+              : 'default',
+        }}
       >
         <Layer>
           <Image
@@ -378,6 +482,7 @@ export default function RenderMap({
           {linesB}
         </Layer>
 
+        {/* Layer de FOG */}
         <Layer>
           <Rect
             x={0}
@@ -402,6 +507,24 @@ export default function RenderMap({
               points={line?.points}
               globalCompositeOperation={
                 line?.tool === 'eraser' ? 'destination-out' : 'source-over'
+              }
+            />
+          ))}
+        </Layer>
+
+        {/* Layer de Desenhos Livres */}
+        <Layer>
+          {freeDrawings?.map(drawing => (
+            <Line
+              key={drawing?.id}
+              strokeWidth={drawing?.size || brushSize}
+              stroke={drawing?.color || brushColor}
+              points={drawing?.points}
+              tension={0.5}
+              lineCap="round"
+              lineJoin="round"
+              globalCompositeOperation={
+                drawing?.tool === 'eraser' ? 'destination-out' : 'source-over'
               }
             />
           ))}

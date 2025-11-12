@@ -100,6 +100,58 @@ export function MenuProvider({ children }: MenuProviderProps) {
           toast.error("Erro ao resetar névoa");
         }
       },
+
+      // ===== Actions para desenho livre =====
+      
+      // Selecionar ferramenta de desenho
+      setDrawTool: (tool) => {
+        try {
+          setState((prev) => ({ ...prev, drawTool: tool }));
+        } catch (error) {
+          console.error(error);
+          toast.error("Erro ao alterar ferramenta de desenho");
+        }
+      },
+
+      // Controlar tamanho do pincel
+      setBrushSize: (size: number) => {
+        try {
+          setState((prev) => ({ ...prev, brushSize: size }));
+        } catch (error) {
+          console.error(error);
+          toast.error("Erro ao alterar tamanho do pincel");
+        }
+      },
+
+      // Controlar cor do pincel
+      setBrushColor: (color: string) => {
+        try {
+          setState((prev) => ({ ...prev, brushColor: color }));
+        } catch (error) {
+          console.error(error);
+          toast.error("Erro ao alterar cor do pincel");
+        }
+      },
+
+      // Persistir desenhos livres
+      setDrawings: (drawings: any[]) => {
+        try {
+          setState((prev) => ({ ...prev, drawings }));
+        } catch (error) {
+          console.error(error);
+          toast.error("Erro ao persistir desenhos");
+        }
+      },
+
+      // Resetar desenhos livres
+      resetDrawings: () => {
+        try {
+          setState((prev) => ({ ...prev, drawings: [] }));
+        } catch (error) {
+          console.error(error);
+          toast.error("Erro ao resetar desenhos");
+        }
+      },
     }),
     []
   );

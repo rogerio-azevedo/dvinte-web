@@ -46,6 +46,7 @@ export interface Line {
   tool: string
   points: number[]
   size?: number
+  color?: string
 }
 
 export interface StagePos {

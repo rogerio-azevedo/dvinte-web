@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import Select, { type SingleValue } from "react-select"
+import { useEffect, useState } from 'react'
+import Select, { type SingleValue, type StylesConfig } from 'react-select'
 
 interface Option {
   value: string
@@ -21,7 +21,7 @@ export default function SelectMonsterSubType({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const data = monsterSubTypes.map((subType) => ({
+    const data = monsterSubTypes.map(subType => ({
       value: subType.value,
       label: subType.label.toUpperCase(),
     }))
@@ -31,19 +31,19 @@ export default function SelectMonsterSubType({
   }, [monsterSubTypes])
 
   const customStyles = {
-    input: (styles: any) => ({
+    input: (styles: StylesConfig<Option, false>) => ({
       ...styles,
-      height: "30px",
-      minHeight: "30px",
+      height: '30px',
+      minHeight: '30px',
     }),
   }
 
   return (
-    <div style={{ width: "220px", marginRight: "15px" }}>
+    <div style={{ width: '220px', marginRight: '15px' }}>
       <Select
-        styles={customStyles}
+        styles={customStyles as unknown as StylesConfig<Option, false>}
         maxMenuHeight={220}
-        placeholder="ESCOLHA O SUBTIPO DE MONSTRO"
+        placeholder="ESCOLHA O SUBTIPO"
         onChange={(newValue: SingleValue<Option>) =>
           changeMonsterSubType(newValue ? newValue.value : null)
         }

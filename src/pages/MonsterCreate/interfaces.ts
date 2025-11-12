@@ -11,6 +11,7 @@ export interface Attack {
 
 export interface FormData {
   name: string
+  quantity: number
   type: string
   subType: string
   size: string

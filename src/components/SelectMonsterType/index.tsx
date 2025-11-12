@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import Select, { type SingleValue } from "react-select"
+import { useEffect, useState } from 'react'
+import Select, { type SingleValue, type StylesConfig } from 'react-select'
 
 interface Option {
   value: string
@@ -19,7 +19,7 @@ export default function SelectMonsterType({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const data = monsterTypes.map((type) => ({
+    const data = monsterTypes.map(type => ({
       value: type.value,
       label: type.label.toUpperCase(),
     }))
@@ -29,19 +29,19 @@ export default function SelectMonsterType({
   }, [monsterTypes])
 
   const customStyles = {
-    input: (styles: any) => ({
+    input: (styles: StylesConfig<Option, false>) => ({
       ...styles,
-      height: "30px",
-      minHeight: "30px",
+      height: '30px',
+      minHeight: '30px',
     }),
   }
 
   return (
-    <div style={{ width: "220px", marginRight: "15px" }}>
+    <div style={{ width: '220px', marginRight: '15px' }}>
       <Select
-        styles={customStyles}
+        styles={customStyles as unknown as StylesConfig<Option, false>}
         maxMenuHeight={220}
-        placeholder="ESCOLHA O TIPO DE MONSTRO"
+        placeholder="ESCOLHA O TIPO"
         onChange={(newValue: SingleValue<Option>) =>
           changeMonsterType(newValue ? newValue.value : null)
         }

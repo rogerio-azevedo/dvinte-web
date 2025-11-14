@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router'
 import api from '../../services/api'
@@ -13,7 +11,9 @@ import CharWeapon from '../../components/CharWeapon'
 import CharEquipment from '../../components/CharEquipment'
 import CharCa from '../../components/CharCa'
 import CharResist from '../../components/CharResist'
+import ModalEditCharacterProgress from '../../components/Modals/ModalEditCharacterProgress'
 import { calculateEquipmentBonuses } from '../../util/calculateEquipmentBonuses'
+import { useAuth } from '../../hooks/useAuth'
 
 import type {
   Character,
@@ -26,6 +26,7 @@ import type {
 
 export default function CharacterDetail() {
   const { id } = useParams<{ id: string }>()
+  const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [char, setChar] = useState<Character>()
   const [classes, setClasses] = useState<CharacterClass[]>()
@@ -36,7 +37,10 @@ export default function CharacterDetail() {
   const [strMod, setStrMod] = useState<number>()
   const [dexMod, setDexMod] = useState<number>()
 
+  const isGM = user?.is_gm || false
+
   async function loadChar() {
+    setLoading(true)
     try {
       const response = await api.get<Character>(`characters/${id}`)
       const { data } = response
@@ -422,11 +426,25 @@ export default function CharacterDetail() {
         </fieldset>
 
         {/* Classes e Level */}
-        <fieldset className="border border-[#6f0000] rounded  flex flex-col items-center p-2 shadow-md ml-4 h-[360px]">
-          <legend className="text-[18px] font-semibold ml-5 w-[160px] text-[#6f0000] bg-white shadow px-2 py-1 rounded">
-            Classes e Level
-          </legend>
-          <div className="flex flex-col items-center w-full mt-2">
+        <fieldset className="border border-[#6f0000] rounded flex flex-col p-2 shadow-md ml-4 h-[360px]">
+          <div className="flex items-center justify-between w-full mb-2 px-2">
+            <legend className="text-[18px] font-semibold ml-3 text-[#6f0000] bg-white shadow px-2 py-1 rounded">
+              Classes e Level
+            </legend>
+            {isGM && char && classes && (
+              <div className="mr-2">
+                <ModalEditCharacterProgress
+                  characterId={char.Cod}
+                  currentLevel={char.Level}
+                  currentHealth={char.Health}
+                  currentExp={char.Exp}
+                  currentClasses={classes}
+                  onSuccess={loadChar}
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col items-center w-full">
             <div className="flex flex-col gap-2 mb-2">
               <div className="flex flex-row gap-2">
                 <div className="flex flex-col items-center">

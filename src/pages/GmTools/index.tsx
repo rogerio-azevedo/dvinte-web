@@ -26,6 +26,7 @@ interface Character {
   natural: number
   deflex: number
   others: number
+  equipmentArmorBonus?: number
   dexMod: number
   maxDex: number
   baseAttack: number
@@ -33,6 +34,7 @@ interface Character {
   health: number
   health_now: number
   user: string
+  is_ativo?: boolean
 }
 
 interface MonsterAttack {
@@ -58,6 +60,7 @@ interface Monster {
   health_now: number
   monster_attack?: MonsterAttack[]
   attacks?: SelectOption[]
+  is_ativo?: boolean
 }
 
 interface SelectOption {
@@ -80,6 +83,7 @@ export default function GmTools() {
     [monsterId: number]: number | null
   }>({})
   const [loading, setLoading] = useState(false)
+  const [showInactive, setShowInactive] = useState(false)
 
   async function loadChar() {
     setLoading(true)
@@ -475,6 +479,7 @@ export default function GmTools() {
           (item.natural ?? 0) +
           (item.deflex ?? 0) +
           (item.others ?? 0) +
+          (item.equipmentArmorBonus ?? 0) +
           ((item.dexMod ?? 0) <= (item.maxDex ?? 0)
             ? item.dexMod ?? 0
             : item.maxDex ?? 0)
@@ -700,13 +705,33 @@ export default function GmTools() {
     },
   ]
 
+  // Filtrar personagens e monstros ativos/inativos
+  const filteredCharacters = showInactive 
+    ? list 
+    : list.filter(char => char.is_ativo !== false)
+  
+  const filteredMonsters = showInactive 
+    ? monsters 
+    : monsters.filter(monster => monster.is_ativo !== false)
+
   return (
     <Container $loading={!loading}>
-      <h2>GM Tools</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <h2>GM Tools</h2>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={showInactive}
+            onChange={(e) => setShowInactive(e.target.checked)}
+            style={{ cursor: 'pointer' }}
+          />
+          <span>Mostrar Inativos</span>
+        </label>
+      </div>
       <TableContainer>
         <Table
           rowKey="id"
-          dataSource={list}
+          dataSource={filteredCharacters}
           columns={columns}
           loading={loading}
           size="small"
@@ -724,7 +749,7 @@ export default function GmTools() {
       <TableContainer>
         <Table
           rowKey="id"
-          dataSource={monsters}
+          dataSource={filteredMonsters}
           columns={monsterColumns}
           loading={loading}
           size="small"

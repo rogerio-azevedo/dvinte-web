@@ -517,7 +517,13 @@ export default function CharacterDetail() {
             {!loading && resist && <CharResist resist={resist} />}
             <div className="flex flex-row gap-2 mb-2">
               {!loading && armors && dexMod !== undefined && (
-                <CharCa armors={armors} dextMod={dexMod} />
+                <CharCa
+                  armors={armors}
+                  dextMod={dexMod}
+                  equipmentArmorBonus={
+                    calculateEquipmentBonuses(equipments || []).armorClass
+                  }
+                />
               )}
             </div>
           </div>

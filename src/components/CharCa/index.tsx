@@ -32,9 +32,10 @@ export type ArmorType = (typeof ArmorType)[keyof typeof ArmorType]
 interface CharCaProps {
   armors: Armor[]
   dextMod: number
+  equipmentArmorBonus?: number
 }
 
-const CharCa: React.FC<CharCaProps> = ({ armors, dextMod }) => {
+const CharCa: React.FC<CharCaProps> = ({ armors, dextMod, equipmentArmorBonus = 0 }) => {
   const calculateArmorTypeTotal = (type: number): number => {
     return (
       armors
@@ -49,7 +50,7 @@ const CharCa: React.FC<CharCaProps> = ({ armors, dextMod }) => {
   const shield = calculateArmorTypeTotal(2) // Escudo
   const natural = calculateArmorTypeTotal(3) // Armadura Natural
   const deflex = calculateArmorTypeTotal(4) // Deflex
-  const outros = calculateArmorTypeTotal(5) // Outros
+  const outros = calculateArmorTypeTotal(5) + equipmentArmorBonus // Outros + Bônus de Equipamentos
 
   const maxDext = Math.min(
     ...armors?.filter((t) => t.dexterity > 0).map((item) => item.dexterity)

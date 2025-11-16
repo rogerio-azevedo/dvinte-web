@@ -48,6 +48,8 @@ export default function CharacterDetail() {
       const str = data.StrModTemp || data.StrMod
       const dex = data.DexModTemp || data.DexMod
 
+      console.log(data)
+
       // Calcular bônus dos equipamentos
       const equipmentBonuses = calculateEquipmentBonuses(data.Equipment || [])
 
@@ -468,7 +470,9 @@ export default function CharacterDetail() {
                   <input
                     readOnly
                     value={
-                      char?.BaseAttack && strMod ? char.BaseAttack + strMod : ''
+                      char?.BaseAttack && strMod
+                        ? char.BaseAttack + strMod
+                        : char?.BaseAttack
                     }
                     className="w-[100px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow-md"
                   />

@@ -55,8 +55,8 @@ export default function Armory({ loadChar }: ArmoryProps) {
         DexMod: char.DexMod,
         DexModTemp: char.DexModTemp,
         Weapon: char.Weapon,
+        Equipment: char.Equipment,
       }))
-      console.log('🚀 ~ Armory ~ mappedCharacters:', mappedCharacters)
 
       // Filtra apenas personagens válidos
       const validCharacters = mappedCharacters.filter(
@@ -178,7 +178,15 @@ export default function Armory({ loadChar }: ArmoryProps) {
     const wep = characterWeapons.find((w: any) => w.id === weapon)
     if (!wep) return
 
+    // Calcular bônus de ataque dos equipamentos
+    const equipmentAttackBonus =
+      selectedCharacter?.Equipment?.reduce(
+        (sum: number, equip: any) => sum + (equip.attack_bonus || 0),
+        0
+      ) || 0
+
     const extraHit = wep.hit || 0
+    const totalWeaponBonus = extraHit + equipmentAttackBonus
     const critFrom = wep.crit_from_mod > 0 ? wep.crit_from_mod : wep.crit_from
     const name = wep.nickname?.trim() ? wep.nickname : wep.name
 
@@ -222,7 +230,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
     const mod = wep.range > 3 ? DexMod : StrMod
     const baseAttack = selectedCharacter.BaseAttack ?? 0
     const base = baseAttack + mod
-    const attack = base + dice + extraHit
+    const attack = base + dice + totalWeaponBonus
 
     // Debug logs para confirmar a correção
     console.log('🎯 Debug ataque (corrigido):', {
@@ -236,16 +244,18 @@ export default function Armory({ loadChar }: ArmoryProps) {
       baseTotal: base,
       dice,
       extraHit,
+      equipmentAttackBonus,
+      totalWeaponBonus,
       attackTotal: attack,
     })
 
     let rolled = ''
     if (isCrit === 'HIT') {
-      rolled = `ACERTO CRÍTICO com ${name} => d20: ${dice} + ${base} de base + ${extraHit} de bônus, com resultado: ${attack}`
+      rolled = `ACERTO CRÍTICO com ${name} => d20: ${dice} + ${base} de base + ${totalWeaponBonus} de bônus, com resultado: ${attack}`
     } else if (isCrit === 'FAIL') {
-      rolled = `ERRO CRÍTICO com ${name} => d20: ${dice} + ${base} de base + ${extraHit} de bônus, com resultado: ${attack}`
+      rolled = `ERRO CRÍTICO com ${name} => d20: ${dice} + ${base} de base + ${totalWeaponBonus} de bônus, com resultado: ${attack}`
     } else {
-      rolled = `ATACOU com ${name} => d20: ${dice} + ${base} de base + ${extraHit} de bônus, com resultado: ${attack}`
+      rolled = `ATACOU com ${name} => d20: ${dice} + ${base} de base + ${totalWeaponBonus} de bônus, com resultado: ${attack}`
     }
 
     try {
@@ -285,6 +295,16 @@ export default function Armory({ loadChar }: ArmoryProps) {
 
     const size = selectedCharacter.Size
 
+    // Calcular bônus de dano dos equipamentos
+    const equipmentDamageBonus =
+      selectedCharacter?.Equipment?.reduce((sum: number, equip: any) => {
+        const bonus =
+          typeof equip.damage_bonus === 'string'
+            ? parseFloat(equip.damage_bonus) || 0
+            : equip.damage_bonus || 0
+        return sum + bonus
+      }, 0) || 0
+
     // Usar os modificadores que já vêm corretos da API (mesma lógica do ataque)
     const StrMod =
       selectedCharacter.StrModTemp !== null &&
@@ -315,6 +335,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
     const multi = size === 'MÉDIO' ? wep.multiplier_m : wep.multiplier_s
     const name = wep.nickname?.trim() ? wep.nickname : wep.name
     const extraDamage = wep.damage || 0
+    const totalWeaponDamage = extraDamage + equipmentDamageBonus
     const element =
       wep.element > 0
         ? await generateSecureRandomNumber(1, wep.element, selectedCharacter.id)
@@ -344,7 +365,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
       diceRoll: true,
     })
 
-    const totalDamage = result + extraDamage + exMod + element
+    const totalDamage = result + totalWeaponDamage + exMod + element
 
     // Debug logs para confirmar a correção
     console.log('⚔️ Debug dano (corrigido):', {
@@ -361,11 +382,13 @@ export default function Armory({ loadChar }: ArmoryProps) {
       multi,
       result,
       extraDamage,
+      equipmentDamageBonus,
+      totalWeaponDamage,
       element,
       totalDamage,
     })
 
-    const rolled = `CAUSOU DANO com ${name} => ${multi} x d${dice}: ${result} + ${exMod} ${modType} + ${extraDamage} de bônus da arma + ${element} bônus de elemento. Com resultado: ${totalDamage}`
+    const rolled = `CAUSOU DANO com ${name} => ${multi} x d${dice}: ${result} + ${exMod} ${modType} + ${totalWeaponDamage} de bônus da arma + ${element} bônus de elemento. Com resultado: ${totalDamage}`
 
     try {
       await api.post('combats', {
@@ -405,6 +428,16 @@ export default function Armory({ loadChar }: ArmoryProps) {
 
     const size = selectedCharacter.Size
 
+    // Calcular bônus de dano dos equipamentos
+    const equipmentDamageBonus =
+      selectedCharacter?.Equipment?.reduce((sum: number, equip: any) => {
+        const bonus =
+          typeof equip.damage_bonus === 'string'
+            ? parseFloat(equip.damage_bonus) || 0
+            : equip.damage_bonus || 0
+        return sum + bonus
+      }, 0) || 0
+
     // Usar os modificadores que já vêm corretos da API (mesma lógica do ataque)
     const StrMod =
       selectedCharacter.StrModTemp !== null &&
@@ -435,6 +468,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
     const multi = size === 'MÉDIO' ? wep.multiplier_m : wep.multiplier_s
     const name = wep.nickname?.trim() ? wep.nickname : wep.name
     const extraDamage = wep.damage || 0
+    const totalWeaponDamage = extraDamage + equipmentDamageBonus
     const element =
       wep.element > 0
         ? await generateSecureRandomNumber(1, wep.element, selectedCharacter.id)
@@ -466,7 +500,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
     })
 
     const totalDamage =
-      result + extraDamage * critMult + exMod * critMult + element
+      result + totalWeaponDamage * critMult + exMod * critMult + element
 
     // Debug logs para confirmar a correção
     console.log('💥 Debug dano crítico (corrigido):', {

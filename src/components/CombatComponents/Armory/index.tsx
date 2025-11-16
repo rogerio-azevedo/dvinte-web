@@ -13,6 +13,15 @@ import SelectCharacter from '../../../components/SelectCharacter'
 import * as Styles from './styles'
 import { useAuth } from '../../../contexts'
 
+interface Equipment {
+  attack_bonus: number
+  damage_bonus: number | string | null
+  armor_class_bonus?: number
+  fortitude_bonus?: number
+  reflex_bonus?: number
+  will_bonus?: number
+}
+
 interface Character {
   id: number
   name: string
@@ -22,6 +31,7 @@ interface Character {
   StrModTemp?: number
   DexMod?: number
   DexModTemp?: number
+  Equipment?: Equipment[]
 }
 
 interface Weapon {
@@ -104,11 +114,22 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
     try {
       if (!user) return
 
-      const response = await api.get(`/combats/characters/${user.id}`)
+      const response = await api.get(`/characters/user/${user.id}`)
 
-      const characters: Character[] = Array.isArray(response.data)
-        ? response.data
-        : []
+      const charactersData = Array.isArray(response.data) ? response.data : []
+
+      // Mapear dados da API para o formato esperado
+      const characters: Character[] = charactersData.map((char: any) => ({
+        id: char.Cod,
+        name: char.Name,
+        Size: char.Size,
+        BaseAttack: char.BaseAttack,
+        StrMod: char.StrMod,
+        StrModTemp: char.StrModTemp,
+        DexMod: char.DexMod,
+        DexModTemp: char.DexModTemp,
+        Equipment: char.Equipment,
+      }))
 
       setUserCharacters(characters)
 
@@ -138,7 +159,7 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
       try {
         if (!user) return
 
-        const response = await api.get(`/combats/${user.id}/${characterId}`)
+        const response = await api.get(`/characters/${characterId}`)
         const characterData = response.data
         setCharacterWeapons(characterData?.Weapon || [])
       } catch (error) {
@@ -154,8 +175,19 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
   // Função para carregar dados completos do personagem
   const loadCharacterData = async (characterId: number): Promise<Character> => {
     try {
-      const response = await api.get(`/combats/${user?.id}/${characterId}`)
-      return response.data
+      const response = await api.get(`/characters/${characterId}`)
+      const charData = response.data
+      return {
+        id: charData.Cod,
+        name: charData.Name,
+        Size: charData.Size,
+        BaseAttack: charData.BaseAttack,
+        StrMod: charData.StrMod,
+        StrModTemp: charData.StrModTemp,
+        DexMod: charData.DexMod,
+        DexModTemp: charData.DexModTemp,
+        Equipment: charData.Equipment,
+      }
     } catch (error) {
       return character // fallback para o character passado por props
     }
@@ -198,7 +230,16 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
     const wep = weaponsToUse.find((w: Weapon) => w.id === weapon)
     if (!wep) return
 
+    const currentChar = await getCurrentCharacter()
+    
+    // Calcular bônus de ataque dos equipamentos
+    const equipmentAttackBonus = currentChar?.Equipment?.reduce(
+      (sum, equip) => sum + (equip.attack_bonus || 0),
+      0
+    ) || 0
+
     const extraHit = wep.hit || 0
+    const totalWeaponBonus = extraHit + equipmentAttackBonus
     const critFrom = wep.crit_from_mod > 0 ? wep.crit_from_mod : wep.crit_from
     const name = getWeaponName(wep)
     const dice = Math.floor(Math.random() * 20) + 1
@@ -211,25 +252,24 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
       isCrit = 'FAIL'
     }
 
-    const currentChar = await getCurrentCharacter()
     const StrMod = currentChar?.StrModTemp ?? currentChar?.StrMod ?? 0
     const DexMod = currentChar?.DexModTemp ?? currentChar?.DexMod ?? 0
 
     const mod = wep.range > 3 ? DexMod : StrMod
     const base = (currentChar?.BaseAttack ?? 0) + mod
-    const attack = Number(base) + Number(dice) + Number(extraHit)
+    const attack = Number(base) + Number(dice) + Number(totalWeaponBonus)
 
     let rolled = ''
 
     switch (isCrit) {
       case 'HIT':
-        rolled = `ACERTO CRÍTICO com ${name} => d20: ${dice} + ${base} de base + ${extraHit} de bônus, com resultado: ${attack}`
+        rolled = `ACERTO CRÍTICO com ${name} => d20: ${dice} + ${base} de base + ${totalWeaponBonus} de bônus, com resultado: ${attack}`
         break
       case 'FAIL':
-        rolled = `ERRO CRÍTICO com ${name} => d20: ${dice} + ${base} de base + ${extraHit} de bônus, com resultado: ${attack}`
+        rolled = `ERRO CRÍTICO com ${name} => d20: ${dice} + ${base} de base + ${totalWeaponBonus} de bônus, com resultado: ${attack}`
         break
       default:
-        rolled = `ATACOU com ${name} => d20: ${dice} + ${base} de base + ${extraHit} de bônus, com resultado: ${attack}`
+        rolled = `ATACOU com ${name} => d20: ${dice} + ${base} de base + ${totalWeaponBonus} de bônus, com resultado: ${attack}`
     }
 
     try {
@@ -261,6 +301,17 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
     const currentChar = await getCurrentCharacter()
     const size = currentChar?.Size
 
+    // Calcular bônus de dano dos equipamentos
+    const equipmentDamageBonus = currentChar?.Equipment?.reduce(
+      (sum, equip) => {
+        const bonus = typeof equip.damage_bonus === 'string' 
+          ? parseFloat(equip.damage_bonus) || 0 
+          : equip.damage_bonus || 0
+        return sum + bonus
+      },
+      0
+    ) || 0
+
     let mod = 0
     let modType = ''
 
@@ -277,6 +328,7 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
     const multi = size === 'MÉDIO' ? wep.multiplier_m : wep.multiplier_s
     const name = getWeaponName(wep)
     const extraDamage = wep.damage || 0
+    const totalWeaponDamage = extraDamage + equipmentDamageBonus
     const element =
       wep.element > 0 ? Math.floor(Math.random() * wep.element) + 1 : 0
 
@@ -296,15 +348,15 @@ const Armory: React.FC<ArmoryProps> = ({ character, weapons, loadChar }) => {
       const multCrit = multi * critMult
       const diceCrit = result * critMult
       const modCrit = exMod * critMult
-      const extCrit = extraDamage * critMult
+      const extCrit = totalWeaponDamage * critMult
 
       totalDamage =
         Number(diceCrit) + Number(modCrit) + Number(extCrit) + Number(element)
       rolled = `CAUSOU DANO CRÍTICO com ${name} => ${multi} x d${dice}: ${result} x ${multCrit} CRIT: ${diceCrit} + ${modCrit} ${modType} + ${extCrit} de bônus da arma, + ${element} de bônus elemento. Com resultado: ${totalDamage}`
     } else {
       totalDamage =
-        Number(result) + Number(extraDamage) + Number(exMod) + Number(element)
-      rolled = `CAUSOU DANO com ${name} => ${multi} x d${dice}: ${result} + ${exMod} ${modType} + ${extraDamage} de bônus da arma + ${element} bônus de elemento. Com resultado: ${totalDamage}`
+        Number(result) + Number(totalWeaponDamage) + Number(exMod) + Number(element)
+      rolled = `CAUSOU DANO com ${name} => ${multi} x d${dice}: ${result} + ${exMod} ${modType} + ${totalWeaponDamage} de bônus da arma + ${element} bônus de elemento. Com resultado: ${totalDamage}`
     }
 
     try {

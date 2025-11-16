@@ -476,7 +476,7 @@ export default function CharacterDetail() {
                     }
                     className="w-[100px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow-md"
                   />
-                  <label className="text-xs text-gray-700">Corpo a Corpo</label>
+                  <label className="text-xs text-gray-700">Ataque Base</label>
                 </div>
               </div>
               <div className="flex flex-row gap-2">

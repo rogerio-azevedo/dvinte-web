@@ -266,22 +266,22 @@ export default function CharacterDetail() {
             </div>
             <input
               readOnly
-              value={char?.Str || ''}
+              value={char?.Str || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.StrMod || ''}
+              value={char?.StrMod || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.StrTemp || ''}
+              value={char?.StrTemp || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.StrModTemp || ''}
+              value={char?.StrModTemp || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             {/* DES */}
@@ -294,22 +294,22 @@ export default function CharacterDetail() {
             </div>
             <input
               readOnly
-              value={char?.Dex || ''}
+              value={char?.Dex || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.DexMod || ''}
+              value={char?.DexMod || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.DexTemp || ''}
+              value={char?.DexTemp || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.DexModTemp || ''}
+              value={char?.DexModTemp || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             {/* CON */}
@@ -322,22 +322,22 @@ export default function CharacterDetail() {
             </div>
             <input
               readOnly
-              value={char?.Con || ''}
+              value={char?.Con || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.ConMod || ''}
+              value={char?.ConMod || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.ConTemp || ''}
+              value={char?.ConTemp || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.ConModTemp || ''}
+              value={char?.ConModTemp || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             {/* INT */}
@@ -350,22 +350,22 @@ export default function CharacterDetail() {
             </div>
             <input
               readOnly
-              value={char?.Int || ''}
+              value={char?.Int || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.IntMod || ''}
+              value={char?.IntMod || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.IntTemp || ''}
+              value={char?.IntTemp || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.IntModTemp || ''}
+              value={char?.IntModTemp || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             {/* SAB */}
@@ -378,22 +378,22 @@ export default function CharacterDetail() {
             </div>
             <input
               readOnly
-              value={char?.Wis || ''}
+              value={char?.Wis || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.WisMod || ''}
+              value={char?.WisMod || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.WisTemp || ''}
+              value={char?.WisTemp || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.WisModTemp || ''}
+              value={char?.WisModTemp || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             {/* CAR */}
@@ -406,22 +406,22 @@ export default function CharacterDetail() {
             </div>
             <input
               readOnly
-              value={char?.Cha || ''}
+              value={char?.Cha || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.ChaMod || ''}
+              value={char?.ChaMod || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.ChaTemp || ''}
+              value={char?.ChaTemp || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
             <input
               readOnly
-              value={char?.ChaModTemp || ''}
+              value={char?.ChaModTemp || 0}
               className="w-[48px] h-[36px] text-[#6f0000] font-bold text-[18px] text-center rounded shadow-md"
             />
           </div>
@@ -461,7 +461,7 @@ export default function CharacterDetail() {
                 <div className="flex flex-col items-center">
                   <input
                     readOnly
-                    value={char?.Health || ''}
+                    value={char?.Health || 0}
                     className="w-[100px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow-md"
                   />
                   <label className="text-xs text-gray-700">Vida (HP)</label>
@@ -483,7 +483,7 @@ export default function CharacterDetail() {
                 <div className="flex flex-col items-center">
                   <input
                     readOnly
-                    value={char?.Exp || ''}
+                    value={char?.Exp || 0}
                     className="w-[100px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow-md"
                   />
                   <label className="text-xs text-gray-700">Exp</label>
@@ -491,7 +491,7 @@ export default function CharacterDetail() {
                 <div className="flex flex-col items-center">
                   <input
                     readOnly
-                    value={char?.HealthNow || ''}
+                    value={char?.HealthNow || 0}
                     className="w-[100px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow-md"
                   />
                   <label className="text-xs text-gray-700">Vida Atual</label>
@@ -500,7 +500,7 @@ export default function CharacterDetail() {
                 <div className="flex flex-col items-center">
                   <input
                     readOnly
-                    value={dexMod ?? ''}
+                    value={dexMod ?? 0}
                     className="w-[100px] h-[30px] rounded border border-[#333] text-[#6f0000] font-semibold text-[16px] text-center shadow-md"
                   />
                   <label className="text-xs text-gray-700">Iniciativa</label>

@@ -21,6 +21,7 @@ import PlayMenuBar from './PlayMenuBar'
 import { MENU, type MenuType } from './PlayMenuBar'
 import ActiveMenuPanel from './ActiveMenuPanel'
 import GenericDices from '../../components/CombatComponents/GenericDices'
+import Initiatives from '../../components/CombatComponents/Initiatives'
 
 export default function Play() {
   const {
@@ -98,6 +99,11 @@ export default function Play() {
           className={`relative flex-1 min-w-0 h-full overflow-hidden bg-white rounded-lg shadow-[0px_0px_4px_0px_rgba(0,0,0,0.6)] scrollbar-custom z-0`}
         >
           <GenericDices />
+          <Initiatives
+            profile={user || undefined}
+            from={user?.id}
+            charInit={charInit}
+          />
           <ScrollContainer vertical={allowDrag} horizontal={allowDrag}>
             {diceShow && <MyDices />}
 

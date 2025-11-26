@@ -638,6 +638,8 @@ export default function GmTools() {
             <Select
               styles={customStyles}
               maxMenuHeight={220}
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
               placeholder="ESCOLHA"
               onChange={(e: SelectOption | null) =>
                 setSelectedAttacks(prev => ({

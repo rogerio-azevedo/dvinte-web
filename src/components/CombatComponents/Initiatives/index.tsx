@@ -1,13 +1,12 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { toast } from 'react-toastify'
+import { FaChevronDown, FaChevronUp, FaArrowUp, FaArrowDown, FaTimes, FaUserClock } from 'react-icons/fa'
 import { useAuth } from '../../../contexts'
 import api from '../../../services/api'
 import { connect, socket } from '../../../services/socket'
 import SelectCharacter from '../../SelectCharacter'
-
-import * as Styles from './styles'
 
 interface Profile {
   id: number
@@ -56,6 +55,11 @@ export default function Initiatives({
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null
   )
+  const [isOpen, setIsOpen] = useState(true)
+  const [position, setPosition] = useState({ x: 20, y: 100 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const panelRef = useRef<HTMLDivElement>(null)
 
   async function loadInitiative(): Promise<void> {
     try {
@@ -218,6 +222,15 @@ export default function Initiatives({
       }
     }
 
+    const handleUpdateInit = (updatedInitiative: Initiative): void => {
+      console.log('[SOCKET] Evento init.update recebido:', updatedInitiative)
+      setInitiatives(prevInitiatives =>
+        prevInitiatives.map(init =>
+          init._id === updatedInitiative._id ? updatedInitiative : init
+        )
+      )
+    }
+
     // Conecta ao socket se ainda não estiver conectado
     if (!socket.connected) {
       connect()
@@ -227,6 +240,7 @@ export default function Initiatives({
     socket.on('init.message', handleNewInit)
     socket.on('init.clear', handleClearInit)
     socket.on('init.delete', handleDeleteInit)
+    socket.on('init.update', handleUpdateInit)
 
     // Carrega as iniciativas iniciais
     loadInitiative()
@@ -236,6 +250,7 @@ export default function Initiatives({
       socket.off('init.message', handleNewInit)
       socket.off('init.clear', handleClearInit)
       socket.off('init.delete', handleDeleteInit)
+      socket.off('init.update', handleUpdateInit)
     }
   }, [])
 
@@ -243,6 +258,62 @@ export default function Initiatives({
   useEffect(() => {
     loadUserCharacters()
   }, [loadUserCharacters])
+
+  // Persistência do estado aberto/fechado e posição
+  useEffect(() => {
+    const savedOpen = localStorage.getItem('initiatives-panel-open')
+    const savedPosition = localStorage.getItem('initiatives-panel-position')
+    if (savedOpen !== null) setIsOpen(savedOpen === 'true')
+    if (savedPosition) {
+      try {
+        setPosition(JSON.parse(savedPosition))
+      } catch {
+        // Ignora erro de parse
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('initiatives-panel-open', isOpen ? 'true' : 'false')
+  }, [isOpen])
+
+  useEffect(() => {
+    localStorage.setItem('initiatives-panel-position', JSON.stringify(position))
+  }, [position])
+
+  // Handlers de drag
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!panelRef.current) return
+    const rect = panelRef.current.getBoundingClientRect()
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    })
+    setIsDragging(true)
+  }
+
+  useEffect(() => {
+    if (!isDragging) return
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setPosition({
+        x: e.clientX - dragOffset.x,
+        y: e.clientY - dragOffset.y,
+      })
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging, dragOffset])
 
   async function clearInitiatives(): Promise<void> {
     try {
@@ -255,73 +326,265 @@ export default function Initiatives({
     }
   }
 
-  return (
-    <Styles.Container>
-      <Styles.HeaderContainer>
-        <h2>Iniciativas</h2>
-      </Styles.HeaderContainer>
+  async function deleteInitiative(initiativeId: string): Promise<void> {
+    try {
+      await api.delete(`/initiatives/${initiativeId}`)
+      toast.success('Iniciativa removida com sucesso')
+    } catch (error) {
+      console.error('Erro ao remover iniciativa:', error)
+      toast.error('Erro ao remover iniciativa')
+    }
+  }
 
-      {/* Seletor de Personagem */}
-      <div style={{ padding: '10px 0', width: '100%' }}>
-        {userCharacters.length > 1 ? (
-          <SelectCharacter
-            characters={characterOptions}
-            changeCharacter={handleCharacterChange}
-            value={selectedCharacter?.id.toString()}
-          />
-        ) : userCharacters.length === 1 ? (
-          <div
-            style={{
-              padding: '10px',
-              textAlign: 'center',
-              fontWeight: 'bold',
-              border: '2px solid #4a90e2',
-              borderRadius: '4px',
-              backgroundColor: '#f0f7ff',
-            }}
-          >
-            {userCharacters[0].name}
+  async function moveInitiative(
+    initiativeId: string,
+    currentInitiative: number,
+    direction: 'up' | 'down'
+  ): Promise<void> {
+    try {
+      const sortedInitiatives = [...initiatives].sort(
+        (a, b) => b.initiative - a.initiative
+      )
+      const currentIndex = sortedInitiatives.findIndex(
+        init => init._id === initiativeId
+      )
+
+      if (currentIndex === -1) return
+
+      let newInitiative: number
+
+      if (direction === 'up') {
+        // Mover para cima: aumentar a iniciativa para ficar acima do item anterior
+        if (currentIndex === 0) {
+          // Já está no topo, aumentar em 1
+          newInitiative = currentInitiative + 1
+        } else {
+          const previousInitiative = sortedInitiatives[currentIndex - 1].initiative
+          // Colocar entre o anterior e o atual, ou acima do anterior
+          newInitiative = previousInitiative + 1
+        }
+      } else {
+        // Mover para baixo: diminuir a iniciativa para ficar abaixo do próximo item
+        if (currentIndex === sortedInitiatives.length - 1) {
+          // Já está no final, diminuir em 1
+          newInitiative = Math.max(0, currentInitiative - 1)
+        } else {
+          const nextInitiative = sortedInitiatives[currentIndex + 1].initiative
+          // Colocar entre o atual e o próximo, ou abaixo do próximo
+          newInitiative = Math.max(0, nextInitiative - 1)
+        }
+      }
+
+      await api.put(`/initiatives/${initiativeId}`, {
+        initiative: newInitiative,
+      })
+    } catch (error) {
+      console.error('Erro ao reordenar iniciativa:', error)
+      toast.error('Erro ao reordenar iniciativa')
+    }
+  }
+
+  const sortedInitiatives = [...initiatives].sort(
+    (a, b) => b.initiative - a.initiative
+  )
+
+  return (
+    <div
+      ref={panelRef}
+      className="fixed z-50 select-none pointer-events-auto"
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        cursor: isDragging ? 'grabbing' : 'default',
+      }}
+    >
+      <div
+        className={`
+          bg-white/10
+          backdrop-blur-md
+          border border-white/20
+          shadow-2xl
+          rounded-2xl
+          transition-all duration-300
+          overflow-hidden
+          flex flex-col
+          pointer-events-auto
+          ${isOpen ? 'w-[380px] max-h-[600px]' : 'w-24 h-16'}
+        `}
+      >
+        {/* Header - arrastável */}
+        <div
+          className="flex items-center justify-between px-4 py-3 cursor-move hover:bg-white/5 transition pointer-events-auto"
+          onMouseDown={handleMouseDown}
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 flex items-center justify-center aspect-square bg-red-500/20 rounded-lg">
+              <FaUserClock className="text-red-400" size={18} />
+            </div>
+            {isOpen && (
+              <span className="font-bold text-white text-lg tracking-tight">
+                Iniciativas
+              </span>
+            )}
           </div>
-        ) : (
-          <div style={{ padding: '10px', textAlign: 'center', color: '#999' }}>
-            Carregando personagens...
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsOpen((o) => !o)
+            }}
+            className="text-gray-400 hover:text-white transition"
+          >
+            {isOpen ? (
+              <FaChevronUp className="w-4 h-4" />
+            ) : (
+              <FaChevronDown className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+
+        {/* Conteúdo */}
+        {isOpen && (
+          <div className="flex flex-col gap-4 px-4 pb-4 pt-2 animate-fade-in pointer-events-auto max-h-[550px] overflow-y-auto">
+            {/* Seletor de Personagem */}
+            <div className="w-full flex justify-center">
+              {userCharacters.length > 1 ? (
+                <div className="w-full max-w-xs">
+                  <SelectCharacter
+                    characters={characterOptions}
+                    changeCharacter={handleCharacterChange}
+                    value={selectedCharacter?.id.toString()}
+                  />
+                </div>
+              ) : userCharacters.length === 1 ? (
+                <div className="px-3 py-2 text-center font-semibold border-2 border-purple-500/50 rounded-lg bg-purple-500/10 text-white">
+                  {userCharacters[0].name}
+                </div>
+              ) : (
+                <div className="px-3 py-2 text-center text-gray-400">
+                  Carregando personagens...
+                </div>
+              )}
+            </div>
+
+            {/* Botão de Iniciativa */}
+            <button
+              type="button"
+              onClick={handleInitiative}
+              disabled={isLoading || !selectedCharacter}
+              className={`w-full py-2.5 rounded-xl font-bold text-white text-sm shadow-lg transition-all duration-200 ${
+                isLoading || !selectedCharacter
+                  ? 'bg-gray-700 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 hover:scale-[1.02] active:scale-95'
+              } focus:ring-2 focus:ring-red-500/50`}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Rolando...</span>
+                </div>
+              ) : (
+                '🎲 Rolar Iniciativa'
+              )}
+            </button>
+
+            {/* Lista de Iniciativas */}
+            <div className="space-y-2">
+              {sortedInitiatives.length === 0 ? (
+                <div className="text-center text-gray-400 py-4 text-sm">
+                  Nenhuma iniciativa registrada
+                </div>
+              ) : (
+                sortedInitiatives.map((item, index) => {
+                  const isFirst = index === 0
+                  const isLast = index === sortedInitiatives.length - 1
+                  return (
+                    <div
+                      key={item._id || `initiative-${index}`}
+                      className="flex items-center gap-2 p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition"
+                    >
+                      {/* Setas - lado esquerdo */}
+                      <div className="flex flex-col gap-0.5">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            moveInitiative(item._id, item.initiative, 'up')
+                          }
+                          disabled={isFirst}
+                          title="Mover para cima"
+                          className={`w-5 h-5 rounded flex items-center justify-center text-xs font-bold transition ${
+                            isFirst
+                              ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
+                              : 'bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:scale-110 active:scale-95'
+                          }`}
+                        >
+                          <FaArrowUp size={8} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            moveInitiative(item._id, item.initiative, 'down')
+                          }
+                          disabled={isLast}
+                          title="Mover para baixo"
+                          className={`w-5 h-5 rounded flex items-center justify-center text-xs font-bold transition ${
+                            isLast
+                              ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
+                              : 'bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:scale-110 active:scale-95'
+                          }`}
+                        >
+                          <FaArrowDown size={8} />
+                        </button>
+                      </div>
+
+                      {/* Nome e Valor - centro */}
+                      <div className="flex-1 flex items-center gap-2">
+                        <input
+                          readOnly
+                          value={item.user}
+                          className="flex-1 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                        />
+                        <input
+                          readOnly
+                          value={item.initiative}
+                          className="w-14 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-white text-center text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                        />
+                      </div>
+
+                      {/* Botão de excluir - lado direito */}
+                      <button
+                        type="button"
+                        onClick={() => deleteInitiative(item._id)}
+                        title="Excluir iniciativa"
+                        className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold bg-red-600/20 hover:bg-red-600/30 text-red-400 hover:scale-110 active:scale-95 transition flex-shrink-0"
+                      >
+                        <FaTimes size={10} />
+                      </button>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+
+            {/* Botões de ação */}
+            <div className="flex gap-2 pt-2 border-t border-white/10">
+              <button
+                type="button"
+                onClick={clearInitiatives}
+                className="flex-1 py-2 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-400 font-semibold text-sm transition hover:scale-[1.02] active:scale-95"
+              >
+                Limpar
+              </button>
+              <button
+                type="button"
+                onClick={loadInitiative}
+                className="flex-1 py-2 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 font-semibold text-sm transition hover:scale-[1.02] active:scale-95"
+              >
+                Recarregar
+              </button>
+            </div>
           </div>
         )}
       </div>
-
-      <Styles.ButtonsContainer>
-        <Styles.ButtonInit
-          type="button"
-          onClick={handleInitiative}
-          disabled={isLoading || !selectedCharacter}
-        >
-          {isLoading ? 'Rolando...' : 'Iniciativa'}
-        </Styles.ButtonInit>
-      </Styles.ButtonsContainer>
-
-      <Styles.InitContainer>
-        <Styles.InitBoardContainer>
-          <ul>
-            {initiatives
-              .sort((a, b) => b.initiative - a.initiative)
-              .map((item, index) => (
-                <li key={item._id || `initiative-${index}`}>
-                  <Styles.InitUser readOnly defaultValue={item.user} />
-                  <Styles.InitValue readOnly defaultValue={item.initiative} />
-                </li>
-              ))}
-          </ul>
-        </Styles.InitBoardContainer>
-      </Styles.InitContainer>
-
-      <Styles.ButtonsContainer>
-        <Styles.Button type="button" onClick={clearInitiatives}>
-          Limpar
-        </Styles.Button>
-        <Styles.Button type="button" onClick={loadInitiative}>
-          Recarregar
-        </Styles.Button>
-      </Styles.ButtonsContainer>
-    </Styles.Container>
+    </div>
   )
 }

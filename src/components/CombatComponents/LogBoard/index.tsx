@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import React, { useState, useEffect, useRef } from 'react'
+import { FaTimes } from 'react-icons/fa'
 import { useAuth } from '../../../contexts'
 import { format, parseISO } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
@@ -9,7 +10,7 @@ import api from '../../../services/api'
 import { connect, socket } from '../../../services/socket'
 
 interface LogMessage {
-  id: number
+  id: number | string
   user: string
   message: string
   date: string
@@ -40,7 +41,17 @@ const LogBoard: React.FC = () => {
   async function loadAllMessages(): Promise<void> {
     try {
       const response = await api.get<LogMessage[]>('/combats')
-      setMessages(response.data)
+      const normalizedMessages = response.data.map((m: any) => ({
+        ...m,
+        isCrit: typeof m.isCrit === 'string' 
+          ? m.isCrit 
+          : m.isCrit === true 
+          ? 'HIT' 
+          : m.isCrit === false 
+          ? 'FAIL' 
+          : null
+      }))
+      setMessages(normalizedMessages)
     } catch (error) {
       console.error('Erro ao carregar mensagens do LogBoard:', error)
       toast.error('Houve um problema ao carregar as mensagens do Chat!')
@@ -51,15 +62,44 @@ const LogBoard: React.FC = () => {
     scrollToBottom()
   })
 
+  async function deleteMessage(messageId: string | number): Promise<void> {
+    try {
+      await api.delete(`/combats/${messageId}`)
+      toast.success('Mensagem excluída com sucesso')
+    } catch (error) {
+      console.error('Erro ao excluir mensagem:', error)
+      toast.error('Erro ao excluir mensagem')
+    }
+  }
+
   useEffect(() => {
     const handleNewMessage = (newMessage: LogMessage): void => {
-      setMessages(prevMessages => [...prevMessages, newMessage])
+      // Garantir que isCrit seja sempre string
+      const normalizedMessage = {
+        ...newMessage,
+        isCrit: typeof newMessage.isCrit === 'string' 
+          ? newMessage.isCrit 
+          : newMessage.isCrit === true 
+          ? 'HIT' 
+          : newMessage.isCrit === false 
+          ? 'FAIL' 
+          : null
+      }
+      setMessages(prevMessages => [...prevMessages, normalizedMessage])
+    }
+
+    const handleDeleteMessage = (data: { id: string | number }): void => {
+      setMessages(prevMessages =>
+        prevMessages.filter(msg => String(msg.id) !== String(data.id))
+      )
     }
 
     socket.on('chat.message', handleNewMessage)
+    socket.on('chat.delete', handleDeleteMessage)
 
     return () => {
       socket.off('chat.message', handleNewMessage)
+      socket.off('chat.delete', handleDeleteMessage)
     }
   }, [messages])
 
@@ -76,7 +116,7 @@ const LogBoard: React.FC = () => {
             {messages.map((message, index) => (
               <li
                 ref={index === messages.length - 1 ? messagesEndRef : null}
-                className={`mb-4 ${
+                className={`mb-4 clear-both ${
                   from === message.user ? 'text-right' : 'text-left'
                 }`}
                 key={`message-${message.id}-${index}`}
@@ -86,27 +126,52 @@ const LogBoard: React.FC = () => {
                     from === message.user ? 'text-right' : 'text-left'
                   }`}
                 >
-                  <span className="text-gray-500 text-xs pl-1">
-                    {formatDate(message.date)}
-                  </span>
-                  <span
-                    className={`text-black text-sm pl-1 ${
-                      from === message.user ? 'float-right' : 'float-left'
+                  <div
+                    className={`inline-flex items-center gap-2 ${
+                      from === message.user ? 'flex-row-reverse' : 'flex-row'
                     }`}
                   >
-                    {message.user}
-                  </span>
+                    <span className="text-gray-500 text-xs">
+                      {formatDate(message.date)}
+                    </span>
+                    <span className="text-black text-sm">
+                      {message.user}
+                    </span>
+                    {user?.is_gm && (
+                      <button
+                        onClick={() => deleteMessage(message.id)}
+                        title="Excluir mensagem"
+                        className="text-red-500 hover:text-red-700 transition hover:scale-110"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '2px 4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <FaTimes size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div
-                  className={`relative inline-block px-3 py-2 rounded-lg w-full mb-4 ${
+                  className={`relative inline-block px-3 py-2 rounded-lg max-w-[80%] mb-4 ${
                     from === message.user
                       ? 'bg-green-300 float-right'
                       : 'bg-blue-200 float-left'
                   } ${
                     message.isCrit === 'HIT'
-                      ? 'text-blue-700'
+                      ? 'border-2 border-blue-500'
                       : message.isCrit === 'FAIL'
-                      ? 'text-red-700'
+                      ? 'border-2 border-red-500'
+                      : ''
+                  } ${
+                    message.isCrit === 'HIT'
+                      ? 'text-blue-800 font-bold'
+                      : message.isCrit === 'FAIL'
+                      ? 'text-red-800 font-bold'
                       : 'text-black'
                   }`}
                 >

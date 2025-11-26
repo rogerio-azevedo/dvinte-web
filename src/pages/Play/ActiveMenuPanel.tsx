@@ -2,7 +2,6 @@
 
 import React from 'react'
 import Chat from '../../components/CombatComponents/Chat'
-import Initiatives from '../../components/CombatComponents/Initiatives'
 import ArmoryDelay from '../../components/CombatComponents/ArmoryDelay'
 import DamagesCounter from '../../components/CombatComponents/DamagesCounter'
 import CharStatusComponent from '../../components/CombatComponents/CharStatus'
@@ -35,7 +34,6 @@ interface ActiveMenuPanelProps {
 const ActiveMenuPanel: React.FC<ActiveMenuPanelProps> = ({
   menu,
   user,
-  charInit,
   character,
   weapons,
   getCharacter,
@@ -49,13 +47,7 @@ const ActiveMenuPanel: React.FC<ActiveMenuPanelProps> = ({
     case MENU.CHAT:
       return <Chat />
     case MENU.INIT:
-      return (
-        <Initiatives
-          profile={user || undefined}
-          from={user?.id}
-          charInit={charInit}
-        />
-      )
+      return null
     case MENU.ATTACK:
       return (
         <div className="flex flex-1 flex-col overflow-auto">

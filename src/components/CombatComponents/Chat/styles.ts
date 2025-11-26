@@ -51,15 +51,24 @@ export const Message = styled.div<MessageStyleProps>`
   margin-bottom: 30px;
   width: 100%;
   position: relative;
+  font-weight: ${props => (props.crit === 'HIT' || props.crit === 'FAIL') ? 'bold' : 'normal'};
 
   color: ${props =>
     props.crit === 'HIT'
-      ? '#0000FF'
+      ? '#1e40af'
       : props.crit === 'FAIL'
-      ? '#FF0000'
+      ? '#dc2626'
       : '#000'};
 
   background: ${props => (props.from ? '#c3e88d' : '#94c2ed')};
+  
+  border: ${props => 
+    props.crit === 'HIT' 
+      ? '2px solid #3b82f6' 
+      : props.crit === 'FAIL' 
+      ? '2px solid #ef4444' 
+      : 'none'};
+
   float: ${props => (props.from ? 'right' : 'left')};
 
   &:after {

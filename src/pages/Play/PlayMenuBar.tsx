@@ -2,7 +2,6 @@ import { Link } from 'react-router'
 import ReactTooltip from 'react-tooltip'
 import {
   FaComments,
-  FaUserClock,
   FaDiceD20,
   FaExpandArrowsAlt,
   FaRunning,
@@ -103,14 +102,7 @@ const PlayMenuBar: React.FC<PlayMenuBarProps> = ({
         onClick={() => handleMenu(MENU.DAMAGE)}
       />
     </div>
-    <div data-tip="Iniciativas">
-      <FaUserClock
-        size={30}
-        color={getIconColor(MENU.INIT, menu)}
-        cursor="pointer"
-        onClick={() => handleMenu(MENU.INIT)}
-      />
-    </div>
+
     <div data-tip="Status do Personagem">
       <GiSwordsEmblem
         size={28}

@@ -95,18 +95,67 @@ export default function GenericDices() {
     message: string
     result: number
   } | null>(null)
+  const [position, setPosition] = useState({ x: 16, y: 16 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const panelRef = useRef<HTMLDivElement>(null)
 
   const { setDiceData, state: diceState } = useDices()
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Persistência do estado aberto/fechado
+  // Persistência do estado aberto/fechado e posição
   useEffect(() => {
-    const saved = localStorage.getItem('generic-dice-card-open')
-    if (saved !== null) setIsOpen(saved === 'true')
+    const savedOpen = localStorage.getItem('generic-dice-card-open')
+    const savedPosition = localStorage.getItem('generic-dice-card-position')
+    if (savedOpen !== null) setIsOpen(savedOpen === 'true')
+    if (savedPosition) {
+      try {
+        setPosition(JSON.parse(savedPosition))
+      } catch {
+        // Ignora erro de parse
+      }
+    }
   }, [])
   useEffect(() => {
     localStorage.setItem('generic-dice-card-open', isOpen ? 'true' : 'false')
   }, [isOpen])
+  useEffect(() => {
+    localStorage.setItem('generic-dice-card-position', JSON.stringify(position))
+  }, [position])
+
+  // Handlers de drag
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!panelRef.current) return
+    const rect = panelRef.current.getBoundingClientRect()
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    })
+    setIsDragging(true)
+  }
+
+  useEffect(() => {
+    if (!isDragging) return
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setPosition({
+        x: e.clientX - dragOffset.x,
+        y: e.clientY - dragOffset.y,
+      })
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging, dragOffset])
 
   // Detecta quando a animação dos dados 3D termina para enviar mensagem para o chat
   useEffect(() => {
@@ -226,11 +275,17 @@ export default function GenericDices() {
       )
 
       // Prepara mensagem para ser enviada após a animação terminar
-      const rolled = `Rolou ${multiplier}x d${selectedDice}: [${rolls.join(
-        ', '
-      )}]${
-        modifier !== 0 ? (modifier > 0 ? ` +${modifier}` : ` ${modifier}`) : ''
-      } = ${total}`
+      const rollsText =
+        multiplier === 1 ? `${rolls[0]}` : `[${rolls.join(', ')}] = ${subtotal}`
+
+      const modifierText =
+        modifier !== 0
+          ? modifier > 0
+            ? ` + ${modifier} modificador`
+            : ` ${modifier} modificador`
+          : ''
+
+      const rolled = `🎲 Rolou ${multiplier}x d${selectedDice}: ${rollsText}${modifierText}: ${total}`
 
       setPendingChatMessage({
         message: rolled,
@@ -248,7 +303,15 @@ export default function GenericDices() {
   const dec = () => setMultiplier(m => Math.max(m - 1, 1))
 
   return (
-    <div className="absolute top-4 left-4 z-10 select-none pointer-events-auto">
+    <div
+      ref={panelRef}
+      className="fixed z-50 select-none pointer-events-auto"
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        cursor: isDragging ? 'grabbing' : 'default',
+      }}
+    >
       <div
         className={`
           bg-white/10
@@ -263,10 +326,10 @@ export default function GenericDices() {
           ${isOpen ? 'w-[340px] h-auto' : 'w-20 h-16'}
         `}
       >
-        {/* Header */}
+        {/* Header - arrastável */}
         <div
-          className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/5 transition pointer-events-auto"
-          onClick={() => setIsOpen(o => !o)}
+          className="flex items-center justify-between px-4 py-3 cursor-move hover:bg-white/5 transition pointer-events-auto"
+          onMouseDown={handleMouseDown}
         >
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 flex items-center justify-center aspect-square">
@@ -282,11 +345,19 @@ export default function GenericDices() {
               </span>
             )}
           </div>
-          {isOpen ? (
-            <FaChevronUp className="w-4 h-4 text-gray-400" />
-          ) : (
-            <FaChevronDown className="w-4 h-4 text-gray-400" />
-          )}
+          <button
+            onClick={e => {
+              e.stopPropagation()
+              setIsOpen(o => !o)
+            }}
+            className="text-gray-400 hover:text-white transition"
+          >
+            {isOpen ? (
+              <FaChevronUp className="w-4 h-4" />
+            ) : (
+              <FaChevronDown className="w-4 h-4" />
+            )}
+          </button>
         </div>
 
         {/* Conteúdo */}

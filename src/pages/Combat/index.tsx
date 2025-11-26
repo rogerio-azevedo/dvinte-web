@@ -11,7 +11,6 @@ import { useAuth, useMenu } from '../../contexts'
 import { connect, socket } from '../../services/socket'
 import {
   FaComments,
-  FaUserClock,
   FaDiceD20,
   FaExpandArrowsAlt,
   FaRunning,
@@ -216,6 +215,11 @@ export default function Combat(): React.JSX.Element {
   return (
     <Styles.Container>
       <Styles.CombatContainer show={!!showMenu}>
+        <Initiatives
+          profile={user || undefined}
+          from={user?.id}
+          charInit={charInit}
+        />
         <ScrollContainer vertical={allowDrag} horizontal={allowDrag}>
           <Styles.MapContainer>
             <RenderMap
@@ -287,15 +291,6 @@ export default function Combat(): React.JSX.Element {
             />
           </div>
 
-          <div data-tip="Iniciativas">
-            <FaUserClock
-              size={30}
-              color="#8e0e00"
-              cursor="pointer"
-              onClick={() => handleMenu('init')}
-            />
-          </div>
-
           <div data-tip="Status do Personagem">
             <GiSwordsEmblem
               size={28}
@@ -325,13 +320,7 @@ export default function Combat(): React.JSX.Element {
 
         {menu === 'chat' ? (
           <Chat />
-        ) : menu === 'init' ? (
-          <Initiatives
-            profile={user || undefined}
-            from={user?.id}
-            charInit={charInit}
-          />
-        ) : menu === 'saves' ? (
+        ) : menu === 'init' ? null : menu === 'saves' ? (
           <Styles.SavesConteiner>
             <Styles.ButtonsContainer>
               <Savins

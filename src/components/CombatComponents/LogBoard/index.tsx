@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import React, { useState, useEffect, useRef } from 'react'
 import { FaTimes } from 'react-icons/fa'
 import { useAuth } from '../../../contexts'
@@ -41,15 +40,13 @@ const LogBoard: React.FC = () => {
   async function loadAllMessages(): Promise<void> {
     try {
       const response = await api.get<LogMessage[]>('/combats')
-      const normalizedMessages = response.data.map((m: any) => ({
+      const normalizedMessages = response.data.map((m: LogMessage) => ({
         ...m,
-        isCrit: typeof m.isCrit === 'string' 
-          ? m.isCrit 
-          : m.isCrit === true 
-          ? 'HIT' 
-          : m.isCrit === false 
-          ? 'FAIL' 
-          : null
+        isCrit:
+          typeof m.isCrit === 'string' &&
+          (m.isCrit === 'HIT' || m.isCrit === 'FAIL')
+            ? m.isCrit
+            : null,
       }))
       setMessages(normalizedMessages)
     } catch (error) {
@@ -74,16 +71,15 @@ const LogBoard: React.FC = () => {
 
   useEffect(() => {
     const handleNewMessage = (newMessage: LogMessage): void => {
-      // Garantir que isCrit seja sempre string
+      // Garantir que isCrit seja sempre string ou null
       const normalizedMessage = {
         ...newMessage,
-        isCrit: typeof newMessage.isCrit === 'string' 
-          ? newMessage.isCrit 
-          : newMessage.isCrit === true 
-          ? 'HIT' 
-          : newMessage.isCrit === false 
-          ? 'FAIL' 
-          : null
+        isCrit:
+          typeof newMessage.isCrit === 'string'
+            ? newMessage.isCrit === 'HIT' || newMessage.isCrit === 'FAIL'
+              ? newMessage.isCrit
+              : null
+            : null,
       }
       setMessages(prevMessages => [...prevMessages, normalizedMessage])
     }
@@ -134,9 +130,7 @@ const LogBoard: React.FC = () => {
                     <span className="text-gray-500 text-xs">
                       {formatDate(message.date)}
                     </span>
-                    <span className="text-black text-sm">
-                      {message.user}
-                    </span>
+                    <span className="text-black text-sm">{message.user}</span>
                     {user?.is_gm && (
                       <button
                         onClick={() => deleteMessage(message.id)}

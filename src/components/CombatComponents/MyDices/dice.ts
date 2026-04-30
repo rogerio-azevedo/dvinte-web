@@ -657,7 +657,9 @@ export class DiceD8 extends DiceObject {
     this.tab = 0
     this.af = -Math.PI / 4 / 2
     this.chamfer = 0.965
-    this.invertUpside = true
+    // invertUpside removido: para o octaedro (D8), lê-se a face de CIMA,
+    // igual ao D6. Com invertUpside=true, getUpsideValue() lia a face de baixo,
+    // corrompendo o cálculo do shiftUpperValue.
     this.vertices = [
       [1, 0, 0],
       [-1, 0, 0],
@@ -667,14 +669,14 @@ export class DiceD8 extends DiceObject {
       [0, 0, -1],
     ]
     this.faces = [
-      [0, 2, 4, 8],
-      [0, 4, 3, 7],
-      [0, 3, 5, 6],
-      [0, 5, 2, 5],
-      [1, 3, 4, 4],
-      [1, 4, 2, 3],
-      [1, 2, 5, 2],
-      [1, 5, 3, 1],
+      [0, 2, 4, 1],
+      [0, 4, 3, 2],
+      [0, 3, 5, 3],
+      [0, 5, 2, 4],
+      [1, 3, 4, 5],
+      [1, 4, 2, 6],
+      [1, 2, 5, 7],
+      [1, 5, 3, 8],
     ]
     this.scaleFactor = 1
     this.values = 8

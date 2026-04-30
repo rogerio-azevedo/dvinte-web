@@ -19,7 +19,7 @@ export const ChatContainer = styled.div`
 `
 
 export const ChatHistory = styled.div`
-  padding: 30px 30px 20px;
+  padding: 10px 10px 20px;
   border-bottom: 2px solid white;
   overflow: auto;
   height: 100%;

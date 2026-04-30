@@ -72,11 +72,11 @@ export default function SelectCharacter({
   }
 
   return (
-    <div className="w-72">
+    <div className="w-full px-2">
       <Select
         styles={customStyles}
         maxMenuHeight={220}
-        placeholder="ESCOLHA O PERSONAGEM"
+        placeholder="Selecione o personagem"
         onChange={handleChange}
         isLoading={loading}
         options={characterOptions}

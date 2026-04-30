@@ -105,10 +105,10 @@ const LogBoard: React.FC = () => {
   }, [])
 
   return (
-    <div className="flex flex-col w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent bg-white rounded-lg p-2">
+    <div className="flex flex-col w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent bg-white rounded-lg px-1 py-2">
       <div className="w-full flex-1 flex flex-row font-sans">
-        <div className="w-full p-4 border-b-2 border-white">
-          <ul>
+        <div className="w-full border-b-2 border-white">
+          <ul className="w-full p-0 m-0">
             {messages.map((message, index) => (
               <li
                 ref={index === messages.length - 1 ? messagesEndRef : null}
@@ -151,7 +151,7 @@ const LogBoard: React.FC = () => {
                   </div>
                 </div>
                 <div
-                  className={`relative inline-block px-3 py-2 rounded-lg max-w-[80%] mb-4 ${
+                  className={`relative inline-block px-2 py-2 rounded-lg max-w-full mb-4 ${
                     from === message.user
                       ? 'bg-green-300 float-right'
                       : 'bg-blue-200 float-left'

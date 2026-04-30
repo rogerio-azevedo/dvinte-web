@@ -59,7 +59,7 @@ export default function SelectWeapon({
   }
 
   return (
-    <div className="w-72">
+    <div className="w-full px-2">
       <Select<Option>
         styles={customStyles}
         maxMenuHeight={220}

@@ -46,21 +46,23 @@ export const ArmoryContainer = styled.div`
 export const AttackContainer = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   margin-top: 10px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 
   button {
     color: #6f0000;
-    width: 95px !important;
+    flex: 1;
+    min-width: 75px;
     height: 35px !important;
+    padding: 0 4px;
     text-align: center;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 12px;
     border-radius: 4px;
-    margin-right: 8px;
-    margin-left: 8px;
     border: 0;
     cursor: pointer;
 

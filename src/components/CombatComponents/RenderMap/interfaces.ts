@@ -4,6 +4,7 @@ export interface RenderMapProps {
   tokens?: Token[]
   allowDrag?: boolean
   setTokens?: Dispatch<SetStateAction<Token[]>>
+  containerSize?: { width: number; height: number }
 }
 
 export interface Token {

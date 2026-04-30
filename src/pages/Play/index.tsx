@@ -1,27 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 import { connect } from '../../services/socket'
 import {
   type Character,
   type CharStatusData,
   type WeaponItem,
+  MENU,
+  type MenuType,
 } from './interfaces'
 
 import { type Token } from '../../components/CombatComponents/RenderMap/interfaces'
 
 import RenderMap from '../../components/CombatComponents/RenderMap'
-import ScrollContainer from 'react-indiana-drag-scroll'
 import MyDices from '../../components/CombatComponents/MyDices'
 import { useDices } from '../../hooks/useDices'
 import { useAuth } from '../../contexts'
 import { getTokens } from './getTokens'
 import { getCharacter } from './getCharacters'
-import PlayMenuBar from './PlayMenuBar'
-import { MENU, type MenuType } from './PlayMenuBar'
+import PlaySidebar from './PlaySidebar'
 import ActiveMenuPanel from './ActiveMenuPanel'
 import GenericDices from '../../components/CombatComponents/GenericDices'
 import Initiatives from '../../components/CombatComponents/Initiatives'
+import { useStageSize } from '../../hooks/useStageSize'
 
 export default function Play() {
   const {
@@ -43,6 +44,9 @@ export default function Play() {
   const [weapons, setWeapons] = useState<WeaponItem[]>()
   const [charStatus, setCharStatus] = useState<CharStatusData>()
   const { setDiceData } = useDices()
+
+  const mapContainerRef = useRef<HTMLDivElement>(null)
+  const mapSize = useStageSize(mapContainerRef)
 
   const clickListener = (event: any) => {
     if (event.target.tagName === 'CANVAS') {
@@ -94,36 +98,41 @@ export default function Play() {
 
   return (
     <div className="flex w-full h-full justify-center items-center">
-      <div className="flex flex-row align-stretch w-full  auto gap-16px overflow-hidden gap-4 px-2 h-[calc(100vh-65px)]">
+      <div className="flex flex-row align-stretch w-full auto overflow-hidden gap-4 px-2 h-[calc(100vh-65px)]">
         <div
-          className={`relative flex-1 min-w-0 h-full overflow-hidden bg-white rounded-lg shadow-[0px_0px_4px_0px_rgba(0,0,0,0.6)] scrollbar-custom z-0`}
+          ref={mapContainerRef}
+          className="relative flex-1 min-w-0 h-full overflow-hidden bg-[#bebebe] rounded-lg shadow-[0px_0px_4px_0px_rgba(0,0,0,0.6)] z-0"
         >
-          <GenericDices />
-          <Initiatives
-            profile={user || undefined}
-            from={user?.id}
-            charInit={charInit}
-          />
-          <ScrollContainer vertical={allowDrag} horizontal={allowDrag}>
-            {diceShow && <MyDices />}
+          <div className="absolute top-0 left-0 w-full z-10 pointer-events-none">
+            <div className="pointer-events-auto">
+              <GenericDices />
+              <Initiatives
+                profile={user || undefined}
+                from={user?.id}
+                charInit={charInit}
+              />
+            </div>
+          </div>
 
-            <RenderMap
-              tokens={tokens}
-              allowDrag={allowDrag}
-              setTokens={setTokens}
-            />
-          </ScrollContainer>
+          <div className="absolute top-0 left-0 w-full h-full z-20 pointer-events-none">
+            {diceShow && <MyDices />}
+          </div>
+
+          <RenderMap
+            tokens={tokens}
+            allowDrag={allowDrag}
+            setTokens={setTokens}
+            containerSize={mapSize}
+          />
         </div>
 
-        <div className="flex flex-col w-96 shadow-[0px_0px_4px_0px_rgba(0,0,0,0.6)] rounded-lg px-2 pt-2 h-full">
-          <PlayMenuBar
-            allowDrag={allowDrag}
-            handleDragable={handleDragable}
-            handleMenu={handleMenu}
-            user={user}
-            menu={menu}
-          />
-
+        <PlaySidebar
+          allowDrag={allowDrag}
+          handleDragable={handleDragable}
+          handleMenu={handleMenu}
+          user={user}
+          menu={menu}
+        >
           <ActiveMenuPanel
             menu={menu}
             user={user}
@@ -137,7 +146,7 @@ export default function Play() {
             strength={strength}
             charStatus={charStatus}
           />
-        </div>
+        </PlaySidebar>
       </div>
     </div>
   )

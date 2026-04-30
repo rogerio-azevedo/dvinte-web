@@ -9,12 +9,13 @@ import LogBoard from '../../components/CombatComponents/LogBoard'
 import MapTool from '../../components/CombatComponents/MapTool'
 import Savins from '../../components/CombatComponents/Savings'
 import * as Styles from './styles'
-import { MENU, type MenuType } from './PlayMenuBar'
 
 import {
   type Character,
   type CharStatusData,
   type WeaponItem,
+  MENU,
+  type MenuType,
 } from './interfaces'
 
 interface ActiveMenuPanelProps {
@@ -50,17 +51,21 @@ const ActiveMenuPanel: React.FC<ActiveMenuPanelProps> = ({
       return null
     case MENU.ATTACK:
       return (
-        <div className="flex flex-1 flex-col overflow-auto">
-          <ArmoryDelay
-            character={character}
-            weapons={weapons || []}
-            loadChar={async () => {
-              if (!user) return
-              await getCharacter({ id: user.id })
-            }}
-          />
-          <h2>Painel Logs</h2>
-          <LogBoard />
+        <div className="flex flex-1 flex-col overflow-hidden h-full">
+          <div className="flex-shrink-0">
+            <ArmoryDelay
+              character={character}
+              weapons={weapons || []}
+              loadChar={async () => {
+                if (!user) return
+                await getCharacter({ id: user.id })
+              }}
+            />
+          </div>
+          <h2 className="mt-4 mb-2 font-semibold text-center flex-shrink-0">Painel Logs</h2>
+          <div className="flex-1 overflow-y-auto w-full">
+            <LogBoard />
+          </div>
         </div>
       )
     case MENU.DAMAGE:
@@ -73,17 +78,21 @@ const ActiveMenuPanel: React.FC<ActiveMenuPanelProps> = ({
       )
     case MENU.SAVES:
       return (
-        <Styles.SavesConteiner>
-          <Styles.ButtonsContainer>
-            <Savins
-              fortitude={fortitude}
-              reflex={reflex}
-              will={will}
-              strength={strength}
-            />
-          </Styles.ButtonsContainer>
-          <h2>Painel Logs</h2>
-          <LogBoard />
+        <Styles.SavesConteiner className="flex flex-1 flex-col overflow-hidden h-full">
+          <div className="flex-shrink-0 w-full">
+            <Styles.ButtonsContainer>
+              <Savins
+                fortitude={fortitude}
+                reflex={reflex}
+                will={will}
+                strength={strength}
+              />
+            </Styles.ButtonsContainer>
+          </div>
+          <h2 className="mt-4 mb-2 font-semibold text-center flex-shrink-0">Painel Logs</h2>
+          <div className="flex-1 overflow-y-auto w-full">
+            <LogBoard />
+          </div>
         </Styles.SavesConteiner>
       )
     case MENU.CONFIG:

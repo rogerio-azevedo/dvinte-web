@@ -34,6 +34,18 @@ export interface ArmorItem {
   dexterity: number
 }
 
+export const MENU = {
+  ATTACK: 'attack',
+  CHAT: 'chat',
+  SAVES: 'saves',
+  DAMAGE: 'damage',
+  INIT: 'init',
+  STATUS: 'status',
+  CONFIG: 'config',
+} as const
+
+export type MenuType = (typeof MENU)[keyof typeof MENU]
+
 export interface WeaponItem {
   id: number
   name: string

@@ -19,6 +19,7 @@ export default function RenderMap({
   tokens = [],
   allowDrag,
   setTokens,
+  containerSize = { width: window.innerWidth, height: window.innerHeight },
 }: RenderMapProps) {
   const { user } = useAuth()
   const { state: menuState, actions: menuActions } = useMenu()
@@ -435,39 +436,39 @@ export default function RenderMap({
   }, [tokens, getTokensAtPosition])
 
   return (
-    <div className="flex w-full h-full justify-between items-center">
-      <Stage
-        x={stageX}
-        y={stageY}
-        scaleX={stageScale}
-        scaleY={stageScale}
-        width={window.innerWidth}
-        height={window.innerHeight}
-        onWheel={handleWheel}
-        draggable={allowDrag}
-        onDragEnd={e => {
-          if (allowDrag) {
-            setStageX(e.currentTarget.x())
-            setStageY(e.currentTarget.y())
-          }
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        onContextMenu={e => {
-          e.evt.preventDefault()
-        }}
-        style={{
-          cursor:
-            drawTool === 'pen'
-              ? 'crosshair'
-              : drawTool === 'eraser'
-              ? 'cell'
-              : allowDrag
-              ? 'grab'
-              : 'default',
-        }}
-      >
+    <Stage
+      x={stageX}
+      y={stageY}
+      scaleX={stageScale}
+      scaleY={stageScale}
+      width={containerSize.width}
+      height={containerSize.height}
+      onWheel={handleWheel}
+      draggable={allowDrag}
+      onDragEnd={e => {
+        if (allowDrag) {
+          setStageX(e.currentTarget.x())
+          setStageY(e.currentTarget.y())
+        }
+      }}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseMove={handleMouseMove}
+      onContextMenu={e => {
+        e.evt.preventDefault()
+      }}
+      style={{
+        display: 'block',
+        cursor:
+          drawTool === 'pen'
+            ? 'crosshair'
+            : drawTool === 'eraser'
+            ? 'cell'
+            : allowDrag
+            ? 'grab'
+            : 'default',
+      }}
+    >
         <Layer>
           <Image
             image={map}
@@ -645,7 +646,6 @@ export default function RenderMap({
             />
           </Layer>
         )}
-      </Stage>
-    </div>
+    </Stage>
   )
 }

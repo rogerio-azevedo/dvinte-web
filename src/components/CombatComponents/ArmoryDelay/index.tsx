@@ -549,7 +549,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
   }
 
   return (
-    <div className="flex justify-center items-center flex-col h-52 w-full">
+    <div className="flex justify-center items-center flex-col h-auto py-2 w-full">
       <h2 className="text-center my-2">Painel de Ataque</h2>
 
       {/* Seletor de personagem */}

@@ -110,7 +110,15 @@ export default function GenericDices() {
     if (savedOpen !== null) setIsOpen(savedOpen === 'true')
     if (savedPosition) {
       try {
-        setPosition(JSON.parse(savedPosition))
+        const parsedPos = JSON.parse(savedPosition)
+        if (typeof window !== 'undefined') {
+          // Garante que pelo menos parte do painel esteja visível no carregamento (80px topnav, 330px sidebar)
+          const safeX = Math.max(0, Math.min(parsedPos.x, window.innerWidth - 330 - 100))
+          const safeY = Math.max(80, Math.min(parsedPos.y, window.innerHeight - 50))
+          setPosition({ x: safeX, y: safeY })
+        } else {
+          setPosition(parsedPos)
+        }
       } catch {
         // Ignora erro de parse
       }
@@ -138,9 +146,23 @@ export default function GenericDices() {
     if (!isDragging) return
 
     const handleMouseMove = (e: MouseEvent) => {
+      let newX = e.clientX - dragOffset.x
+      let newY = e.clientY - dragOffset.y
+
+      if (panelRef.current && typeof window !== 'undefined') {
+        const panelWidth = panelRef.current.offsetWidth
+        const panelHeight = panelRef.current.offsetHeight
+        
+        const maxX = Math.max(0, window.innerWidth - panelWidth - 330)
+        const maxY = Math.max(80, window.innerHeight - panelHeight)
+        
+        newX = Math.max(0, Math.min(newX, maxX))
+        newY = Math.max(80, Math.min(newY, maxY))
+      }
+
       setPosition({
-        x: e.clientX - dragOffset.x,
-        y: e.clientY - dragOffset.y,
+        x: newX,
+        y: newY,
       })
     }
 

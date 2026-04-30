@@ -1,6 +1,4 @@
 import styled from 'styled-components'
-import { type StyledProps } from './interfaces'
-
 
 export const SavesConteiner = styled.div`
   display: flex;

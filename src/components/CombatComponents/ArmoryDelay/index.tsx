@@ -217,14 +217,14 @@ export default function Armory({ loadChar }: ArmoryProps) {
     // Usar os modificadores que já vêm corretos da API
     const StrMod =
       selectedCharacter.StrModTemp !== null &&
-      selectedCharacter.StrModTemp !== undefined &&
-      selectedCharacter.StrModTemp !== 0
+        selectedCharacter.StrModTemp !== undefined &&
+        selectedCharacter.StrModTemp !== 0
         ? selectedCharacter.StrModTemp
         : selectedCharacter.StrMod ?? 0
     const DexMod =
       selectedCharacter.DexModTemp !== null &&
-      selectedCharacter.DexModTemp !== undefined &&
-      selectedCharacter.DexModTemp !== 0
+        selectedCharacter.DexModTemp !== undefined &&
+        selectedCharacter.DexModTemp !== 0
         ? selectedCharacter.DexModTemp
         : selectedCharacter.DexMod ?? 0
     const mod = wep.range > 3 ? DexMod : StrMod
@@ -308,14 +308,14 @@ export default function Armory({ loadChar }: ArmoryProps) {
     // Usar os modificadores que já vêm corretos da API (mesma lógica do ataque)
     const StrMod =
       selectedCharacter.StrModTemp !== null &&
-      selectedCharacter.StrModTemp !== undefined &&
-      selectedCharacter.StrModTemp !== 0
+        selectedCharacter.StrModTemp !== undefined &&
+        selectedCharacter.StrModTemp !== 0
         ? selectedCharacter.StrModTemp
         : selectedCharacter.StrMod ?? 0
     const DexMod =
       selectedCharacter.DexModTemp !== null &&
-      selectedCharacter.DexModTemp !== undefined &&
-      selectedCharacter.DexModTemp !== 0
+        selectedCharacter.DexModTemp !== undefined &&
+        selectedCharacter.DexModTemp !== 0
         ? selectedCharacter.DexModTemp
         : selectedCharacter.DexMod ?? 0
 
@@ -441,14 +441,14 @@ export default function Armory({ loadChar }: ArmoryProps) {
     // Usar os modificadores que já vêm corretos da API (mesma lógica do ataque)
     const StrMod =
       selectedCharacter.StrModTemp !== null &&
-      selectedCharacter.StrModTemp !== undefined &&
-      selectedCharacter.StrModTemp !== 0
+        selectedCharacter.StrModTemp !== undefined &&
+        selectedCharacter.StrModTemp !== 0
         ? selectedCharacter.StrModTemp
         : selectedCharacter.StrMod ?? 0
     const DexMod =
       selectedCharacter.DexModTemp !== null &&
-      selectedCharacter.DexModTemp !== undefined &&
-      selectedCharacter.DexModTemp !== 0
+        selectedCharacter.DexModTemp !== undefined &&
+        selectedCharacter.DexModTemp !== 0
         ? selectedCharacter.DexModTemp
         : selectedCharacter.DexMod ?? 0
 
@@ -525,11 +525,9 @@ export default function Armory({ loadChar }: ArmoryProps) {
       totalDamage,
     })
 
-    const rolled = `CAUSOU DANO CRÍTICO com ${name} => ${
-      multi * critMult
-    } x d${dice}: ${result} + ${exMod * critMult} ${modType} + ${
-      extraDamage * critMult
-    } de bônus da arma + ${element} bônus de elemento. Com resultado: ${totalDamage}`
+    const rolled = `CAUSOU DANO CRÍTICO com ${name} => ${multi * critMult
+      } x d${dice}: ${result} + ${exMod * critMult} ${modType} + ${extraDamage * critMult
+      } de bônus da arma + ${element} bônus de elemento. Com resultado: ${totalDamage}`
 
     try {
       await api.post('combats', {
@@ -556,7 +554,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
       {renderCharacterSelector()}
 
       {/* Seletor de armas */}
-      <div>
+      <div className="w-full">
         {loadingWeapons ? (
           <p>Carregando armas...</p>
         ) : characterWeapons && characterWeapons.length > 0 ? (

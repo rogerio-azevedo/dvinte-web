@@ -93,7 +93,7 @@ class DiceManagerClass {
           diceValues[i].stableCount = 0
         }
 
-        if (diceValues[i].stableCount < 50) {
+        if (diceValues[i].stableCount < 100) {
           allStable = false
         }
       }
@@ -180,7 +180,7 @@ export class DiceObject {
       if (this.isFinished()) {
         stableCount++
 
-        if (stableCount === 50) {
+        if (stableCount === 100) {
           DiceManager.world.removeEventListener('postStep', check)
           callback(this.getUpsideValue())
         }
@@ -195,7 +195,7 @@ export class DiceObject {
   }
 
   isFinished() {
-    const threshold = 1
+    const threshold = 0.5
 
     const angularVelocity = this.object.body.angularVelocity
     const velocity = this.object.body.velocity
@@ -669,17 +669,17 @@ export class DiceD8 extends DiceObject {
       [0, 0, -1],
     ]
     this.faces = [
-      [0, 2, 4, 1],
-      [0, 4, 3, 2],
-      [0, 3, 5, 3],
-      [0, 5, 2, 4],
-      [1, 3, 4, 5],
-      [1, 4, 2, 6],
-      [1, 2, 5, 7],
-      [1, 5, 3, 8],
+      [0, 2, 4, 2],
+      [0, 4, 3, 3],
+      [0, 3, 5, 4],
+      [0, 5, 2, 5],
+      [1, 3, 4, 6],
+      [1, 4, 2, 7],
+      [1, 2, 5, 8],
+      [1, 5, 3, 9],
     ]
     this.scaleFactor = 1
-    this.values = 8
+    this.values = 9
     this.faceTexts = [
       ' ',
       '0',
@@ -692,17 +692,6 @@ export class DiceD8 extends DiceObject {
       '7',
       '8',
       '9',
-      '10',
-      '11',
-      '12',
-      '13',
-      '14',
-      '15',
-      '16',
-      '17',
-      '18',
-      '19',
-      '20',
     ]
     this.textMargin = 1.2
     this.mass = 340
@@ -759,10 +748,10 @@ export class DiceD10 extends DiceObject {
       '3',
       '4',
       '5',
-      '.6',
+      '6',
       '7',
       '8',
-      '.9',
+      '9',
       '10',
       '11',
       '12',
@@ -839,10 +828,10 @@ export class DiceD12 extends DiceObject {
       '3',
       '4',
       '5',
-      '.6',
+      '6',
       '7',
       '8',
-      '.9',
+      '9',
       '10',
       '11',
       '12',
@@ -918,10 +907,10 @@ export class DiceD20 extends DiceObject {
       '3',
       '4',
       '5',
-      '.6',
+      '6',
       '7',
       '8',
-      '.9',
+      '9',
       '10',
       '11',
       '12',

@@ -56,7 +56,7 @@ export const AttackContainer = styled.div`
   button {
     color: #6f0000;
     flex: 1;
-    min-width: 75px;
+    min-width: 70px;
     height: 35px !important;
     padding: 0 4px;
     text-align: center;
@@ -81,6 +81,7 @@ export const WeaponContainer = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+  width: 100%;
 
   label {
     margin-right: 10px;

@@ -255,6 +255,14 @@ export default function MyDices() {
   }
 
   function randomDiceThrow() {
+    try {
+      const audio = new Audio('/dice-roll.mp3')
+      audio.volume = 0.6
+      audio.play().catch(() => {})
+    } catch (e) {
+      console.log('Error playing dice sound', e)
+    }
+
     const diceValues: any = []
 
     for (let i = 0; i < dice.length; i++) {

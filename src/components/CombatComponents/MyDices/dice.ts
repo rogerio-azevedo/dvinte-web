@@ -195,7 +195,7 @@ export class DiceObject {
   }
 
   isFinished() {
-    const threshold = 0.5
+    const threshold = 0.1
 
     const angularVelocity = this.object.body.angularVelocity
     const velocity = this.object.body.velocity
@@ -236,14 +236,30 @@ export class DiceObject {
       quaternion: this.object.body.quaternion.clone(),
       velocity: this.object.body.velocity.clone(),
       angularVelocity: this.object.body.angularVelocity.clone(),
+      force: this.object.body.force.clone(),
+      torque: this.object.body.torque.clone(),
     }
   }
 
   setVectors(vectors: any) {
-    this.object.body.position = vectors.position
-    this.object.body.quaternion = vectors.quaternion
-    this.object.body.velocity = vectors.velocity
-    this.object.body.angularVelocity = vectors.angularVelocity
+    this.object.body.position.copy(vectors.position)
+    this.object.body.quaternion.copy(vectors.quaternion)
+    this.object.body.velocity.copy(vectors.velocity)
+    this.object.body.angularVelocity.copy(vectors.angularVelocity)
+    this.object.body.force.copy(vectors.force)
+    this.object.body.torque.copy(vectors.torque)
+    if (this.object.body.previousPosition) {
+      this.object.body.previousPosition.copy(vectors.position)
+    }
+    if (this.object.body.interpolatedPosition) {
+      this.object.body.interpolatedPosition.copy(vectors.position)
+    }
+    if (this.object.body.previousQuaternion) {
+      this.object.body.previousQuaternion.copy(vectors.quaternion)
+    }
+    if (this.object.body.interpolatedQuaternion) {
+      this.object.body.interpolatedQuaternion.copy(vectors.quaternion)
+    }
   }
 
   shiftUpperValue(toValue: any) {
@@ -679,7 +695,7 @@ export class DiceD8 extends DiceObject {
       [1, 5, 3, 9],
     ]
     this.scaleFactor = 1
-    this.values = 9
+    this.values = 8
     this.faceTexts = [
       ' ',
       '0',

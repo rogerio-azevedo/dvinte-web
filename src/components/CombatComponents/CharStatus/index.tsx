@@ -1,5 +1,4 @@
 import React from 'react'
-import * as Styles from './styles'
 
 interface CharacterStatus {
   fortitude: number
@@ -17,71 +16,52 @@ interface CharStatusProps {
   charStatus: CharacterStatus | null
 }
 
+interface StatItem {
+  label: string
+  value: number
+}
+
 const CharStatus: React.FC<CharStatusProps> = ({ charStatus }) => {
-  const fort = charStatus?.fortitude ?? 0
-  const ref = charStatus?.reflex ?? 0
-  const wil = charStatus?.will ?? 0
-  const init = charStatus?.charInit ?? 0
-  const mel = charStatus?.melee ?? 0
-  const ran = charStatus?.ranged ?? 0
-  const ca = charStatus?.totalCa ?? 0
-  const heal = charStatus?.health ?? 0
-  const healNow = charStatus?.healthNow ?? 0
+  const rows: StatItem[][] = [
+    [
+      { label: 'Fortitude', value: charStatus?.fortitude ?? 0 },
+      { label: 'Reflexos', value: charStatus?.reflex ?? 0 },
+      { label: 'Vontade', value: charStatus?.will ?? 0 },
+    ],
+    [
+      { label: 'Iniciativa', value: charStatus?.charInit ?? 0 },
+      { label: 'Melee', value: charStatus?.melee ?? 0 },
+      { label: 'Ranged', value: charStatus?.ranged ?? 0 },
+    ],
+    [
+      { label: 'CA', value: charStatus?.totalCa ?? 0 },
+      { label: 'PV', value: charStatus?.health ?? 0 },
+      { label: 'PV Atual', value: charStatus?.healthNow ?? 0 },
+    ],
+  ]
 
   return (
-    <Styles.Container>
-      <Styles.HeaderContainer>
-        <h2>Meus Atributos</h2>
-      </Styles.HeaderContainer>
-
-      <Styles.StatusContainer>
-        <Styles.GroupStatus>
-          <Styles.Resume>
-            <label htmlFor="fortitude">Fortitude</label>
-            <Styles.InputResume id="fortitude" readOnly defaultValue={fort} />
-          </Styles.Resume>
-          <Styles.Resume>
-            <label htmlFor="reflexos">Reflexos</label>
-            <Styles.InputResume id="reflexos" readOnly defaultValue={ref} />
-          </Styles.Resume>
-          <Styles.Resume>
-            <label htmlFor="vontade">Vontade</label>
-            <Styles.InputResume id="vontade" readOnly defaultValue={wil} />
-          </Styles.Resume>
-        </Styles.GroupStatus>
-
-        <Styles.GroupStatus>
-          <Styles.Resume>
-            <label htmlFor="iniciativa">Iniciativa</label>
-            <Styles.InputResume id="iniciativa" readOnly defaultValue={init} />
-          </Styles.Resume>
-          <Styles.Resume>
-            <label htmlFor="melee">Melee</label>
-            <Styles.InputResume id="melee" readOnly defaultValue={mel} />
-          </Styles.Resume>
-          <Styles.Resume>
-            <label htmlFor="ranged">Ranged</label>
-            <Styles.InputResume id="ranged" readOnly defaultValue={ran} />
-          </Styles.Resume>
-        </Styles.GroupStatus>
-
-        <Styles.GroupStatus>
-          <Styles.Resume>
-            <label htmlFor="ca">CA</label>
-            <Styles.InputResume id="ca" readOnly defaultValue={ca} />
-          </Styles.Resume>
-
-          <Styles.Resume>
-            <label htmlFor="pv">PV</label>
-            <Styles.InputResume id="pv" readOnly defaultValue={heal} />
-          </Styles.Resume>
-          <Styles.Resume>
-            <label htmlFor="pvAtual">PV Atual</label>
-            <Styles.InputResume id="pvAtual" readOnly defaultValue={healNow} />
-          </Styles.Resume>
-        </Styles.GroupStatus>
-      </Styles.StatusContainer>
-    </Styles.Container>
+    <div className="flex w-full flex-col gap-4 rounded-lg bg-white p-4 shadow-sm border border-stone-200">
+      <div className="flex flex-col gap-3">
+        {rows.map((group, gi) => (
+          <div key={gi} className="grid grid-cols-3 gap-2">
+            {group.map(stat => (
+              <div
+                key={stat.label}
+                className="flex flex-col items-center gap-1"
+              >
+                <span className="text-[11px] font-semibold text-[#8e0e00]">
+                  {stat.label}
+                </span>
+                <div className="flex h-9 w-full items-center justify-center rounded-md border border-stone-200 bg-stone-50 text-base font-bold text-[#8e0e00] shadow-sm">
+                  {stat.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 

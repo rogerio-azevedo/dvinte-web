@@ -20,8 +20,6 @@ import {
   type Character,
 } from './interfaces'
 
-import * as Styles from './styles'
-
 export default function Armory({ loadChar }: ArmoryProps) {
   const { setDiceData } = useDices()
 
@@ -147,7 +145,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
     )
 
     return (
-      <Styles.WeaponContainer>
+      <div className="flex items-center mb-2 w-full">
         {validCharacters.length > 1 && (
           <SelectCharacter
             characters={validCharacters.map(char => ({
@@ -157,7 +155,7 @@ export default function Armory({ loadChar }: ArmoryProps) {
             changeCharacter={handleCharacterChange}
           />
         )}
-      </Styles.WeaponContainer>
+      </div>
     )
   }
 
@@ -530,11 +528,12 @@ export default function Armory({ loadChar }: ArmoryProps) {
       await api.post('combats', {
         id: from,
         user_id: user?.id,
-        user: user?.name,
+        user: selectedCharacter?.name || user?.name,
         message: rolled,
         result: totalDamage,
         type: 4,
-        isCrit: 'HIT',
+        // HIT/FAIL em isCrit é só para rolagem de ataque (d20); dano crítico não é “acerto crítico”
+        isCrit: 'NORMAL',
       })
       loadChar()
     } catch (error) {
@@ -544,37 +543,47 @@ export default function Armory({ loadChar }: ArmoryProps) {
   }
 
   return (
-    <div className="flex justify-center items-center flex-col h-auto py-2 w-full">
-      <h2 className="text-center my-2">Painel de Ataque</h2>
-
+    <div className="flex justify-center items-center flex-col h-auto w-full px-3 py-3">
       {/* Seletor de personagem */}
       {renderCharacterSelector()}
 
       {/* Seletor de armas */}
       <div className="w-full">
         {loadingWeapons ? (
-          <p>Carregando armas...</p>
+          <p className="text-sm text-slate-500 italic text-center py-1">Carregando armas...</p>
         ) : characterWeapons && characterWeapons.length > 0 ? (
           <SelectWeapon
             weapons={characterWeapons}
             changeWeapon={option => setWeapon(option?.value)}
           />
         ) : !loadingWeapons ? (
-          <p>Nenhuma arma encontrada.</p>
+          <p className="text-sm text-slate-400 italic text-center py-1">Nenhuma arma encontrada.</p>
         ) : null}
       </div>
 
-      <Styles.AttackContainer>
-        <button type="button" onClick={handleAttack}>
+      <div className="flex flex-row flex-wrap items-center justify-center gap-2 mt-3 mb-2 w-full">
+        <button
+          type="button"
+          onClick={handleAttack}
+          className="flex-1 min-w-[70px] h-9 px-2 text-xs font-bold rounded-md border border-[#8e0e00]/40 bg-[#8e0e00]/8 text-[#8e0e00] shadow-sm transition-all duration-150 hover:bg-[#8e0e00] hover:text-white hover:border-[#8e0e00] hover:shadow-[0_2px_8px_rgba(142,14,0,0.35)] active:scale-95"
+        >
           Atacar
         </button>
-        <button type="button" onClick={handleDamage}>
+        <button
+          type="button"
+          onClick={handleDamage}
+          className="flex-1 min-w-[70px] h-9 px-2 text-xs font-bold rounded-md border border-amber-400/60 bg-amber-50 text-amber-800 shadow-sm transition-all duration-150 hover:bg-amber-600 hover:text-white hover:border-amber-600 hover:shadow-[0_2px_8px_rgba(217,119,6,0.35)] active:scale-95"
+        >
           Dano
         </button>
-        <button type="button" onClick={handleCritDamage}>
+        <button
+          type="button"
+          onClick={handleCritDamage}
+          className="flex-1 min-w-[70px] h-9 px-2 text-xs font-bold rounded-md border border-blue-400/60 bg-blue-50 text-blue-800 shadow-sm transition-all duration-150 hover:bg-blue-700 hover:text-white hover:border-blue-700 hover:shadow-[0_2px_8px_rgba(29,78,216,0.35)] active:scale-95"
+        >
           Dano Crítico
         </button>
-      </Styles.AttackContainer>
+      </div>
     </div>
   )
 }

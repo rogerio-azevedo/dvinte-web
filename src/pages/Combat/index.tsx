@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import ReactTooltip from 'react-tooltip'
@@ -27,7 +25,7 @@ import {
 import * as Styles from './styles'
 
 import RenderMap from '../../components/CombatComponents/RenderMap'
-import Chat from '../../components/CombatComponents/Chat'
+import { ChatMessageForm } from '../../components/CombatComponents/Chat'
 import Savins from '../../components/CombatComponents/Savings'
 import Armory from '../../components/CombatComponents/Armory'
 import Initiatives from '../../components/CombatComponents/Initiatives'
@@ -319,7 +317,11 @@ export default function Combat(): React.JSX.Element {
         </Styles.IconContainer>
 
         {menu === 'chat' ? (
-          <Chat />
+          <Styles.AttackContainer>
+            <ChatMessageForm />
+            <h2>Painel Logs</h2>
+            <LogBoard />
+          </Styles.AttackContainer>
         ) : menu === 'init' ? null : menu === 'saves' ? (
           <Styles.SavesConteiner>
             <Styles.ButtonsContainer>

@@ -1,6 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import React, { useState, useEffect } from 'react'
 import { useAuth, useMenu } from '../../../contexts'
 import { toast } from 'react-toastify'
@@ -245,27 +242,26 @@ const MapTool: React.FC = () => {
     handleSave()
   }
 
+  const fieldLabelCn =
+    'mb-1 block text-xs font-semibold tracking-wide text-stone-600'
+
+  const selectCn =
+    'mt-1.5 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#8e0e00] focus:ring-2 focus:ring-[#8e0e00]/15'
+
   return (
-    <div
-      className="flex flex-col gap-4 px-2 overflow-y-auto"
-      style={{ maxHeight: 'calc(100vh - 100px)' }}
-    >
-      <h2>Cadastro de Mapas</h2>
-      <form onSubmit={handleFormSubmit}>
-        <Styles.InputContainer>
+    <div className="-mx-0.5 scrollbar-hide flex min-h-0 flex-1 flex-col overflow-y-auto">
+      <form onSubmit={handleFormSubmit} className="pb-4">
+        <Styles.PanelSection>
+          <Styles.SectionHeading id="map-config-campaign-h">
+            Campanha
+          </Styles.SectionHeading>
           <div>
-            <label htmlFor="campaign">Campanha</label>
             <select
               id="campaign"
+              aria-labelledby="map-config-campaign-h"
               value={selectedCampaign}
-              onChange={e => handleCampaignChange(parseInt(e.target.value))}
-              style={{
-                width: '100%',
-                padding: '8px',
-                marginTop: '5px',
-                borderRadius: '4px',
-                border: '1px solid #ccc',
-              }}
+              onChange={e => handleCampaignChange(parseInt(e.target.value, 10))}
+              className={selectCn}
             >
               {campaigns.map(campaign => (
                 <option key={campaign.id} value={campaign.id}>
@@ -274,247 +270,208 @@ const MapTool: React.FC = () => {
               ))}
             </select>
           </div>
-        </Styles.InputContainer>
+        </Styles.PanelSection>
 
-        <Styles.InputContainer>
-          <div>
-            <label htmlFor="battle">Mapa Batalha (Público)</label>
-            <Styles.InputLarge
-              id="battle"
-              value={battle}
-              onChange={e => setBattle(e.target.value)}
-              placeholder="URL do mapa de batalha público"
-            />
+        <Styles.PanelSection>
+          <Styles.SectionHeading>URLs dos mapas</Styles.SectionHeading>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="battle" className={fieldLabelCn}>
+                Mapa Batalha (Público)
+              </label>
+              <Styles.InputLarge
+                id="battle"
+                value={battle}
+                onChange={e => setBattle(e.target.value)}
+                placeholder="URL do mapa de batalha público"
+              />
+            </div>
+            <div>
+              <label htmlFor="battle_gm" className={fieldLabelCn}>
+                Mapa Batalha GM (Preparação)
+                {gm_layer && (
+                  <span className="ml-2 text-xs font-semibold text-amber-700">
+                    • GM só
+                  </span>
+                )}
+              </label>
+              <Styles.InputLarge
+                id="battle_gm"
+                value={battle_gm}
+                onChange={e => setBattleGm(e.target.value)}
+                placeholder="URL do mapa GM (visível só com GM Layer)"
+              />
+            </div>
+            <div>
+              <label htmlFor="world" className={fieldLabelCn}>
+                Mapa Mundo
+              </label>
+              <Styles.InputLarge
+                id="world"
+                value={world}
+                onChange={e => setWorld(e.target.value)}
+                placeholder="URL do mapa mundo"
+              />
+            </div>
+            <div>
+              <label htmlFor="portrait" className={fieldLabelCn}>
+                Portrait (Público)
+              </label>
+              <Styles.InputLarge
+                id="portrait"
+                value={portrait}
+                onChange={e => setPortrait(e.target.value)}
+                placeholder="URL do portrait público"
+              />
+            </div>
+            <div>
+              <label htmlFor="portrait_gm" className={fieldLabelCn}>
+                Portrait GM (Preparação)
+                {gm_layer && (
+                  <span className="ml-2 text-xs font-semibold text-amber-700">
+                    • GM só
+                  </span>
+                )}
+              </label>
+              <Styles.InputLarge
+                id="portrait_gm"
+                value={portrait_gm}
+                onChange={e => setPortraitGm(e.target.value)}
+                placeholder="URL portrait GM"
+              />
+            </div>
           </div>
-        </Styles.InputContainer>
+        </Styles.PanelSection>
 
-        <Styles.InputContainer>
+        <Styles.PanelSection>
+          <Styles.SectionHeading>Dimensões e exibição</Styles.SectionHeading>
           <div>
-            <label htmlFor="battle_gm">
-              Mapa Batalha GM (Preparação)
-              {gm_layer && (
-                <span
-                  style={{
-                    marginLeft: '8px',
-                    color: '#ff4444',
-                    fontSize: '12px',
-                  }}
-                >
-                  ● ATIVO - Apenas GM vê este mapa
-                </span>
-              )}
+            <label htmlFor="orientation" className={fieldLabelCn}>
+              Orientação da imagem
             </label>
-            <Styles.InputLarge
-              id="battle_gm"
-              value={battle_gm}
-              onChange={e => setBattleGm(e.target.value)}
-              placeholder="URL do mapa GM (visível apenas para GM quando GM Layer ativo)"
-            />
-          </div>
-        </Styles.InputContainer>
-
-        <Styles.InputContainer>
-          <div>
-            <label htmlFor="world">Mapa Mundo</label>
-            <Styles.InputLarge
-              id="world"
-              value={world}
-              onChange={e => setWorld(e.target.value)}
-              placeholder="URL do mapa mundo"
-            />
-          </div>
-        </Styles.InputContainer>
-
-        <Styles.InputContainer>
-          <div>
-            <label htmlFor="portrait">Portrait (Público)</label>
-            <Styles.InputLarge
-              id="portrait"
-              value={portrait}
-              onChange={e => setPortrait(e.target.value)}
-              placeholder="URL do portrait público"
-            />
-          </div>
-        </Styles.InputContainer>
-
-        <Styles.InputContainer>
-          <div>
-            <label htmlFor="portrait_gm">
-              Portrait GM (Preparação)
-              {gm_layer && (
-                <span
-                  style={{
-                    marginLeft: '8px',
-                    color: '#ff4444',
-                    fontSize: '12px',
-                  }}
-                >
-                  ● ATIVO
-                </span>
-              )}
-            </label>
-            <Styles.InputLarge
-              id="portrait_gm"
-              value={portrait_gm}
-              onChange={e => setPortraitGm(e.target.value)}
-              placeholder="URL do portrait GM (visível apenas para GM quando GM Layer ativo)"
-            />
-          </div>
-        </Styles.InputContainer>
-
-        <Styles.InputContainer>
-          <div>
-            <label htmlFor="orientation">Orientação da Imagem</label>
-            <div style={{ marginTop: '18px' }}>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
               <Switch
                 id="orientation"
                 checked={orientation}
                 onChange={handleOrientation}
-                aria-label="Habilitar orientação do mapa"
+                aria-label="Alternar retrato ou paisagem"
               />
-              <span
-                style={{ marginLeft: '8px', fontSize: '12px', color: '#666' }}
-              >
-                {orientation ? 'Retrato (Vertical)' : 'Paisagem (Horizontal)'}
+              <span className="text-xs text-slate-600">
+                {orientation ? 'Retrato (vertical)' : 'Paisagem (horizontal)'}
               </span>
             </div>
           </div>
-        </Styles.InputContainer>
 
-        <Styles.InputContainer>
-          <div>
-            <label htmlFor="width">Largura</label>
-            <Styles.InputShort
-              id="width"
-              value={width}
-              onChange={e => setWidth(e.target.value)}
-              placeholder="pixels"
-              type="number"
-            />
-          </div>
+          <Styles.InputContainer style={{ paddingTop: 16 }}>
+            <div>
+              <label htmlFor="width">Largura (px)</label>
+              <Styles.InputShort
+                id="width"
+                value={width}
+                onChange={e => setWidth(e.target.value)}
+                placeholder="ex: 2200"
+                type="number"
+              />
+            </div>
+            <div>
+              <label htmlFor="height">Altura (px)</label>
+              <Styles.InputShort
+                id="height"
+                value={height}
+                onChange={e => setHeight(e.target.value)}
+                placeholder="ex: 2200"
+                type="number"
+              />
+            </div>
+          </Styles.InputContainer>
 
-          <div>
-            <label htmlFor="height">Altura</label>
-            <Styles.InputShort
-              id="height"
-              value={height}
-              onChange={e => setHeight(e.target.value)}
-              placeholder="pixels"
-              type="number"
-            />
-          </div>
-        </Styles.InputContainer>
-
-        <Styles.InputContainer>
-          <div>
-            <label htmlFor="grid">Grid</label>
-            <div style={{ marginTop: '18px' }}>
+          <Styles.ToggleRow>
+            <Styles.ToggleCell>
+              <label htmlFor="grid">Grid</label>
               <Switch
                 id="grid"
                 checked={grid}
                 onChange={handleGrid}
                 aria-label="Habilitar grid no mapa"
               />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="fog">Fog</label>
-            <div style={{ marginTop: '18px' }}>
+            </Styles.ToggleCell>
+            <Styles.ToggleCell>
+              <label htmlFor="fog">Fog</label>
               <Switch
                 id="fog"
                 checked={fog}
                 onChange={handleFog}
                 aria-label="Habilitar fog of war"
               />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="gm_layer">GM Layer</label>
-            <div style={{ marginTop: '18px' }}>
+            </Styles.ToggleCell>
+            <Styles.ToggleCell>
+              <label htmlFor="gm_layer">GM Layer</label>
               <Switch
                 id="gm_layer"
                 checked={gm_layer}
                 onChange={handleGmLayer}
                 aria-label="Habilitar camada do GM"
               />
-            </div>
-          </div>
-        </Styles.InputContainer>
+            </Styles.ToggleCell>
+          </Styles.ToggleRow>
 
-        <Styles.InputContainer>
-          <div>
-            <label htmlFor="eraserSize">Borracha ({size}px)</label>
-            <Styles.RangeInput
-              id="eraserSize"
-              value={size}
-              onChange={e => {
-                handleEraserSize(parseInt(e.target.value, 10))
-              }}
-              type="range"
-              step={10}
-              min={10}
-              max={400}
-              aria-label={`Tamanho da borracha: ${size} pixels`}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="fogOpacity">Fog of War ({fogOpacity}%)</label>
-            <Styles.RangeInput
-              id="fogOpacity"
-              value={fogOpacity}
-              onChange={e => {
-                handleFogLevel(e.target.value)
-              }}
-              type="range"
-              step={10}
-              min={10}
-              max={100}
-              aria-label={`Opacidade do fog: ${fogOpacity}%`}
-            />
-          </div>
-        </Styles.InputContainer>
-
-        {/* ===== Seção de Desenho Livre ===== */}
-        <div
-          style={{
-            borderTop: '2px solid #ddd',
-            marginTop: '20px',
-            paddingTop: '20px',
-          }}
-        >
-          <h3 style={{ marginBottom: '15px', fontSize: '16px' }}>
-            ✏️ Desenho Livre
-          </h3>
-
-          <Styles.InputContainer>
-            <div>
-              <label htmlFor="drawTool">Ferramenta</label>
-              <select
-                id="drawTool"
-                value={drawTool}
-                onChange={e =>
-                  menuActions.setDrawTool(
-                    e.target.value as 'none' | 'pen' | 'eraser'
-                  )
-                }
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  marginTop: '5px',
-                  borderRadius: '4px',
-                  border: '1px solid #ccc',
-                  backgroundColor: drawTool === 'pen' ? '#e3f2fd' : 'white',
+          <Styles.InputContainer style={{ paddingTop: 8, paddingBottom: 0 }}>
+            <div className='mt-2'>
+              <label htmlFor="eraserSize">Borracha ({size}px)</label>
+              <Styles.RangeInput
+                id="eraserSize"
+                value={size}
+                onChange={e => {
+                  handleEraserSize(parseInt(e.target.value, 10))
                 }}
-              >
-                <option value="none">Nenhuma</option>
-                <option value="pen">✏️ Caneta</option>
-                <option value="eraser">🧹 Borracha</option>
-              </select>
+                type="range"
+                step={10}
+                min={10}
+                max={400}
+                aria-label={`Tamanho da borracha: ${size} pixels`}
+              />
+            </div>
+            <div className='mt-2'>
+              <label htmlFor="fogOpacity">Fog ({fogOpacity}%)</label>
+              <Styles.RangeInput
+                id="fogOpacity"
+                value={fogOpacity}
+                onChange={e => {
+                  handleFogLevel(e.target.value)
+                }}
+                type="range"
+                step={10}
+                min={10}
+                max={100}
+                aria-label={`Opacidade do fog: ${fogOpacity}%`}
+              />
             </div>
           </Styles.InputContainer>
+        </Styles.PanelSection>
+
+        <Styles.PanelSection>
+          <Styles.SectionHeading>Desenho livre</Styles.SectionHeading>
+
+          <div>
+            <label htmlFor="drawTool" className={fieldLabelCn}>
+              Ferramenta
+            </label>
+            <select
+              id="drawTool"
+              value={drawTool}
+              onChange={e =>
+                menuActions.setDrawTool(
+                  e.target.value as 'none' | 'pen' | 'eraser'
+                )
+              }
+              className={`${selectCn} ${drawTool === 'pen' ? 'border-sky-200 bg-sky-50' : ''
+                }`}
+            >
+              <option value="none">Nenhuma</option>
+              <option value="pen">Caneta</option>
+              <option value="eraser">Borracha no mapa</option>
+            </select>
+          </div>
 
           {drawTool === 'pen' && (
             <>
@@ -539,14 +496,7 @@ const MapTool: React.FC = () => {
               <Styles.InputContainer>
                 <div>
                   <label htmlFor="brushColor">Cor do Pincel</label>
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '8px',
-                      marginTop: '5px',
-                      flexWrap: 'wrap',
-                    }}
-                  >
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {[
                       '#FF0000',
                       '#00FF00',
@@ -561,21 +511,11 @@ const MapTool: React.FC = () => {
                         key={color}
                         type="button"
                         onClick={() => menuActions.setBrushColor(color)}
-                        style={{
-                          width: '32px',
-                          height: '32px',
-                          backgroundColor: color,
-                          border:
-                            brushColor === color
-                              ? '3px solid #333'
-                              : '1px solid #ccc',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          boxShadow:
-                            brushColor === color
-                              ? '0 0 8px rgba(0,0,0,0.5)'
-                              : 'none',
-                        }}
+                        className={`size-8 shrink-0 rounded-md border transition-[box-shadow,transform] hover:scale-105 ${brushColor === color
+                          ? 'ring-2 ring-stone-800 ring-offset-2'
+                          : 'border-stone-200'
+                          }`}
+                        style={{ backgroundColor: color }}
                         aria-label={`Selecionar cor ${color}`}
                       />
                     ))}
@@ -584,13 +524,7 @@ const MapTool: React.FC = () => {
                       type="color"
                       value={brushColor}
                       onChange={e => menuActions.setBrushColor(e.target.value)}
-                      style={{
-                        width: '32px',
-                        height: '32px',
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                      }}
+                      className="size-8 cursor-pointer shrink-0 overflow-hidden rounded-md border border-stone-300 p-0"
                       aria-label="Seletor de cor personalizada"
                     />
                   </div>
@@ -599,38 +533,43 @@ const MapTool: React.FC = () => {
             </>
           )}
 
-          <Styles.ButtonsContainer style={{ marginTop: '15px' }}>
-            <Styles.Button type="button" onClick={handleResetDrawings}>
-              Limpar Desenhos
-            </Styles.Button>
+          <Styles.ButtonsContainer style={{ marginTop: 12 }}>
+            <Styles.ButtonSecondary
+              type="button"
+              onClick={handleResetDrawings}
+            >
+              Limpar desenhos
+            </Styles.ButtonSecondary>
           </Styles.ButtonsContainer>
-        </div>
+        </Styles.PanelSection>
 
         <Styles.ButtonsContainer>
-          <Styles.Button type="submit">Cadastrar</Styles.Button>
-          <Styles.Button type="button" onClick={handleResetFog}>
-            Limpar Fog
-          </Styles.Button>
+          <Styles.ButtonPrimary type="submit">Salvar mapa</Styles.ButtonPrimary>
+          <Styles.ButtonSecondary type="button" onClick={handleResetFog}>
+            Limpar fog
+          </Styles.ButtonSecondary>
           {(battle_gm || portrait_gm) && (
-            <Styles.Button
+            <Styles.ButtonSecondary
               type="button"
               onClick={handleRevealMap}
-              style={{
-                backgroundColor: gm_layer ? '#28a745' : '#6c757d',
-                fontWeight: 'bold',
-                opacity: gm_layer ? 1 : 0.6,
-              }}
               disabled={!gm_layer}
               title={
                 gm_layer
                   ? 'Revelar mapa aos jogadores'
                   : 'Ative o GM Layer para revelar o mapa'
               }
+              style={
+                gm_layer
+                  ? {
+                    backgroundColor: '#15803d',
+                    borderColor: '#166534',
+                    color: '#fff',
+                  }
+                  : undefined
+              }
             >
-              {gm_layer
-                ? '🎭 Revelar Mapa aos Jogadores'
-                : '🔒 GM Layer Desativado'}
-            </Styles.Button>
+              {gm_layer ? 'Revelar aos jogadores' : 'GM Layer desativado'}
+            </Styles.ButtonSecondary>
           )}
         </Styles.ButtonsContainer>
       </form>

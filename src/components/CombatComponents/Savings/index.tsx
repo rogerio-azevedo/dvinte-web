@@ -1,16 +1,21 @@
 /* eslint-disable no-console */
 
-import React from "react";
-import { useAuth } from "../../../contexts";
-import api from "../../../services/api";
-
-import * as Styles from "./styles";
+import React from 'react'
+import { useAuth } from '../../../contexts'
+import api from '../../../services/api'
 
 interface SavingsProps {
-  fortitude?: number;
-  reflex?: number;
-  will?: number;
-  strength?: number;
+  fortitude?: number
+  reflex?: number
+  will?: number
+  strength?: number
+}
+
+interface SaveTest {
+  label: string
+  value: number
+  type: number
+  onRoll: () => Promise<void>
 }
 
 const Savings: React.FC<SavingsProps> = ({
@@ -19,121 +24,85 @@ const Savings: React.FC<SavingsProps> = ({
   will = 0,
   strength = 0,
 }) => {
-  const { user } = useAuth();
-  const from = user?.id;
+  const { user } = useAuth()
+  const from = user?.id
 
-  const handleFortitude = async (): Promise<void> => {
+  const rollTest = async (
+    label: string,
+    bonus: number,
+    type: number,
+    bonusLabel: string,
+  ): Promise<void> => {
+    const dice = Math.floor(Math.random() * 20) + 1
+    const result = bonus + dice
+    const message = `Rolou teste de ${label} d20: ${dice} + ${bonus} de ${bonusLabel}, com resultado: ${result}`
+
+    await api.post('combats', {
+      id: from,
+      user_id: user?.id,
+      user: user?.name,
+      message,
+      result,
+      type,
+    })
+  }
+
+  const tests: SaveTest[] = [
+    {
+      label: 'Fortitude',
+      value: fortitude,
+      type: 5,
+      onRoll: () => rollTest('Fortitude', fortitude, 5, 'fortitude'),
+    },
+    {
+      label: 'Reflexos',
+      value: reflex,
+      type: 6,
+      onRoll: () => rollTest('Reflexos', reflex, 6, 'reflexos'),
+    },
+    {
+      label: 'Vontade',
+      value: will,
+      type: 7,
+      onRoll: () => rollTest('Vontade', will, 7, 'vontade'),
+    },
+    {
+      label: 'Base',
+      value: strength,
+      type: 10,
+      onRoll: () =>
+        rollTest('Base contra Base', strength, 10, 'Base + Mod de Força'),
+    },
+  ]
+
+  const handleClick = async (test: SaveTest) => {
     try {
-      const dice = Math.floor(Math.random() * 20) + 1;
-      const fortitudeTest = fortitude + dice;
-      const rolled = `Rolou teste de Fortitude d20: ${dice} + ${fortitude} de fortitude, com resultado: ${fortitudeTest}`;
-
-      await api.post("combats", {
-        id: from,
-        user_id: user?.id,
-        user: user?.name,
-        message: rolled,
-        result: fortitudeTest,
-        type: 5,
-      });
+      await test.onRoll()
     } catch (error) {
-      console.error("Erro ao realizar teste de Fortitude:", error);
+      console.error(`Erro ao realizar teste de ${test.label}:`, error)
     }
-  };
-
-  const handleReflex = async (): Promise<void> => {
-    try {
-      const dice = Math.floor(Math.random() * 20) + 1;
-      const reflexTest = reflex + dice;
-      const rolled = `Rolou teste de Reflexos d20: ${dice} + ${reflex} de reflexos, com resultado: ${reflexTest}`;
-
-      await api.post("combats", {
-        id: from,
-        user_id: user?.id,
-        user: user?.name,
-        message: rolled,
-        result: reflexTest,
-        type: 6,
-      });
-    } catch (error) {
-      console.error("Erro ao realizar teste de Reflexos:", error);
-    }
-  };
-
-  const handleWill = async (): Promise<void> => {
-    try {
-      const dice = Math.floor(Math.random() * 20) + 1;
-      const willTest = will + dice;
-      const rolled = `Rolou teste de Vontade d20: ${dice} + ${will} de vontade, com resultado: ${willTest}`;
-
-      await api.post("combats", {
-        id: from,
-        user_id: user?.id,
-        user: user?.name,
-        message: rolled,
-        result: willTest,
-        type: 7,
-      });
-    } catch (error) {
-      console.error("Erro ao realizar teste de Vontade:", error);
-    }
-  };
-
-  const handleStrength = async (): Promise<void> => {
-    try {
-      const dice = Math.floor(Math.random() * 20) + 1;
-      const strTest = strength + dice;
-      const rolled = `Rolou teste de Base contra Base d20: ${dice} + ${strength} de Base + Mod de Força, com resultado: ${strTest}`;
-
-      await api.post("combats", {
-        id: from,
-        user_id: user?.id,
-        user: user?.name,
-        message: rolled,
-        result: strTest,
-        type: 10,
-      });
-    } catch (error) {
-      console.error("Erro ao realizar teste de Base:", error);
-    }
-  };
+  }
 
   return (
-    <Styles.Container>
-      <Styles.HeaderContainer>
-        <h2>Testes de Resistência</h2>
-      </Styles.HeaderContainer>
+    <div className="flex w-full flex-col gap-3">
+      <div className="grid grid-cols-2 gap-2">
+        {tests.map(test => (
+          <button
+            key={test.label}
+            type="button"
+            onClick={() => handleClick(test)}
+            className="flex flex-col items-center justify-center rounded-md border border-stone-200 bg-white px-2 py-2.5 shadow-sm transition-colors hover:border-[#8e0e00]/40 hover:bg-[#8e0e00] hover:text-white"
+          >
+            <span className="text-xs font-semibold">{test.label}</span>
+            <span className="mt-0.5 text-[10px] opacity-60">
+              bônus: {test.value >= 0 ? '+' : ''}
+              {test.value}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
 
-      <Styles.MainContainer>
-        <Styles.SavesContainer>
-          <Styles.ActionContainer>
-            <div>
-              <button type="button" onClick={handleFortitude}>
-                Fortitude
-              </button>
-            </div>
-            <div>
-              <button type="button" onClick={handleReflex}>
-                Reflexos
-              </button>
-            </div>
-            <div>
-              <button type="button" onClick={handleWill}>
-                Vontade
-              </button>
-            </div>
-          </Styles.ActionContainer>
-          <Styles.ActionContainer>
-            <div>
-              <button type="button" onClick={handleStrength}>
-                Base
-              </button>
-            </div>
-          </Styles.ActionContainer>
-        </Styles.SavesContainer>
-      </Styles.MainContainer>
-    </Styles.Container>
-  );
-};
-
-export default Savings;
+export default Savings

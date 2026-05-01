@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React from 'react'
-import Chat from '../../components/CombatComponents/Chat'
+import { ChatMessageForm } from '../../components/CombatComponents/Chat'
 import ArmoryDelay from '../../components/CombatComponents/ArmoryDelay'
 import DamagesCounter from '../../components/CombatComponents/DamagesCounter'
 import CharStatusComponent from '../../components/CombatComponents/CharStatus'
 import LogBoard from '../../components/CombatComponents/LogBoard'
 import MapTool from '../../components/CombatComponents/MapTool'
 import Savins from '../../components/CombatComponents/Savings'
-import * as Styles from './styles'
-
 import {
   type Character,
   type CharStatusData,
@@ -46,7 +44,19 @@ const ActiveMenuPanel: React.FC<ActiveMenuPanelProps> = ({
 }) => {
   switch (menu) {
     case MENU.CHAT:
-      return <Chat />
+      return (
+        <div className="flex h-full flex-1 flex-col overflow-hidden">
+          <div className="flex-shrink-0">
+            <ChatMessageForm />
+          </div>
+          <h2 className="mt-4 mb-2 flex-shrink-0 text-center font-semibold text-slate-700">
+            Painel Logs
+          </h2>
+          <div className="flex min-h-0 w-full flex-1 flex-col">
+            <LogBoard />
+          </div>
+        </div>
+      )
     case MENU.INIT:
       return null
     case MENU.ATTACK:
@@ -62,8 +72,8 @@ const ActiveMenuPanel: React.FC<ActiveMenuPanelProps> = ({
               }}
             />
           </div>
-          <h2 className="mt-4 mb-2 font-semibold text-center flex-shrink-0">Painel Logs</h2>
-          <div className="flex-1 overflow-y-auto w-full">
+          <h2 className="mt-4 mb-2 font-semibold text-center flex-shrink-0 text-slate-700">Painel Logs</h2>
+          <div className="flex-1 min-h-0 flex flex-col w-full">
             <LogBoard />
           </div>
         </div>
@@ -78,22 +88,20 @@ const ActiveMenuPanel: React.FC<ActiveMenuPanelProps> = ({
       )
     case MENU.SAVES:
       return (
-        <Styles.SavesConteiner className="flex flex-1 flex-col overflow-hidden h-full">
-          <div className="flex-shrink-0 w-full">
-            <Styles.ButtonsContainer>
-              <Savins
-                fortitude={fortitude}
-                reflex={reflex}
-                will={will}
-                strength={strength}
-              />
-            </Styles.ButtonsContainer>
+        <div className="flex flex-1 flex-col overflow-hidden h-full gap-3">
+          <div className="flex-shrink-0 w-full rounded-lg bg-white p-4 shadow-sm border border-stone-200">
+            <Savins
+              fortitude={fortitude}
+              reflex={reflex}
+              will={will}
+              strength={strength}
+            />
           </div>
-          <h2 className="mt-4 mb-2 font-semibold text-center flex-shrink-0">Painel Logs</h2>
-          <div className="flex-1 overflow-y-auto w-full">
+          <h2 className="font-semibold text-center flex-shrink-0 text-slate-700">Painel Logs</h2>
+          <div className="flex-1 min-h-0 flex flex-col w-full">
             <LogBoard />
           </div>
-        </Styles.SavesConteiner>
+        </div>
       )
     case MENU.CONFIG:
       return <MapTool />

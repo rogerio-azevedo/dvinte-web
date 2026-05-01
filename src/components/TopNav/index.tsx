@@ -50,6 +50,7 @@ const mainMenu: MenuItem[] = [
   { label: 'MONSTROS', dropdown: monstrosMenu, gm: true },
   // { label: 'COMBATE', to: '/combat' },
   { label: 'JOGAR', to: '/play' },
+  { label: 'GM', to: '/gmtools', gm: true },
   { label: 'NOTAS', to: '/notes' },
   { label: 'MUNDO', to: '/map' },
 ]
@@ -92,9 +93,8 @@ function MobileMenuItem({
         >
           <span>{item.label}</span>
           <svg
-            className={`w-4 h-4 transition-transform ${
-              isOpen ? 'rotate-180' : ''
-            }`}
+            className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''
+              }`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -260,9 +260,8 @@ export default function TopNav() {
 
       {/* Menu lateral para mobile */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-[#6f0000] transform transition-transform duration-300 z-50 md:hidden ${
-          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed top-0 right-0 h-full w-80 bg-[#6f0000] transform transition-transform duration-300 z-50 md:hidden ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-white/10">
           <span className="text-white font-semibold">Menu</span>

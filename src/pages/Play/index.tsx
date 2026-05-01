@@ -22,6 +22,7 @@ import PlaySidebar from './PlaySidebar'
 import ActiveMenuPanel from './ActiveMenuPanel'
 import GenericDices from '../../components/CombatComponents/GenericDices'
 import Initiatives from '../../components/CombatComponents/Initiatives'
+import MapControls from '../../components/CombatComponents/MapControls'
 import { useStageSize } from '../../hooks/useStageSize'
 
 export default function Play() {
@@ -118,21 +119,19 @@ export default function Play() {
             {diceShow && <MyDices />}
           </div>
 
-          <RenderMap
-            tokens={tokens}
-            allowDrag={allowDrag}
-            setTokens={setTokens}
-            containerSize={mapSize}
-          />
+          <div className="absolute inset-0 z-[5] min-h-0">
+            <RenderMap
+              tokens={tokens}
+              allowDrag={allowDrag}
+              setTokens={setTokens}
+              containerSize={mapSize}
+            />
+          </div>
+
+          <MapControls allowDrag={allowDrag} onToggleDrag={handleDragable} />
         </div>
 
-        <PlaySidebar
-          allowDrag={allowDrag}
-          handleDragable={handleDragable}
-          handleMenu={handleMenu}
-          user={user}
-          menu={menu}
-        >
+        <PlaySidebar handleMenu={handleMenu} user={user} menu={menu}>
           <ActiveMenuPanel
             menu={menu}
             user={user}

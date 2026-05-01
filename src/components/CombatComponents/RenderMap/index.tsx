@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect, useCallback, type ReactElement } from 'react'
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  type ReactElement,
+} from 'react'
 import { useAuth, useMenu } from '../../../contexts'
 import { Stage, Layer, Line, Image, Rect } from 'react-konva'
 import useImage from 'use-image'
@@ -42,6 +48,94 @@ export default function RenderMap({
   const [mapData, setMapData] = useState<MapData>({} as MapData)
   const [overlappingTokens, setOverlappingTokens] = useState<number[]>([])
   const [initialCenterDone, setInitialCenterDone] = useState<boolean>(false)
+
+  const stageScaleRef = useRef(stageScale)
+  const stageXRef = useRef(stageX)
+  const stageYRef = useRef(stageY)
+  const pinchDistRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    stageScaleRef.current = stageScale
+  }, [stageScale])
+  useEffect(() => {
+    stageXRef.current = stageX
+  }, [stageX])
+  useEffect(() => {
+    stageYRef.current = stageY
+  }, [stageY])
+
+  const touchPinchDist = useCallback((a: Touch, b: Touch) => {
+    const dx = a.clientX - b.clientX
+    const dy = a.clientY - b.clientY
+    return Math.hypot(dx, dy)
+  }, [])
+
+  const touchPinchMidInContainer = useCallback(
+    (stage: any, t1: Touch, t2: Touch) => {
+      const rect = stage.container().getBoundingClientRect()
+      const mx = (t1.clientX + t2.clientX) / 2 - rect.left
+      const my = (t1.clientY + t2.clientY) / 2 - rect.top
+      return { mx, my }
+    },
+    []
+  )
+
+  /** Pinch-zoom (mobile); mesmo princípio do zoom com scroll wheel. */
+  function handleTouchMove(e: any) {
+    if (e.evt.touches?.length !== 2 || pinchDistRef.current === null) return
+
+    e.evt.preventDefault()
+    const stage = e.target.getStage?.()
+    if (!stage) return
+
+    const t1 = e.evt.touches[0]
+    const t2 = e.evt.touches[1]
+    const newDist = touchPinchDist(t1, t2)
+    if (newDist <= 1) return
+
+    const ratio = newDist / pinchDistRef.current
+    const oldScale = stageScaleRef.current
+    let newScale = oldScale * ratio
+    const minScale = 0.06
+    const maxScale = 8
+    newScale = Math.min(maxScale, Math.max(minScale, newScale))
+
+    const { mx, my } = touchPinchMidInContainer(stage, t1, t2)
+    const sx = stageXRef.current
+    const sy = stageYRef.current
+    const anchorWorldX = (mx - sx) / oldScale
+    const anchorWorldY = (my - sy) / oldScale
+    const nextX = mx - anchorWorldX * newScale
+    const nextY = my - anchorWorldY * newScale
+
+    setStageScale(newScale)
+    setStageX(nextX)
+    setStageY(nextY)
+    pinchDistRef.current = newDist
+  }
+
+  function handleTouchStart(e: any) {
+    if (e.evt.touches?.length === 2) {
+      e.evt.preventDefault()
+      pinchDistRef.current = touchPinchDist(
+        e.evt.touches[0],
+        e.evt.touches[1]
+      )
+    }
+  }
+
+  function handleTouchEnd(e: any) {
+    if (
+      pinchDistRef.current !== null &&
+      (!e.evt.touches?.length || e.evt.touches.length < 2)
+    ) {
+      pinchDistRef.current = null
+    }
+  }
+
+  function handleTouchCancel() {
+    pinchDistRef.current = null
+  }
 
   // Efeito para centralizar o mapa inicialmente se ele for menor que o container
   useEffect(() => {
@@ -474,6 +568,10 @@ export default function RenderMap({
       width={containerSize.width}
       height={containerSize.height}
       onWheel={handleWheel}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
       draggable={allowDrag}
       onDragEnd={e => {
         if (allowDrag) {
@@ -488,6 +586,7 @@ export default function RenderMap({
         e.evt.preventDefault()
       }}
       style={{
+        touchAction: 'none',
         display: 'block',
         cursor:
           drawTool === 'pen'

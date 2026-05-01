@@ -33,6 +33,14 @@ export default function SelectWeapon({
   )
 
   const customStyles: StylesConfig<Option, false> = {
+    menuPortal: base => ({
+      ...base,
+      zIndex: 10060,
+    }),
+    menu: base => ({
+      ...base,
+      zIndex: 10060,
+    }),
     input: styles => ({
       ...styles,
       height: '30px',
@@ -62,6 +70,10 @@ export default function SelectWeapon({
     <div className="w-full px-2">
       <Select<Option>
         styles={customStyles}
+        menuPosition="fixed"
+        menuPortalTarget={
+          typeof document !== 'undefined' ? document.body : undefined
+        }
         maxMenuHeight={220}
         placeholder="ESCOLHA A ARMA"
         onChange={changeWeapon}

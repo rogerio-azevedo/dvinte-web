@@ -53,7 +53,15 @@ export default function SelectCharacter({
   }, [value, characterOptions, loading, changeCharacter])
 
   const customStyles = {
-    input: (styles: any) => ({
+    menuPortal: (base: Record<string, unknown>) => ({
+      ...base,
+      zIndex: 10060,
+    }),
+    menu: (base: Record<string, unknown>) => ({
+      ...base,
+      zIndex: 10060,
+    }),
+    input: (styles: Record<string, unknown>) => ({
       ...styles,
       height: '30px',
       minHeight: '30px',
@@ -75,6 +83,10 @@ export default function SelectCharacter({
     <div className="w-full px-2">
       <Select
         styles={customStyles}
+        menuPosition="fixed"
+        menuPortalTarget={
+          typeof document !== 'undefined' ? document.body : undefined
+        }
         maxMenuHeight={220}
         placeholder="Selecione o personagem"
         onChange={handleChange}

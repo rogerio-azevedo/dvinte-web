@@ -13,79 +13,30 @@ import api from '../../../services/api'
 import { useAuth, useDices } from '../../../contexts'
 import { generateSecureRandomNumbers } from '../ArmoryDelay/genRandomNumber'
 
-// Tipos de dados suportados
-const DICE_TYPES = [
-  {
-    key: 4,
-    label: 'd4',
-    icon: (
-      <div className="w-6 h-6">
-        <img src={d4Img} alt="d6" className="w-full h-full" />
-      </div>
-    ),
-  },
-  {
-    key: 6,
-    label: 'd6',
-    icon: (
-      <div className="w-6 h-6">
-        <img src={d6Img} alt="d6" className="w-full h-full" />
-      </div>
-    ),
-  },
-  {
-    key: 8,
-    label: 'd8',
-    icon: (
-      <div className="w-6 h-6">
-        <img src={d8Img} alt="d8" className="w-full h-full" />
-      </div>
-    ),
-  },
-  {
-    key: 10,
-    label: 'd10',
-    icon: (
-      <div className="w-6 h-6">
-        <img src={d10Img} alt="d10" className="w-full h-full" />
-      </div>
-    ),
-  },
-  {
-    key: 12,
-    label: 'd12',
-    icon: (
-      <div className="w-6 h-6">
-        <img src={d12Img} alt="d12" className="w-full h-full" />
-      </div>
-    ),
-  },
-  {
-    key: 20,
-    label: 'd20',
-    icon: (
-      <div className="w-6 h-6">
-        <img src={d20Img} alt="d20" className="w-full h-full" />
-      </div>
-    ),
-  },
-  {
-    key: 100,
-    label: 'd100',
-    icon: (
-      <div className="w-6 h-6">
-        <img src={d100Img} alt="d100" className="w-full h-full" />
-      </div>
-    ),
-  },
-]
+const DICE_META = [
+  { key: 4, label: 'd4', img: d4Img },
+  { key: 6, label: 'd6', img: d6Img },
+  { key: 8, label: 'd8', img: d8Img },
+  { key: 10, label: 'd10', img: d10Img },
+  { key: 12, label: 'd12', img: d12Img },
+  { key: 20, label: 'd20', img: d20Img },
+  { key: 100, label: 'd100', img: d100Img },
+] as const
+
+export type GenericDicesVariant = 'floating' | 'mobile'
+
+export interface GenericDicesProps {
+  /** `mobile`: layout full-width no sheet, alto contraste e toque amplo. */
+  variant?: GenericDicesVariant
+}
 
 type DiceSides = 4 | 6 | 8 | 10 | 12 | 20 | 100
 
 /** Alinhado ao máximo de `diceMult` na API; 20 evita travamentos/piscada com muitas malhas 3D. */
 const MAX_DICE_MULTIPLIER = 20
 
-export default function GenericDices() {
+export default function GenericDices({ variant = 'floating' }: GenericDicesProps) {
+  const isMobile = variant === 'mobile'
   const { user } = useAuth()
   const [isOpen, setIsOpen] = useState(true)
   const [selectedDice, setSelectedDice] = useState<DiceSides>(20)
@@ -106,8 +57,9 @@ export default function GenericDices() {
   const { setDiceData, state: diceState } = useDices()
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Persistência do estado aberto/fechado e posição
+  // Persistência do estado aberto/fechado e posição (apenas card flutuante no mapa)
   useEffect(() => {
+    if (isMobile) return
     const savedOpen = localStorage.getItem('generic-dice-card-open')
     const savedPosition = localStorage.getItem('generic-dice-card-position')
     if (savedOpen !== null) setIsOpen(savedOpen === 'true')
@@ -119,37 +71,40 @@ export default function GenericDices() {
         // Ignora erro de parse
       }
     }
-  }, [])
+  }, [isMobile])
 
   // Clamp position within container when it resizes or opens/closes
   useEffect(() => {
+    if (isMobile) return
     const timeoutId = setTimeout(() => {
       if (panelRef.current && panelRef.current.parentElement) {
         const container = panelRef.current.parentElement
         const panelWidth = panelRef.current.offsetWidth
         const panelHeight = panelRef.current.offsetHeight
-        
+
         const maxX = Math.max(0, container.clientWidth - panelWidth)
         const maxY = Math.max(0, container.clientHeight - panelHeight)
-        
+
         setPosition(prev => ({
           x: Math.max(0, Math.min(prev.x, maxX)),
-          y: Math.max(0, Math.min(prev.y, maxY))
+          y: Math.max(0, Math.min(prev.y, maxY)),
         }))
       }
     }, 100)
     return () => clearTimeout(timeoutId)
-  }, [isOpen])
+  }, [isOpen, isMobile])
   useEffect(() => {
+    if (isMobile) return
     localStorage.setItem('generic-dice-card-open', isOpen ? 'true' : 'false')
-  }, [isOpen])
+  }, [isOpen, isMobile])
   useEffect(() => {
+    if (isMobile) return
     localStorage.setItem('generic-dice-card-position', JSON.stringify(position))
-  }, [position])
+  }, [position, isMobile])
 
   // Handlers de drag
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!panelRef.current) return
+    if (isMobile || !panelRef.current) return
     const rect = panelRef.current.getBoundingClientRect()
     setDragOffset({
       x: e.clientX - rect.left,
@@ -159,7 +114,7 @@ export default function GenericDices() {
   }
 
   useEffect(() => {
-    if (!isDragging) return
+    if (!isDragging || isMobile) return
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!panelRef.current || !panelRef.current.parentElement) return
@@ -196,7 +151,7 @@ export default function GenericDices() {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [isDragging, dragOffset])
+  }, [isDragging, dragOffset, isMobile])
 
   // Detecta quando a animação dos dados 3D termina para enviar mensagem para o chat
   useEffect(() => {
@@ -341,18 +296,236 @@ export default function GenericDices() {
     setMultiplier(m => Math.min(m + 1, MAX_DICE_MULTIPLIER))
   const dec = () => setMultiplier(m => Math.max(m - 1, 1))
 
+  const panelOpen = isMobile || isOpen
+
+  const dicePicker = (
+    <div
+      className={
+        isMobile
+          ? 'grid grid-cols-4 gap-1.5 px-0.5'
+          : 'grid grid-cols-4 gap-2'
+      }
+    >
+      {DICE_META.map(dice => (
+        <button
+          key={dice.key}
+          type="button"
+          onClick={() => setSelectedDice(dice.key as DiceSides)}
+          className={
+            isMobile
+              ? `flex min-h-[2.85rem] flex-col items-center justify-center rounded-lg border px-1 py-1 transition active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ${
+                  selectedDice === dice.key
+                    ? 'border-purple-600 bg-purple-50'
+                    : 'border-slate-200 bg-white hover:border-slate-300'
+                }`
+              : `flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-150 focus:outline-none ${
+                  selectedDice === dice.key
+                    ? 'border border-purple-500/50 bg-purple-500/20 shadow-lg shadow-purple-500/10'
+                    : 'border border-transparent bg-white/5 hover:bg-purple-500/10'
+                }`
+          }
+        >
+          <div className={isMobile ? 'mx-auto h-7 w-7' : 'h-6 w-6'}>
+            <img
+              src={dice.img}
+              alt=""
+              className="h-full w-full object-contain"
+            />
+          </div>
+          <span
+            className={
+              isMobile
+                ? 'mt-0.5 text-[10px] font-semibold leading-tight text-slate-700'
+                : 'mt-1 text-xs font-medium text-gray-300'
+            }
+          >
+            {dice.label}
+          </span>
+        </button>
+      ))}
+    </div>
+  )
+
+  const controlsAndRoll = (
+    <>
+      <div
+        className={
+          isMobile ? 'grid grid-cols-2 gap-3' : 'grid grid-cols-2 gap-3'
+        }
+      >
+        <div className="space-y-1">
+          <div
+            className={
+              isMobile
+                ? 'text-xs font-semibold text-slate-700'
+                : 'text-sm font-medium text-gray-400'
+            }
+          >
+            Quantidade
+          </div>
+          <div className="flex items-center gap-1.5 sm:justify-start">
+            <button
+              type="button"
+              onClick={dec}
+              className={
+                isMobile
+                  ? 'flex h-9 min-w-[2.25rem] shrink-0 items-center justify-center rounded-lg bg-purple-100 text-lg font-bold text-purple-800 transition active:bg-purple-200 disabled:pointer-events-none disabled:opacity-40'
+                  : 'flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/20 text-lg font-bold text-purple-400 transition hover:bg-purple-500/30 disabled:opacity-50'
+              }
+              disabled={multiplier <= 1}
+            >
+              −
+            </button>
+            <input
+              type="number"
+              min={1}
+              max={MAX_DICE_MULTIPLIER}
+              value={multiplier}
+              onChange={e =>
+                setMultiplier(
+                  Math.max(
+                    1,
+                    Math.min(
+                      MAX_DICE_MULTIPLIER,
+                      parseInt(e.target.value, 10) || 1
+                    )
+                  )
+                )
+              }
+              className={
+                isMobile
+                  ? 'h-9 w-full max-w-[3rem] shrink-0 rounded-lg border border-slate-300 bg-white px-1 text-center text-base font-bold text-slate-900 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/40'
+                  : 'w-14 rounded-lg border border-gray-700 bg-white/5 px-2 py-1 text-center text-lg font-semibold text-white focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/50'
+              }
+            />
+            <button
+              type="button"
+              onClick={inc}
+              className={
+                isMobile
+                  ? 'flex h-9 min-w-[2.25rem] shrink-0 items-center justify-center rounded-lg bg-purple-100 text-lg font-bold text-purple-800 transition active:bg-purple-200 disabled:pointer-events-none disabled:opacity-40'
+                  : 'flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/20 text-lg font-bold text-purple-400 transition hover:bg-purple-500/30 disabled:opacity-50'
+              }
+              disabled={multiplier >= MAX_DICE_MULTIPLIER}
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <div
+            className={
+              isMobile
+                ? 'text-xs font-semibold text-slate-700'
+                : 'text-sm font-medium text-gray-400'
+            }
+          >
+            Modificador
+          </div>
+          <input
+            type="number"
+            min={-99}
+            max={99}
+            value={modifier}
+            onChange={e => setModifier(parseInt(e.target.value) || 0)}
+            inputMode={isMobile ? 'numeric' : undefined}
+            className={
+              isMobile
+                ? 'h-9 w-full rounded-lg border border-slate-300 bg-white px-2 text-center text-base font-bold text-slate-900 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/40'
+                : 'w-full rounded-lg border border-gray-700 bg-white/5 px-2 py-1 text-center text-lg font-semibold text-white focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/50'
+            }
+          />
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={rollDice}
+        disabled={isRolling || !user}
+        className={
+          isMobile
+            ? `flex min-h-[2.625rem] w-full touch-manipulation items-center justify-center rounded-xl text-sm font-bold text-white shadow-md transition active:scale-[0.98] disabled:opacity-60 ${
+                isRolling ? 'bg-slate-500' : 'bg-gradient-to-r from-purple-600 to-purple-500'
+              }`
+            : `w-full rounded-xl py-3 text-lg font-bold text-white shadow-lg transition-all duration-200 ${
+                isRolling
+                  ? 'cursor-not-allowed bg-gray-700'
+                  : 'bg-gradient-to-r from-purple-600 to-purple-500 hover:scale-[1.02] hover:from-purple-500 hover:to-purple-400 active:scale-95'
+              } focus:ring-2 focus:ring-purple-500/50`
+        }
+      >
+        {isRolling ? (
+          <div className="flex items-center justify-center gap-2">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            <span>Rolando...</span>
+          </div>
+        ) : (
+          <span>
+            🎲 Rolar {multiplier}x d{selectedDice}
+            {modifier !== 0
+              ? modifier > 0
+                ? ` +${modifier}`
+                : ` ${modifier}`
+              : ''}
+          </span>
+        )}
+      </button>
+
+      {result !== null && (
+        <div
+          className={
+            isMobile
+              ? 'rounded-xl border border-purple-200 bg-purple-50 px-3 py-2 text-center'
+              : 'mt-1 rounded-lg border border-purple-500/20 bg-purple-500/10 p-3 text-center'
+          }
+        >
+          <div
+            className={
+              isMobile
+                ? 'text-2xl font-extrabold text-slate-900'
+                : 'text-xl font-bold text-white'
+            }
+          >
+            {result}
+          </div>
+          <div
+            className={
+              isMobile
+                ? 'mt-1 text-xs font-medium leading-snug text-slate-600'
+                : 'mt-1 text-xs text-gray-400'
+            }
+          >
+            {rollDetails}
+          </div>
+        </div>
+      )}
+    </>
+  )
+
   return (
     <div
       ref={panelRef}
-      className="absolute z-50 select-none pointer-events-auto"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        cursor: isDragging ? 'grabbing' : 'default',
-      }}
+      className={
+        isMobile
+          ? 'relative z-auto w-full max-w-full select-none'
+          : 'pointer-events-auto absolute z-50 select-none'
+      }
+      style={
+        isMobile
+          ? undefined
+          : {
+              left: `${position.x}px`,
+              top: `${position.y}px`,
+              cursor: isDragging ? 'grabbing' : 'default',
+            }
+      }
     >
       <div
-        className={`
+        className={
+          isMobile
+            ? 'flex w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md'
+            : `
           bg-white/10
           backdrop-blur-md
           border border-white/20
@@ -363,158 +536,52 @@ export default function GenericDices() {
           flex flex-col
           pointer-events-auto
           ${isOpen ? 'w-[340px] h-auto' : 'w-20 h-16'}
-        `}
+        `
+        }
       >
-        {/* Header - arrastável */}
-        <div
-          className="flex items-center justify-between px-4 py-3 cursor-move hover:bg-white/5 transition pointer-events-auto"
-          onMouseDown={handleMouseDown}
-        >
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 flex items-center justify-center aspect-square">
-              <img
-                src={d20Img}
-                alt="d20"
-                className="w-full h-full object-contain"
-              />
-            </div>
-            {isOpen && (
-              <span className="font-bold text-white text-lg tracking-tight">
-                Lançador de Dados
-              </span>
-            )}
-          </div>
-          <button
-            onClick={e => {
-              e.stopPropagation()
-              setIsOpen(o => !o)
-            }}
-            className="text-gray-400 hover:text-white transition"
+        {!isMobile && (
+          <div
+            className="pointer-events-auto flex cursor-move items-center justify-between px-4 py-3 transition hover:bg-white/5"
+            onMouseDown={handleMouseDown}
           >
-            {isOpen ? (
-              <FaChevronUp className="w-4 h-4" />
-            ) : (
-              <FaChevronDown className="w-4 h-4" />
-            )}
-          </button>
-        </div>
-
-        {/* Conteúdo */}
-        {isOpen && (
-          <div className="flex flex-col gap-5 px-4 pb-4 pt-2 animate-fade-in pointer-events-auto">
-            {/* Seleção de Dados */}
-            <div className="grid grid-cols-4 gap-2">
-              {DICE_TYPES.map(dice => (
-                <button
-                  key={dice.key}
-                  onClick={() => setSelectedDice(dice.key as DiceSides)}
-                  className={`flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-150 focus:outline-none ${
-                    selectedDice === dice.key
-                      ? 'bg-purple-500/20 border border-purple-500/50 shadow-lg shadow-purple-500/10'
-                      : 'bg-white/5 hover:bg-purple-500/10 border border-transparent'
-                  }`}
-                >
-                  {dice.icon}
-                  <span className="text-xs font-medium mt-1 text-gray-300">
-                    {dice.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Controles */}
-            <div className="grid grid-cols-2 gap-3">
-              {/* Quantidade */}
-              <div className="space-y-1.5">
-                <div className="text-sm font-medium text-gray-400">
-                  Quantidade
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={dec}
-                    className="w-8 h-8 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 font-bold text-lg flex items-center justify-center transition disabled:opacity-50"
-                    disabled={multiplier <= 1}
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    min={1}
-                    max={MAX_DICE_MULTIPLIER}
-                    value={multiplier}
-                    onChange={e =>
-                      setMultiplier(
-                        Math.max(
-                          1,
-                          Math.min(
-                            MAX_DICE_MULTIPLIER,
-                            parseInt(e.target.value, 10) || 1
-                          )
-                        )
-                      )
-                    }
-                    className="w-14 text-center bg-white/5 border border-gray-700 rounded-lg py-1 px-2 text-lg font-semibold text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50"
-                  />
-                  <button
-                    onClick={inc}
-                    className="w-8 h-8 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 font-bold text-lg flex items-center justify-center transition disabled:opacity-50"
-                    disabled={multiplier >= MAX_DICE_MULTIPLIER}
-                  >
-                    +
-                  </button>
-                </div>
+            <div className="flex items-center gap-2">
+              <div className="flex aspect-square h-7 w-7 items-center justify-center">
+                <img src={d20Img} alt="" className="h-full w-full object-contain" />
               </div>
-
-              {/* Modificador */}
-              <div className="space-y-1.5">
-                <div className="text-sm font-medium text-gray-400">
-                  Modificador
-                </div>
-                <input
-                  type="number"
-                  min={-99}
-                  max={99}
-                  value={modifier}
-                  onChange={e => setModifier(parseInt(e.target.value) || 0)}
-                  className="w-full text-center bg-white/5 border border-gray-700 rounded-lg py-1 px-2 text-lg font-semibold text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50"
-                />
-              </div>
-            </div>
-
-            {/* Botão de rolar */}
-            <button
-              onClick={rollDice}
-              disabled={isRolling || !user}
-              className={`w-full py-3 rounded-xl font-bold text-white text-lg shadow-lg transition-all duration-200 ${
-                isRolling
-                  ? 'bg-gray-700 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 hover:scale-[1.02] active:scale-95'
-              } focus:ring-2 focus:ring-purple-500/50`}
-            >
-              {isRolling ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Rolando...</span>
-                </div>
-              ) : (
-                <span>
-                  🎲 Rolar {multiplier}x d{selectedDice}
-                  {modifier !== 0
-                    ? modifier > 0
-                      ? ` +${modifier}`
-                      : ` ${modifier}`
-                    : ''}
+              {panelOpen && (
+                <span className="text-lg font-bold tracking-tight text-white">
+                  Lançador de Dados
                 </span>
               )}
+            </div>
+            <button
+              type="button"
+              onClick={e => {
+                e.stopPropagation()
+                setIsOpen(o => !o)
+              }}
+              className="text-gray-400 transition hover:text-white"
+              aria-expanded={isOpen}
+            >
+              {isOpen ? (
+                <FaChevronUp className="h-4 w-4" />
+              ) : (
+                <FaChevronDown className="h-4 w-4" />
+              )}
             </button>
+          </div>
+        )}
 
-            {/* Resultado visual */}
-            {result !== null && (
-              <div className="mt-1 p-3 rounded-lg bg-purple-500/10 border border-purple-500/20 text-center">
-                <div className="font-bold text-xl text-white">{result}</div>
-                <div className="text-xs mt-1 text-gray-400">{rollDetails}</div>
-              </div>
-            )}
+        {panelOpen && (
+          <div
+            className={
+              isMobile
+                ? 'animate-fade-in pointer-events-auto flex flex-col gap-3 px-2 pb-3 pt-2 sm:px-3'
+                : 'animate-fade-in pointer-events-auto flex flex-col gap-5 px-4 pb-4 pt-2'
+            }
+          >
+            {dicePicker}
+            {controlsAndRoll}
           </div>
         )}
       </div>

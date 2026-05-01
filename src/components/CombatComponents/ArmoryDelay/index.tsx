@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
 
@@ -20,7 +20,20 @@ import {
   type Character,
 } from './interfaces'
 
-export default function Armory({ loadChar }: ArmoryProps) {
+/** combats/ e formulários legacy usam `Cod`; outros trechos usam `id`. */
+function resolveCharacterRecordId(char: unknown): number | undefined {
+  if (!char || typeof char !== 'object') return undefined
+  const o = char as Record<string, unknown>
+  if (typeof o.id === 'number') return o.id
+  if (typeof o.Cod === 'number') return o.Cod
+  return undefined
+}
+
+export default function Armory({
+  loadChar,
+  character: prefetchedCharacter,
+  weapons: prefetchedWeapons = [],
+}: ArmoryProps) {
   const { setDiceData } = useDices()
 
   const { user } = useAuth()
@@ -32,20 +45,57 @@ export default function Armory({ loadChar }: ArmoryProps) {
   )
   const [userCharacters, setUserCharacters] = useState<Character[]>([])
   const [characterWeapons, setCharacterWeapons] = useState<any[]>([])
-  const [loadingCharacters, setLoadingCharacters] = useState(false)
   const [loadingWeapons, setLoadingWeapons] = useState(false)
 
-  // Carregar personagens do usuário
-  const loadUserCharacters = useCallback(async () => {
-    if (loadingCharacters) return
+  const loadCharsInFlightRef = useRef(false)
+  const loadWeaponsInFlightRef = useRef(false)
 
-    setLoadingCharacters(true)
+  const loadCharacterWeapons = useCallback(
+    async (charId: number) => {
+      if (loadWeaponsInFlightRef.current) return
+      loadWeaponsInFlightRef.current = true
+
+      const applyWeaponsOrPrefetch = (): void => {
+        const pid = resolveCharacterRecordId(prefetchedCharacter)
+        if (pid !== undefined && pid === charId && prefetchedWeapons.length > 0) {
+          setCharacterWeapons(prefetchedWeapons)
+        } else {
+          setCharacterWeapons([])
+        }
+      }
+
+      setLoadingWeapons(true)
+      try {
+        const response = await api.get(`characters/${charId}`)
+        const charData = response.data
+        const list = charData?.Weapon || []
+
+        if (Array.isArray(list) && list.length > 0) {
+          setCharacterWeapons(list)
+        } else {
+          applyWeaponsOrPrefetch()
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar armas do personagem:', error)
+        toast.error('Erro ao carregar armas do personagem')
+        applyWeaponsOrPrefetch()
+      } finally {
+        setLoadingWeapons(false)
+        loadWeaponsInFlightRef.current = false
+      }
+    },
+    [prefetchedCharacter, prefetchedWeapons]
+  )
+
+  const loadUserCharacters = useCallback(async () => {
+    if (!user?.id || loadCharsInFlightRef.current) return
+
+    loadCharsInFlightRef.current = true
     try {
       const response = await api.get(`/characters/user/${user?.id}`)
 
       const characters = Array.isArray(response.data) ? response.data : []
 
-      // Mapeia os campos da API para o formato esperado
       const mappedCharacters = characters.map((char: APICharacter) => ({
         id: char.Cod,
         name: char.Name,
@@ -59,22 +109,28 @@ export default function Armory({ loadChar }: ArmoryProps) {
         Equipment: char.Equipment,
       }))
 
-      // Filtra apenas personagens válidos
       const validCharacters = mappedCharacters.filter(
         char => char && char.id && char.name
       )
 
       setUserCharacters(validCharacters)
 
-      console.log(validCharacters)
-
-      // Auto-selecionar quando há apenas 1 personagem
       if (validCharacters.length === 1) {
         const singleChar = validCharacters[0]
         setSelectedCharacter(singleChar)
 
+        const combatId = resolveCharacterRecordId(prefetchedCharacter)
+        const canUsePrefetch =
+          combatId !== undefined &&
+          combatId === singleChar.id &&
+          prefetchedWeapons.length > 0
+
         if (!singleChar.Weapon || singleChar.Weapon.length === 0) {
-          loadCharacterWeapons(singleChar.id)
+          if (canUsePrefetch) {
+            setCharacterWeapons(prefetchedWeapons)
+          } else {
+            await loadCharacterWeapons(singleChar.id)
+          }
         } else {
           setCharacterWeapons(singleChar.Weapon || [])
         }
@@ -84,32 +140,31 @@ export default function Armory({ loadChar }: ArmoryProps) {
       toast.error('Erro ao carregar seus personagens')
       setUserCharacters([])
     } finally {
-      setLoadingCharacters(false)
+      loadCharsInFlightRef.current = false
     }
-  }, [user?.id])
-
-  // Removido loadFullCharacterData - usando dados diretos da lista
-
-  const loadCharacterWeapons = useCallback(async (charId: number) => {
-    if (loadingWeapons) return
-
-    setLoadingWeapons(true)
-    try {
-      const response = await api.get(`characters/${charId}`)
-      const charData = response.data
-      setCharacterWeapons(charData?.Weapon || [])
-    } catch (error) {
-      console.error('❌ Erro ao carregar armas do personagem:', error)
-      toast.error('Erro ao carregar armas do personagem')
-      setCharacterWeapons([])
-    } finally {
-      setLoadingWeapons(false)
-    }
-  }, [])
+  }, [user?.id, prefetchedCharacter, prefetchedWeapons, loadCharacterWeapons])
 
   useEffect(() => {
     loadUserCharacters()
   }, [loadUserCharacters])
+
+  // getCharacter (/combats) pode resolver depois da lista — preenche armas se o slot ainda está vazio
+  useEffect(() => {
+    const combatId = resolveCharacterRecordId(prefetchedCharacter)
+    if (
+      prefetchedWeapons.length === 0 ||
+      combatId === undefined ||
+      selectedCharacter?.id === undefined ||
+      selectedCharacter.id !== combatId
+    ) {
+      return
+    }
+    setCharacterWeapons(prev => (prev.length === 0 ? prefetchedWeapons : prev))
+  }, [
+    prefetchedCharacter,
+    prefetchedWeapons,
+    selectedCharacter?.id,
+  ])
 
   // Removido useEffect desnecessário - carregamento via handleCharacterChange
 

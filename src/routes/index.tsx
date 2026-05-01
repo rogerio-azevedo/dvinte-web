@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import DefaultLayout from '../pages/_Layouts/default'
 import FullWidthLayout from '../pages/_Layouts/fullwidth'
+import PlayMobileLayout from '../pages/_Layouts/playmobile'
 import AuthLayout from '../pages/_Layouts/auth'
 import { RequireAuth, PublicOnly } from './guards'
 
@@ -34,6 +35,7 @@ import CharAttributes from '../pages/CharacterCreate/CharAttributes'
 import CharPreview from '../pages/CharacterCreate/CharPreview'
 import Equipment from '../pages/Equipment'
 import Play from '../pages/Play'
+import PlayMobile from '../pages/PlayMobile'
 import MyDices from '../components/CombatComponents/MyDices'
 import AssetsPage from '../pages/Assets'
 
@@ -78,6 +80,12 @@ export default function AppRoutes() {
           <Route path="/charpreview" element={<CharPreview />} />
           <Route path="/mydices" element={<MyDices />} />
           <Route path="/assets" element={<AssetsPage />} />
+        </Route>
+      </Route>
+
+      <Route element={<PlayMobileLayout />}>
+        <Route element={<RequireAuth />}>
+          <Route path="/playmobile" element={<PlayMobile />} />
         </Route>
       </Route>
 

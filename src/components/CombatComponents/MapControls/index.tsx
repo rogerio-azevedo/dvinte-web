@@ -3,6 +3,8 @@ import { FaExpandArrowsAlt, FaRunning } from 'react-icons/fa'
 interface MapControlsProps {
   allowDrag: boolean
   onToggleDrag: () => void
+  /** Classes Tailwind extras para posicionar o FAB (ex.: acima da barra inferior no mobile) */
+  containerClassName?: string
 }
 
 /**
@@ -11,9 +13,12 @@ interface MapControlsProps {
 export default function MapControls({
   allowDrag,
   onToggleDrag,
+  containerClassName = 'bottom-4 left-4',
 }: MapControlsProps) {
   return (
-    <div className="pointer-events-auto absolute bottom-4 left-4 z-30">
+    <div
+      className={`pointer-events-auto absolute z-30 ${containerClassName}`}
+    >
       <button
         type="button"
         onClick={onToggleDrag}

@@ -98,13 +98,13 @@ export default function Play() {
 
   return (
     <div className="flex w-full h-full justify-center items-center">
-      <div className="flex flex-row align-stretch w-full auto overflow-hidden gap-4 px-2 h-[calc(100vh-65px)]">
+      <div className="flex flex-row align-stretch w-full max-w-[1920px] mx-auto overflow-hidden gap-4 px-2 h-[calc(100vh-65px)]">
         <div
           ref={mapContainerRef}
-          className="relative flex-1 min-w-0 h-full overflow-hidden bg-[#bebebe] rounded-lg shadow-[0px_0px_4px_0px_rgba(0,0,0,0.6)] z-0"
+          className="relative flex-1 min-w-0 h-full overflow-hidden bg-[#1a1a2e] rounded-lg shadow-[0px_0px_4px_0px_rgba(0,0,0,0.6)] z-0"
         >
-          <div className="absolute top-0 left-0 w-full z-10 pointer-events-none">
-            <div className="pointer-events-auto">
+          <div className="absolute top-0 left-0 w-full h-full z-10 pointer-events-none">
+            <div className="pointer-events-none w-full h-full relative">
               <GenericDices />
               <Initiatives
                 profile={user || undefined}

@@ -11,7 +11,7 @@ import d20Img from '../../../assets/dices/d20.png'
 import d100Img from '../../../assets/dices/d100.png'
 import api from '../../../services/api'
 import { useAuth, useDices } from '../../../contexts'
-import { generateSecureRandomNumber } from '../ArmoryDelay/genRandomNumber'
+import { generateSecureRandomNumbers } from '../ArmoryDelay/genRandomNumber'
 
 // Tipos de dados suportados
 const DICE_TYPES = [
@@ -82,6 +82,9 @@ const DICE_TYPES = [
 
 type DiceSides = 4 | 6 | 8 | 10 | 12 | 20 | 100
 
+/** Alinhado ao máximo de `diceMult` na API; 20 evita travamentos/piscada com muitas malhas 3D. */
+const MAX_DICE_MULTIPLIER = 20
+
 export default function GenericDices() {
   const { user } = useAuth()
   const [isOpen, setIsOpen] = useState(true)
@@ -111,19 +114,32 @@ export default function GenericDices() {
     if (savedPosition) {
       try {
         const parsedPos = JSON.parse(savedPosition)
-        if (typeof window !== 'undefined') {
-          // Garante que pelo menos parte do painel esteja visível no carregamento (80px topnav, 330px sidebar)
-          const safeX = Math.max(0, Math.min(parsedPos.x, window.innerWidth - 330 - 100))
-          const safeY = Math.max(80, Math.min(parsedPos.y, window.innerHeight - 50))
-          setPosition({ x: safeX, y: safeY })
-        } else {
-          setPosition(parsedPos)
-        }
+        setPosition(parsedPos)
       } catch {
         // Ignora erro de parse
       }
     }
   }, [])
+
+  // Clamp position within container when it resizes or opens/closes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (panelRef.current && panelRef.current.parentElement) {
+        const container = panelRef.current.parentElement
+        const panelWidth = panelRef.current.offsetWidth
+        const panelHeight = panelRef.current.offsetHeight
+        
+        const maxX = Math.max(0, container.clientWidth - panelWidth)
+        const maxY = Math.max(0, container.clientHeight - panelHeight)
+        
+        setPosition(prev => ({
+          x: Math.max(0, Math.min(prev.x, maxX)),
+          y: Math.max(0, Math.min(prev.y, maxY))
+        }))
+      }
+    }, 100)
+    return () => clearTimeout(timeoutId)
+  }, [isOpen])
   useEffect(() => {
     localStorage.setItem('generic-dice-card-open', isOpen ? 'true' : 'false')
   }, [isOpen])
@@ -146,19 +162,22 @@ export default function GenericDices() {
     if (!isDragging) return
 
     const handleMouseMove = (e: MouseEvent) => {
-      let newX = e.clientX - dragOffset.x
-      let newY = e.clientY - dragOffset.y
+      if (!panelRef.current || !panelRef.current.parentElement) return
+      
+      const container = panelRef.current.parentElement
+      const containerRect = container.getBoundingClientRect()
+      
+      let newX = e.clientX - containerRect.left - dragOffset.x
+      let newY = e.clientY - containerRect.top - dragOffset.y
 
-      if (panelRef.current && typeof window !== 'undefined') {
-        const panelWidth = panelRef.current.offsetWidth
-        const panelHeight = panelRef.current.offsetHeight
-        
-        const maxX = Math.max(0, window.innerWidth - panelWidth - 330)
-        const maxY = Math.max(80, window.innerHeight - panelHeight)
-        
-        newX = Math.max(0, Math.min(newX, maxX))
-        newY = Math.max(80, Math.min(newY, maxY))
-      }
+      const panelWidth = panelRef.current.offsetWidth
+      const panelHeight = panelRef.current.offsetHeight
+      
+      const maxX = Math.max(0, containerRect.width - panelWidth)
+      const maxY = Math.max(0, containerRect.height - panelHeight)
+      
+      newX = Math.max(0, Math.min(newX, maxX))
+      newY = Math.max(0, Math.min(newY, maxY))
 
       setPosition({
         x: newX,
@@ -262,16 +281,13 @@ export default function GenericDices() {
     })
 
     try {
-      const rolls: number[] = []
-      for (let i = 0; i < multiplier; i++) {
-        const roll = await generateSecureRandomNumber(
-          1,
-          selectedDice,
-          user?.id,
-          user?.name
-        )
-        rolls.push(roll)
-      }
+      const rolls = await generateSecureRandomNumbers(
+        1,
+        selectedDice,
+        multiplier,
+        user?.id,
+        user?.name
+      )
 
       if (selectedDice !== 100) {
         setDiceData({
@@ -321,13 +337,14 @@ export default function GenericDices() {
   }, [user, isRolling, multiplier, selectedDice, modifier, setDiceData])
 
   // Stepper handlers
-  const inc = () => setMultiplier(m => Math.min(m + 1, 20))
+  const inc = () =>
+    setMultiplier(m => Math.min(m + 1, MAX_DICE_MULTIPLIER))
   const dec = () => setMultiplier(m => Math.max(m - 1, 1))
 
   return (
     <div
       ref={panelRef}
-      className="fixed z-50 select-none pointer-events-auto"
+      className="absolute z-50 select-none pointer-events-auto"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -423,11 +440,17 @@ export default function GenericDices() {
                   <input
                     type="number"
                     min={1}
-                    max={20}
+                    max={MAX_DICE_MULTIPLIER}
                     value={multiplier}
                     onChange={e =>
                       setMultiplier(
-                        Math.max(1, Math.min(20, parseInt(e.target.value) || 1))
+                        Math.max(
+                          1,
+                          Math.min(
+                            MAX_DICE_MULTIPLIER,
+                            parseInt(e.target.value, 10) || 1
+                          )
+                        )
                       )
                     }
                     className="w-14 text-center bg-white/5 border border-gray-700 rounded-lg py-1 px-2 text-lg font-semibold text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50"
@@ -435,7 +458,7 @@ export default function GenericDices() {
                   <button
                     onClick={inc}
                     className="w-8 h-8 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 font-bold text-lg flex items-center justify-center transition disabled:opacity-50"
-                    disabled={multiplier >= 20}
+                    disabled={multiplier >= MAX_DICE_MULTIPLIER}
                   >
                     +
                   </button>

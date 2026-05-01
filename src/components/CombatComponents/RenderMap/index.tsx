@@ -41,6 +41,36 @@ export default function RenderMap({
   const [selectedId, selectShape] = useState<number | null>(null)
   const [mapData, setMapData] = useState<MapData>({} as MapData)
   const [overlappingTokens, setOverlappingTokens] = useState<number[]>([])
+  const [initialCenterDone, setInitialCenterDone] = useState<boolean>(false)
+
+  // Efeito para centralizar o mapa inicialmente se ele for menor que o container
+  useEffect(() => {
+    if (mapData?.width && containerSize.width > 0 && !initialCenterDone) {
+      const mapW = (mapData.width || 1920) * 0.6
+      const mapH = (mapData.height || 1080) * 0.6
+      
+      let newX = 0
+      let newY = 0
+      
+      if (containerSize.width > mapW) {
+        newX = (containerSize.width - mapW) / 2
+      }
+      if (containerSize.height > mapH) {
+        newY = (containerSize.height - mapH) / 2
+      }
+      
+      setStageX(newX)
+      setStageY(newY)
+      setInitialCenterDone(true)
+    }
+  }, [mapData?.width, mapData?.height, containerSize.width, containerSize.height, initialCenterDone])
+
+  // Resetar a centralização caso o mapa mude
+  useEffect(() => {
+    if (mapData?.battle) {
+      setInitialCenterDone(false)
+    }
+  }, [mapData?.battle])
 
   // Estado para desenhos livres
   const [freeDrawings, setFreeDrawings] = useState<LineType[]>(drawings)

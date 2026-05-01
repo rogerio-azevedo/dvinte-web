@@ -9,7 +9,10 @@ import SelectWeapon from '../../SelectWeapon'
 import SelectCharacter from '../../SelectCharacter'
 import { useDices } from '../../../hooks/useDices'
 import { useAuth } from '../../../contexts'
-import { generateSecureRandomNumber } from './genRandomNumber'
+import {
+  generateSecureRandomNumber,
+  generateSecureRandomNumbers,
+} from './genRandomNumber'
 
 import {
   type APICharacter,
@@ -341,15 +344,12 @@ export default function Armory({ loadChar }: ArmoryProps) {
         ? await generateSecureRandomNumber(1, wep.element, selectedCharacter.id)
         : 0
 
-    const dices = []
-    for (let i = 0; i < multi; i++) {
-      const roll = await generateSecureRandomNumber(
-        1,
-        Number(dice),
-        selectedCharacter.id
-      )
-      dices.push(roll)
-    }
+    const dices = await generateSecureRandomNumbers(
+      1,
+      Number(dice),
+      multi,
+      selectedCharacter.id
+    )
 
     const result = dices.reduce((a, b) => a + b, 0)
 
@@ -475,15 +475,12 @@ export default function Armory({ loadChar }: ArmoryProps) {
         : 0
     const critMult = wep.crit_mod > 0 ? wep.crit_mod : wep.critical
 
-    const dices = []
-    for (let i = 0; i < multi * critMult; i++) {
-      const roll = await generateSecureRandomNumber(
-        1,
-        Number(dice),
-        selectedCharacter.id
-      )
-      dices.push(roll)
-    }
+    const dices = await generateSecureRandomNumbers(
+      1,
+      Number(dice),
+      multi * critMult,
+      selectedCharacter.id
+    )
 
     const result = dices.reduce((a, b) => a + b, 0)
 

@@ -59,7 +59,7 @@ export function useDiceRoll(): UseDiceRollReturn {
       // Permissões padrão em caso de erro
       setPermissions({
         canRoll: true,
-        maxDicePerRoll: 10,
+        maxDicePerRoll: 20,
         allowedDiceTypes: ['d4', 'd6', 'd8', 'd10', 'd12', 'd20'],
         cooldownSeconds: 0,
       })

@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import DefaultLayout from '../pages/_Layouts/default'
+import FullWidthLayout from '../pages/_Layouts/fullwidth'
 import AuthLayout from '../pages/_Layouts/auth'
 import { RequireAuth, PublicOnly } from './guards'
 
@@ -71,15 +72,21 @@ export default function AppRoutes() {
           <Route path="/campaigns" element={<Campaign />} />
           <Route path="/notes" element={<Notes />} />
           <Route path="/gmtools" element={<GmTools />} />
-          <Route path="/map" element={<WorldMap />} />
-          <Route path="/combat" element={<Combat />} />
-          <Route path="/play" element={<Play />} />
           <Route path="/charbase" element={<CharBase />} />
           <Route path="/charclass" element={<CharClass />} />
           <Route path="/charattributes" element={<CharAttributes />} />
           <Route path="/charpreview" element={<CharPreview />} />
           <Route path="/mydices" element={<MyDices />} />
           <Route path="/assets" element={<AssetsPage />} />
+        </Route>
+      </Route>
+
+      {/* Rotas FullWidth (usuário autenticado, páginas de jogo) */}
+      <Route element={<FullWidthLayout />}>
+        <Route element={<RequireAuth />}>
+          <Route path="/map" element={<WorldMap />} />
+          <Route path="/combat" element={<Combat />} />
+          <Route path="/play" element={<Play />} />
         </Route>
       </Route>
     </Routes>

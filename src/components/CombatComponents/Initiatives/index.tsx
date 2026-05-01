@@ -267,19 +267,32 @@ export default function Initiatives({
     if (savedPosition) {
       try {
         const parsedPos = JSON.parse(savedPosition)
-        if (typeof window !== 'undefined') {
-          // Garante que pelo menos parte do painel esteja visível no carregamento (80px topnav, 330px sidebar)
-          const safeX = Math.max(0, Math.min(parsedPos.x, window.innerWidth - 330 - 100))
-          const safeY = Math.max(80, Math.min(parsedPos.y, window.innerHeight - 50))
-          setPosition({ x: safeX, y: safeY })
-        } else {
-          setPosition(parsedPos)
-        }
+        setPosition(parsedPos)
       } catch {
         // Ignora erro de parse
       }
     }
   }, [])
+
+  // Clamp position within container when it resizes or opens/closes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (panelRef.current && panelRef.current.parentElement) {
+        const container = panelRef.current.parentElement
+        const panelWidth = panelRef.current.offsetWidth
+        const panelHeight = panelRef.current.offsetHeight
+        
+        const maxX = Math.max(0, container.clientWidth - panelWidth)
+        const maxY = Math.max(0, container.clientHeight - panelHeight)
+        
+        setPosition(prev => ({
+          x: Math.max(0, Math.min(prev.x, maxX)),
+          y: Math.max(0, Math.min(prev.y, maxY))
+        }))
+      }
+    }, 100)
+    return () => clearTimeout(timeoutId)
+  }, [isOpen])
 
   useEffect(() => {
     localStorage.setItem('initiatives-panel-open', isOpen ? 'true' : 'false')
@@ -304,19 +317,22 @@ export default function Initiatives({
     if (!isDragging) return
 
     const handleMouseMove = (e: MouseEvent) => {
-      let newX = e.clientX - dragOffset.x
-      let newY = e.clientY - dragOffset.y
+      if (!panelRef.current || !panelRef.current.parentElement) return
+      
+      const container = panelRef.current.parentElement
+      const containerRect = container.getBoundingClientRect()
+      
+      let newX = e.clientX - containerRect.left - dragOffset.x
+      let newY = e.clientY - containerRect.top - dragOffset.y
 
-      if (panelRef.current && typeof window !== 'undefined') {
-        const panelWidth = panelRef.current.offsetWidth
-        const panelHeight = panelRef.current.offsetHeight
-        
-        const maxX = Math.max(0, window.innerWidth - panelWidth - 330)
-        const maxY = Math.max(80, window.innerHeight - panelHeight)
-        
-        newX = Math.max(0, Math.min(newX, maxX))
-        newY = Math.max(80, Math.min(newY, maxY))
-      }
+      const panelWidth = panelRef.current.offsetWidth
+      const panelHeight = panelRef.current.offsetHeight
+      
+      const maxX = Math.max(0, containerRect.width - panelWidth)
+      const maxY = Math.max(0, containerRect.height - panelHeight)
+      
+      newX = Math.max(0, Math.min(newX, maxX))
+      newY = Math.max(0, Math.min(newY, maxY))
 
       setPosition({
         x: newX,
@@ -413,7 +429,7 @@ export default function Initiatives({
   return (
     <div
       ref={panelRef}
-      className="fixed z-50 select-none pointer-events-auto"
+      className="absolute z-50 select-none pointer-events-auto"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
